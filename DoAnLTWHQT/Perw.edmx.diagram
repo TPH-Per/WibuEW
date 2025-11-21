@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="d073a6f76afe4b3e9be4da6c7dc4f793" Name="Diagram1" ZoomLevel="79" >
+        <EntityTypeShape EntityType="perwModel.address" Width="1.5" PointX="5.25" PointY="34" />
+        <EntityTypeShape EntityType="perwModel.branch_inventories" Width="1.5" PointX="10.5" PointY="21.125" />
+        <EntityTypeShape EntityType="perwModel.branch" Width="1.5" PointX="8.25" PointY="21" />
+        <EntityTypeShape EntityType="perwModel.cart" Width="1.5" PointX="5.25" PointY="25.125" />
+        <EntityTypeShape EntityType="perwModel.category" Width="1.5" PointX="0.75" PointY="7.5" />
+        <EntityTypeShape EntityType="perwModel.discount" Width="1.5" PointX="8" PointY="11.875" />
+        <EntityTypeShape EntityType="perwModel.inbound_receipt_details" Width="1.5" PointX="7.5" PointY="16.5" />
+        <EntityTypeShape EntityType="perwModel.inbound_receipts" Width="1.5" PointX="5.25" PointY="15.625" />
+        <EntityTypeShape EntityType="perwModel.inventory" Width="1.5" PointX="3" PointY="16" />
+        <EntityTypeShape EntityType="perwModel.inventory_transactions" Width="1.5" PointX="6" PointY="20.875" />
+        <EntityTypeShape EntityType="perwModel.payment_methods" Width="1.5" PointX="10.25" PointY="11.375" />
+        <EntityTypeShape EntityType="perwModel.payment" Width="1.5" PointX="12.5" PointY="16" />
+        <EntityTypeShape EntityType="perwModel.product_variants" Width="1.5" PointX="5.25" PointY="6.375" />
+        <EntityTypeShape EntityType="perwModel.product" Width="1.5" PointX="3" PointY="6.75" />
+        <EntityTypeShape EntityType="perwModel.purchase_order_details" Width="1.5" PointX="15.5" PointY="16.125" />
+        <EntityTypeShape EntityType="perwModel.purchase_orders" Width="1.5" PointX="10.25" PointY="15.25" />
+        <EntityTypeShape EntityType="perwModel.role" Width="1.5" PointX="0.75" PointY="17.5" />
+        <EntityTypeShape EntityType="perwModel.supplier" Width="1.5" PointX="3" PointY="11.75" />
+        <EntityTypeShape EntityType="perwModel.sysdiagram" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="perwModel.user" Width="1.5" PointX="3" PointY="20" />
+        <EntityTypeShape EntityType="perwModel.warehouse_transfers" Width="1.5" PointX="13.5" PointY="20.875" />
+        <EntityTypeShape EntityType="perwModel.warehouse" Width="1.5" PointX="0.75" PointY="21" />
+        <EntityTypeShape EntityType="perwModel.product_reviews" Width="1.5" PointX="8.25" PointY="25" />
+        <AssociationConnector Association="perwModel.FK_addresses_users" />
+        <AssociationConnector Association="perwModel.FK_branch_inventories_branches" />
+        <AssociationConnector Association="perwModel.FK_branch_inventories_product_variants" />
+        <AssociationConnector Association="perwModel.FK_branches_users_manager" />
+        <AssociationConnector Association="perwModel.FK_branches_warehouses" />
+        <AssociationConnector Association="perwModel.FK_warehouse_transfers_to_branches" />
+        <AssociationConnector Association="perwModel.FK_carts_product_variants" />
+        <AssociationConnector Association="perwModel.FK_carts_users" />
+        <AssociationConnector Association="perwModel.FK_products_categories" />
+        <AssociationConnector Association="perwModel.FK_purchase_orders_discounts" />
+        <AssociationConnector Association="perwModel.FK_inbound_receipt_details_receipts" />
+        <AssociationConnector Association="perwModel.FK_inbound_receipt_details_variants" />
+        <AssociationConnector Association="perwModel.FK_inbound_receipts_suppliers" />
+        <AssociationConnector Association="perwModel.FK_inbound_receipts_users" />
+        <AssociationConnector Association="perwModel.FK_inbound_receipts_warehouses" />
+        <AssociationConnector Association="perwModel.FK_inventories_product_variants" />
+        <AssociationConnector Association="perwModel.FK_inventories_warehouses" />
+        <AssociationConnector Association="perwModel.FK_inventory_transactions_product_variants" />
+        <AssociationConnector Association="perwModel.FK_inventory_transactions_purchase_orders" />
+        <AssociationConnector Association="perwModel.FK_inventory_transactions_warehouses" />
+        <AssociationConnector Association="perwModel.FK_payments_payment_methods" />
+        <AssociationConnector Association="perwModel.FK_payments_purchase_orders" />
+        <AssociationConnector Association="perwModel.FK_product_variants_products" />
+        <AssociationConnector Association="perwModel.FK_purchase_order_details_product_variants" />
+        <AssociationConnector Association="perwModel.FK_warehouse_transfers_product_variants" />
+        <AssociationConnector Association="perwModel.FK_product_reviews_products" />
+        <AssociationConnector Association="perwModel.FK_products_suppliers" />
+        <AssociationConnector Association="perwModel.FK_purchase_order_details_purchase_orders" />
+        <AssociationConnector Association="perwModel.FK_purchase_orders_users" />
+        <AssociationConnector Association="perwModel.FK_users_roles" />
+        <AssociationConnector Association="perwModel.FK_product_reviews_users" />
+        <AssociationConnector Association="perwModel.FK_users_warehouses" />
+        <AssociationConnector Association="perwModel.FK_warehouse_transfers_from_warehouses" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

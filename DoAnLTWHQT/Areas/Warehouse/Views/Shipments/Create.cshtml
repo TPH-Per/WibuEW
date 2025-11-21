@@ -1,0 +1,360 @@
+@model Ltwhqt.ViewModels.Warehouse.InboundReceiptFormViewModel
+@{
+    ViewBag.Title = "Tạo phiếu nhập kho";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Tạo phiếu nhập kho</h2>
+        <p class="text-secondary mb-0">Nhập hàng từ nhà cung cấp vào kho</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="@Url.Action("Index")">
+        <i class="bi bi-arrow-left me-1"></i>Quay lại
+    </a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@using (Html.BeginForm("Create", "Shipments", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.DetailsJson, new { id = "detailsJson" })
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Thông tin chung</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Mã phiếu nhập</label>
+                            @Html.TextBoxFor(m => m.Code, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nhà cung cấp <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(m => m.SupplierId, Model.SupplierOptions, "-- Chọn nhà cung cấp --", new { @class = "form-select", required = "required", id = "SupplierId" })
+                            @Html.ValidationMessageFor(m => m.SupplierId, "", new { @class = "invalid-feedback" })
+                            <small class="text-muted">Chỉ có thể nhập sản phẩm từ một nhà cung cấp</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kho nhận <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(m => m.WarehouseId, Model.WarehouseOptions, "-- Chọn kho --", new { @class = "form-select", required = "required" })
+                            @Html.ValidationMessageFor(m => m.WarehouseId, "", new { @class = "invalid-feedback" })
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ngày nhận hàng</label>
+                            @Html.TextBoxFor(m => m.ReceivedAt, "{0:yyyy-MM-ddTHH:mm}", new { @class = "form-control", type = "datetime-local" })
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(m => m.Status, new SelectList(new[] {
+                                new { Value = "pending", Text = "Chờ xử lý" },
+                                new { Value = "completed", Text = "Hoàn thành" }
+                            }, "Value", "Text"), new { @class = "form-select", required = "required" })
+                            <small class="text-muted">Chọn "Hoàn thành" để tự động cập nhật tồn kho</small>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Ghi chú</label>
+                            @Html.TextAreaFor(m => m.Notes, new { @class = "form-control", rows = 3, placeholder = "Ghi chú về phiếu nhập..." })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Chi tiết sản phẩm</h5>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="showAddProductModal()">
+                        <i class="bi bi-plus-lg me-1"></i>Thêm sản phẩm
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="detailsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-end">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                                <th style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailsTableBody">
+                            <tr id="emptyRow">
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                    Chọn nhà cung cấp và nhấn "Thêm sản phẩm" để bắt đầu.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Tổng kết</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tổng số lượng SP:</span>
+                        <strong id="totalItems">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tổng số lượng:</span>
+                        <strong id="totalQuantity">0</strong>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between mb-4">
+                        <strong>Tổng tiền:</strong>
+                        <strong class="text-primary fs-5" id="totalAmount">0 đ</strong>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">
+                        <i class="bi bi-check-lg me-1"></i>Tạo phiếu nhập
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm sản phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Sản phẩm <span class="text-danger">*</span></label>
+                    <select class="form-select" id="productVariantSelect">
+                        <option value="">-- Chọn nhà cung cấp trước --</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Số lượng <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="quantityInput" min="1" value="1" required />
+                    <small class="text-muted">Số lượng sản phẩm nhập vào kho</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Giá nhập (VNĐ) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control form-control-lg" id="priceInput" min="0" step="1000" value="" placeholder="Nhập giá mua từ nhà cung cấp" required />
+                    <small class="text-muted">Giá nhập vào kho (chưa bao gồm VAT nếu có)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="addProductDetail()">Thêm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let details = [];
+        let addProductModal;
+        let productVariants = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            addProductModal = new bootstrap.Modal(document.getElementById('addProductModal'));
+            
+            // Load products when supplier changes
+            document.getElementById('SupplierId').addEventListener('change', function() {
+                const supplierId = this.value;
+                if (!supplierId) {
+                    productVariants = [];
+                    document.getElementById('productVariantSelect').innerHTML = '<option value="">-- Chọn nhà cung cấp trước --</option>';
+                    return;
+                }
+
+                // Clear existing details when supplier changes
+                if (details.length > 0) {
+                    if (confirm('Thay đổi nhà cung cấp sẽ xóa tất cả sản phẩm đã thêm. Bạn có chắc chắn?')) {
+                        details = [];
+                        updateDetailsTable();
+                        updateSummary();
+                    } else {
+                        // Revert selection - không làm gì cả, giữ nguyên supplier
+                        return;
+                    }
+                }
+
+                // Show loading
+                document.getElementById('productVariantSelect').innerHTML = '<option value="">Đang tải...</option>';
+
+                // Load products for selected supplier
+                fetch('@Url.Action("GetProductVariantsBySupplierId")?supplierId=' + supplierId)
+                    .then(response => response.json())
+                    .then(data => {
+                        productVariants = data;
+                        const select = document.getElementById('productVariantSelect');
+                        
+                        if (data.length === 0) {
+                            select.innerHTML = '<option value="">Nhà cung cấp chưa có sản phẩm</option>';
+                        } else {
+                            select.innerHTML = '<option value="">-- Chọn sản phẩm --</option>';
+                            data.forEach(variant => {
+                                const option = document.createElement('option');
+                                option.value = variant.id;
+                                option.textContent = variant.text;
+                                option.setAttribute('data-text', variant.text);
+                                select.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading products:', error);
+                        alert('Lỗi khi tải danh sách sản phẩm!');
+                        document.getElementById('productVariantSelect').innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                    });
+            });
+        });
+
+        function showAddProductModal() {
+            const supplierId = document.getElementById('SupplierId').value;
+            if (!supplierId) {
+                alert('Vui lòng chọn nhà cung cấp trước!');
+                return;
+            }
+
+            if (productVariants.length === 0) {
+                alert('Nhà cung cấp này chưa có sản phẩm nào!');
+                return;
+            }
+
+            // Reset form
+            document.getElementById('productVariantSelect').value = '';
+            document.getElementById('quantityInput').value = 1;
+            document.getElementById('priceInput').value = '';
+            
+            addProductModal.show();
+            
+            // Focus on product select after modal is shown
+            setTimeout(() => {
+                document.getElementById('productVariantSelect').focus();
+            }, 500);
+        }
+
+        function addProductDetail() {
+            const variantId = parseInt(document.getElementById('productVariantSelect').value);
+            const variantText = document.getElementById('productVariantSelect').selectedOptions[0]?.dataset.text || '';
+            const quantity = parseInt(document.getElementById('quantityInput').value);
+            const priceValue = document.getElementById('priceInput').value;
+            const price = parseFloat(priceValue);
+
+            // Validation
+            if (!variantId) {
+                alert('Vui lòng chọn sản phẩm!');
+                document.getElementById('productVariantSelect').focus();
+                return;
+            }
+
+            if (!quantity || quantity <= 0) {
+                alert('Vui lòng nhập số lượng hợp lệ (lớn hơn 0)!');
+                document.getElementById('quantityInput').focus();
+                return;
+            }
+
+            if (!priceValue || price <= 0) {
+                alert('Vui lòng nhập giá nhập hợp lệ (lớn hơn 0)!');
+                document.getElementById('priceInput').focus();
+                return;
+            }
+
+            // Check if product already exists
+            const existingIndex = details.findIndex(d => d.ProductVariantId === variantId);
+            if (existingIndex >= 0) {
+                alert('Sản phẩm đã tồn tại trong danh sách!');
+                return;
+            }
+
+            details.push({
+                ProductVariantId: variantId,
+                ProductVariantText: variantText,
+                Quantity: quantity,
+                InputPrice: price
+            });
+
+            updateDetailsTable();
+            updateSummary();
+            addProductModal.hide();
+        }
+
+        function removeProductDetail(index) {
+            if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
+                details.splice(index, 1);
+                updateDetailsTable();
+                updateSummary();
+            }
+        }
+
+        function updateDetailsTable() {
+            const tbody = document.getElementById('detailsTableBody');
+            const emptyRow = document.getElementById('emptyRow');
+
+            if (details.length === 0) {
+                emptyRow.style.display = '';
+                return;
+            }
+
+            emptyRow.style.display = 'none';
+            
+            // Remove all rows except empty row
+            while (tbody.children.length > 1) {
+                tbody.removeChild(tbody.lastChild);
+            }
+
+            details.forEach((detail, index) => {
+                const lineTotal = detail.Quantity * detail.InputPrice;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${detail.ProductVariantText}</td>
+                    <td class="text-end">${detail.Quantity}</td>
+                    <td class="text-end">${formatCurrency(detail.InputPrice)}</td>
+                    <td class="text-end"><strong>${formatCurrency(lineTotal)}</strong></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeProductDetail(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update hidden field
+            document.getElementById('detailsJson').value = JSON.stringify(details);
+        }
+
+        function updateSummary() {
+            const totalItems = details.length;
+            const totalQuantity = details.reduce((sum, d) => sum + d.Quantity, 0);
+            const totalAmount = details.reduce((sum, d) => sum + (d.Quantity * d.InputPrice), 0);
+
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalQuantity').textContent = totalQuantity;
+            document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+        }
+    </script>
+}

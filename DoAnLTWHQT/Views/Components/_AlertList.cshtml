@@ -1,0 +1,15 @@
+@using System.Linq
+@model IEnumerable<Ltwhqt.ViewModels.Shared.AlertViewModel>
+@if (Model?.Any() == true)
+{
+    foreach (var alert in Model)
+    {
+        <div class="alert alert-@alert.Type alert-dismissible fade show" role="alert">
+            @alert.Message
+            @if (alert.Dismissible)
+            {
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            }
+        </div>
+    }
+}

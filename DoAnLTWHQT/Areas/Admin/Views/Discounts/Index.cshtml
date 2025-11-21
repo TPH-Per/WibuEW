@@ -1,0 +1,48 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.DiscountManagementViewModel>
+@{
+    ViewBag.Title = "Mã giảm giá";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Chiến dịch discounts</h2>
+        <p class="text-secondary mb-0">Theo dõi số lượt dùng, hiệu lực.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="bi bi-plus-lg me-2"></i>Thêm mã mới
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Loại</th>
+                    <th>Giá trị</th>
+                    <th>Điều kiện</th>
+                    <th>Lượt dùng</th>
+                    <th>Hiệu lực</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var discount in Model)
+                {
+                    <tr class="@(discount.IsActive ? null : "text-secondary")">
+                        <td class="fw-semibold">@discount.Code</td>
+                        <td>@discount.Type</td>
+                        <td>@discount.Value</td>
+                        <td>Min: @discount.MinOrderAmount?.ToString("c0")</td>
+                        <td>@discount.UsedCount / @discount.MaxUses</td>
+                        <td>@discount.StartAt:dd/MM - @discount.EndAt:dd/MM</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-light" href="@Url.Action("Edit", new { id = discount.Id })">Sửa</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

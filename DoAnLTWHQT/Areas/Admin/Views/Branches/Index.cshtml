@@ -1,0 +1,46 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.BranchViewModel>
+@{
+    ViewBag.Title = "Chi nhánh";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Hệ thống chi nhánh</h2>
+        <p class="text-secondary mb-0">Gán manager và kho nguồn.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="bi bi-plus-lg me-2"></i>Thêm chi nhánh
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tên</th>
+                    <th>Địa chỉ</th>
+                    <th>Quản lý</th>
+                    <th>Kho nguồn</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var branch in Model)
+                {
+                    <tr>
+                        <td>@branch.Id</td>
+                        <td>@branch.Name</td>
+                        <td>@branch.Location</td>
+                        <td>@branch.Manager</td>
+                        <td>@branch.SourceWarehouse</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-light" href="@Url.Action("Edit", new { id = branch.Id })">Sửa</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

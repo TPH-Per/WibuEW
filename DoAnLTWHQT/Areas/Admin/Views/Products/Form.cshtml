@@ -1,0 +1,59 @@
+@model Ltwhqt.ViewModels.Admin.ProductFormViewModel
+@{
+    ViewBag.Title = ViewBag.Title ?? "Thông tin sản phẩm";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">@ViewBag.Title</h2>
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+        
+        @using (Html.BeginForm(Model.Id.HasValue ? "Edit" : "Create", "Products", FormMethod.Post, new { @class = "needs-validation" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Tên hiển thị", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Slug</label>
+                    @Html.TextBoxFor(m => m.Slug, new { @class = "form-control", placeholder = "sneaker-aurora" })
+                    @Html.ValidationMessageFor(m => m.Slug, "", new { @class = "text-danger" })
+                    <small class="text-muted">Để trống để tự động tạo từ tên</small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Mô tả</label>
+                    @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = "4", placeholder = "Thông tin mô tả" })
+                    @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                    @Html.DropDownListFor(m => m.CategoryId, Model.CategoryOptions, "-- Chọn danh mục --", new { @class = "form-select", required = "required" })
+                    @Html.ValidationMessageFor(m => m.CategoryId, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Nhà cung cấp <span class="text-danger">*</span></label>
+                    @Html.DropDownListFor(m => m.SupplierId, Model.SupplierOptions, "-- Chọn nhà cung cấp --", new { @class = "form-select", required = "required" })
+                    @Html.ValidationMessageFor(m => m.SupplierId, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                    @Html.DropDownListFor(m => m.Status, Model.StatusOptions, new { @class = "form-select", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+                <button class="btn btn-primary" type="submit">Lưu sản phẩm</button>
+            </div>
+        }
+    </div>
+</div>

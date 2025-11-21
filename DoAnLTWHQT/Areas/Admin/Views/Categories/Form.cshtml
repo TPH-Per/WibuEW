@@ -1,0 +1,39 @@
+@model Ltwhqt.ViewModels.Admin.CategoryFormViewModel
+@{
+    ViewBag.Title = ViewBag.Title ?? "Chi tiết danh mục";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">@ViewBag.Title</h2>
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+        
+        @using (Html.BeginForm(Model.Id.HasValue ? "Edit" : "Create", "Categories", FormMethod.Post, new { @class = "needs-validation" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Ví dụ: Giày thể thao", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Slug</label>
+                    @Html.TextBoxFor(m => m.Slug, new { @class = "form-control", placeholder = "giay-the-thao" })
+                    @Html.ValidationMessageFor(m => m.Slug, "", new { @class = "text-danger" })
+                    <small class="text-muted">Để trống để tự động tạo từ tên</small>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+                <button class="btn btn-primary" type="submit">Lưu</button>
+            </div>
+        }
+    </div>
+</div>

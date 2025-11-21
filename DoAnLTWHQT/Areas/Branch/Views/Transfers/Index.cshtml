@@ -1,0 +1,52 @@
+@model IEnumerable<Ltwhqt.ViewModels.Branch.BranchTransferViewModel>
+@{
+    ViewBag.Title = "Phiếu nhận hàng";
+    var statusFilter = ViewBag.StatusFilter as string ?? "all";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Warehouse transfers</h2>
+        <p class="text-secondary mb-0">Hàng từ kho trung tâm về chi nhánh.</p>
+    </div>
+    <form method="get">
+        <select class="form-select" name="status" onchange="this.form.submit()">
+            <option value="all" @(statusFilter == "all" ? "selected" : null)>Tất cả</option>
+            <option value="pending" @(statusFilter == "pending" ? "selected" : null)>Pending</option>
+            <option value="transferred" @(statusFilter == "transferred" ? "selected" : null)>Đang chuyển</option>
+            <option value="received" @(statusFilter == "received" ? "selected" : null)>Đã nhận</option>
+        </select>
+    </form>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Variant</th>
+                    <th>Số lượng</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transfer in Model)
+                {
+                    <tr>
+                        <td>#@transfer.Id</td>
+                        <td>@transfer.Variant</td>
+                        <td>@transfer.Quantity</td>
+                        <td><span class="badge bg-light text-dark text-uppercase">@transfer.Status</span></td>
+                        <td>@transfer.CreatedAt:dd/MM HH:mm</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Details", new { id = transfer.Id })">Chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

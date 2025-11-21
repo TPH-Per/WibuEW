@@ -1,0 +1,45 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.InventorySnapshotViewModel>
+@{
+    ViewBag.Title = "Tồn kho kho trung tâm";
+}
+
+@section Styles {
+    <link href="@Url.Content("~/wwwroot/css/areas/admin-dashboard.css")" rel="stylesheet" />
+}
+
+<div class="mb-4">
+    <h2 class="h4 mb-1">Inventory overview</h2>
+    <p class="text-secondary mb-0">Theo dõi quantity_on_hand và cảnh báo reorder.</p>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Variant</th>
+                    <th>Kho</th>
+                    <th>Tồn khả dụng</th>
+                    <th>Đang giữ</th>
+                    <th>Reorder lvl</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="@(item.IsWarning ? "table-warning" : null)">
+                        <td>@item.VariantName</td>
+                        <td>@item.WarehouseName</td>
+                        <td>@item.QuantityOnHand</td>
+                        <td>@item.QuantityReserved</td>
+                        <td>@item.ReorderLevel</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-light" href="@Url.Action("Adjust", new { variantId = item.VariantId })">Điều chỉnh</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

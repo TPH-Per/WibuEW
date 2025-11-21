@@ -1,0 +1,45 @@
+/* Admin Dashboard Specific Styles */
+
+.admin-dashboard-header {
+    background: linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%); /* Blue/Cyan gradient */
+    box-shadow: 0 20px 40px -15px #0ea5e9;
+}
+
+.admin-stat-card {
+    border-left: 4px solid #0ea5e9;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.admin-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px -10px rgba(14, 165, 233, 0.3);
+}
+
+.admin-orders-table .table th {
+    background-color: #f0f9ff; /* Light blue */
+    color: #0369a1; /* Dark blue */
+}
+
+.admin-orders-table .status-pill {
+    font-weight: 600;
+}
+
+.admin-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.admin-processing {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.admin-completed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.admin-cancelled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
