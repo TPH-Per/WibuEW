@@ -1,0 +1,62 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.ProductReviewManagementViewModel>
+@{
+    ViewBag.Title = "Đánh giá sản phẩm";
+    var statusFilter = ViewBag.StatusFilter as string ?? "pending";
+}
+
+<div class="mb-4">
+    <h2 class="h4 mb-1">Moderation review</h2>
+    <p class="text-secondary mb-0">Duyệt/từ chối đánh giá khách hàng.</p>
+</div>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-select" name="status" onchange="this.form.submit()">
+            <option value="pending" @(statusFilter == "pending" ? "selected" : null)>Pending</option>
+            <option value="approved" @(statusFilter == "approved" ? "selected" : null)>Approved</option>
+            <option value="rejected" @(statusFilter == "rejected" ? "selected" : null)>Rejected</option>
+        </select>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Khách</th>
+                    <th>Rating</th>
+                    <th>Nhận xét</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var review in Model)
+                {
+                    <tr>
+                        <td>@review.ProductName</td>
+                        <td>@review.CustomerName</td>
+                        <td>@review.Rating/5</td>
+                        <td>@review.Comment</td>
+                        <td>
+                            <span class="badge @(review.Status == "approved" ? "bg-success-subtle text-success" : (review.Status == "rejected" ? "bg-danger-subtle text-danger" : "bg-warning-subtle text-warning"))">
+                                @review.Status
+                            </span>
+                        </td>
+                        <td>@review.CreatedAt:dd/MM/yyyy</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-success">Duyệt</button>
+                                <button type="button" class="btn btn-outline-danger">Từ chối</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

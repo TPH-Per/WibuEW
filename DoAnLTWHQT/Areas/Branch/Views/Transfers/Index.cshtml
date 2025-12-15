@@ -1,0 +1,117 @@
+@model IEnumerable<Ltwhqt.ViewModels.Branch.TransferRequestListViewModel>
+@{
+    ViewBag.Title = "Yêu cầu nhập hàng";
+    var statusFilter = ViewBag.StatusFilter as string ?? "all";
+}
+
+@section Styles {
+    <link href="@Url.Content("~/wwwroot/css/areas/branch-dashboard.css")" rel="stylesheet" />
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">
+            <i class="bi bi-box-arrow-in-down me-2"></i>Yêu cầu nhập hàng
+        </h2>
+        <p class="text-secondary mb-0">Quản lý các phiếu yêu cầu nhập hàng từ kho</p>
+    </div>
+    <a href="@Url.Action("Create")" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Tạo yêu cầu mới
+    </a>
+</div>
+
+<!-- Filter buttons -->
+<div class="mb-4">
+    <div class="btn-group" role="group">
+        <a href="@Url.Action("Index", new { status = "all" })" 
+           class="btn @(statusFilter == "all" ? "btn-primary" : "btn-outline-primary")">Tất cả</a>
+        <a href="@Url.Action("Index", new { status = "Requested" })" 
+           class="btn @(statusFilter == "Requested" ? "btn-warning" : "btn-outline-warning")">Chờ duyệt</a>
+        <a href="@Url.Action("Index", new { status = "Approved" })" 
+           class="btn @(statusFilter == "Approved" ? "btn-info" : "btn-outline-info")">Đã duyệt</a>
+        <a href="@Url.Action("Index", new { status = "Completed" })" 
+           class="btn @(statusFilter == "Completed" ? "btn-success" : "btn-outline-success")">Hoàn thành</a>
+        <a href="@Url.Action("Index", new { status = "Rejected" })" 
+           class="btn @(statusFilter == "Rejected" ? "btn-danger" : "btn-outline-danger")">Từ chối</a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Kho xuất</th>
+                    <th>Ngày tạo</th>
+                    <th>Số SP</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Chưa có yêu cầu nhập hàng nào
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>#@item.Id</strong>
+                            </td>
+                            <td>@item.WarehouseName</td>
+                            <td>
+                                <small>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@item.TotalItems SP</span>
+                            </td>
+                            <td>
+                                <strong>@item.TotalAmount.ToString("N0") đ</strong>
+                            </td>
+                            <td>
+                                <span class="badge @item.StatusBadgeClass">@item.StatusDisplayName</span>
+                            </td>
+                            <td class="text-end">
+                                <a href="@Url.Action("Details", new { id = item.Id })" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                                @if (item.Status == "Requested")
+                                {
+                                    <a href="@Url.Action("AddItems", new { id = item.Id })" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-plus"></i> Thêm SP
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

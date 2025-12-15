@@ -1,0 +1,177 @@
+@model Ltwhqt.ViewModels.Warehouse.InboundReceiptDetailViewModel
+@{
+    ViewBag.Title = "Chi tiết phiếu nhập kho";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Chi tiết phiếu nhập kho</h2>
+        <p class="text-secondary mb-0">Mã: @Model.Code</p>
+    </div>
+    <div>
+        <a class="btn btn-outline-secondary me-2" href="@Url.Action("Index")">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại
+        </a>
+        @if (Model.Status == "pending")
+        {
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash me-1"></i>Xóa
+            </button>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Thông tin phiếu nhập</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Mã phiếu</dt>
+                    <dd class="col-sm-8"><strong>@Model.Code</strong></dd>
+
+                    <dt class="col-sm-4">Nhà cung cấp</dt>
+                    <dd class="col-sm-8">@Model.SupplierName</dd>
+
+                    <dt class="col-sm-4">Kho nhận</dt>
+                    <dd class="col-sm-8">@Model.WarehouseName</dd>
+
+                    <dt class="col-sm-4">Ngày nhận hàng</dt>
+                    <dd class="col-sm-8">@Model.ReceivedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4">Trạng thái</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Status == "pending")
+                        {
+                            <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                        }
+                        else if (Model.Status == "completed")
+                        {
+                            <span class="badge bg-success">Hoàn thành</span>
+                        }
+                        else if (Model.Status == "cancelled")
+                        {
+                            <span class="badge bg-danger">Đã hủy</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@Model.Status</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Ngày tạo</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4">Ghi chú</dt>
+                    <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Notes) ? Model.Notes : "Không có")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Chi tiết sản phẩm</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Biến thể</th>
+                            <th>SKU</th>
+                            <th class="text-end">Số lượng</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Details != null && Model.Details.Any())
+                        {
+                            foreach (var detail in Model.Details)
+                            {
+                                <tr>
+                                    <td>@detail.ProductName</td>
+                                    <td>@detail.VariantName</td>
+                                    <td><code>@detail.Sku</code></td>
+                                    <td class="text-end">@detail.Quantity</td>
+                                    <td class="text-end">@detail.InputPrice.ToString("N0") đ</td>
+                                    <td class="text-end"><strong>@detail.LineTotal.ToString("N0") đ</strong></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">Không có sản phẩm</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Tổng kết</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tổng số lượng SP:</span>
+                    <strong>@Model.Details.Count</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tổng số lượng:</span>
+                    <strong>@Model.Details.Sum(d => d.Quantity)</strong>
+                </div>
+                <hr />
+                <div class="d-flex justify-content-between">
+                    <strong>Tổng tiền:</strong>
+                    <strong class="text-primary fs-5">@Model.TotalAmount.ToString("N0") đ</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa phiếu nhập <strong>@Model.Code</strong> không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                @using (Html.BeginForm("Delete", "Shipments", new { id = Model.Id }, FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

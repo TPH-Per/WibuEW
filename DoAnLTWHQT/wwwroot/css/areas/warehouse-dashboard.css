@@ -1,0 +1,44 @@
+/* Warehouse Dashboard Specific Styles */
+
+.warehouse-dashboard-header {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); /* Purple gradient */
+    box-shadow: 0 20px 40px -15px #8b5cf6;
+}
+
+.warehouse-stat-card {
+    border-left: 4px solid #8b5cf6;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.warehouse-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px -10px rgba(139, 92, 246, 0.3);
+}
+
+.warehouse-transaction-table .table th {
+    background-color: #f5f3ff; /* Light purple */
+    color: #6d28d9; /* Dark purple */
+}
+
+.warehouse-transaction-table .badge {
+    background-color: #ede9fe;
+    color: #7c3aed;
+}
+
+.warehouse-low-stock {
+    background-color: #fee2e2;
+    color: #991b1b;
+    font-weight: 600;
+}
+
+.warehouse-in-stock {
+    background-color: #d1fae5;
+    color: #065f46;
+    font-weight: 600;
+}
+
+.warehouse-reorder {
+    background-color: #fef3c7;
+    color: #92400e;
+    font-weight: 600;
+}

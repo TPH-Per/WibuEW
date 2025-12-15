@@ -1,0 +1,44 @@
+@model Ltwhqt.ViewModels.Branch.BranchDashboardViewModel
+@{
+    ViewBag.Title = $"Branch Dashboard - {Model.BranchName}";
+    ViewBag.Breadcrumb = "Branch Manager › Dashboard";
+}
+@section Styles {
+    <link href="@Url.Content("~/wwwroot/css/areas/branch-dashboard.css")" rel="stylesheet" />
+}
+
+@Html.Partial("~/Views/Components/_StatisticCards.cshtml", Model.Widgets)
+
+<div class="card border-0 shadow-sm mt-4 branch-orders-table">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Đơn gần đây</h5>
+        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","Orders", new { area = "Branch" })">Xem tất cả</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách</th>
+                    <th>Trạng thái</th>
+                    <th>Tổng tiền</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.RecentOrders)
+                {
+                    <tr>
+                        <td>@order.OrderCode</td>
+                        <td>@order.Customer</td>
+                        <td><span class="status-pill @order.Status">@order.Status</span></td>
+                        <td>@order.TotalAmount.ToString("c0")</td>
+                        <td class="text-end">
+                            <a class="btn btn-light btn-sm" href="@Url.Action("Detail","Orders", new { area = "Branch", id = order.Id })">Chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

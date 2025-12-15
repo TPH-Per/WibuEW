@@ -1,0 +1,146 @@
+@model Ltwhqt.ViewModels.Branch.TransferRequestFullViewModel
+@{
+    ViewBag.Title = "Chi tiết yêu cầu nhập hàng #" + (Model.Header != null ? Model.Header.Id.ToString() : "");
+    var header = Model.Header;
+}
+
+@section Styles {
+    <link href="@Url.Content("~/wwwroot/css/areas/branch-dashboard.css")" rel="stylesheet" />
+}
+
+<div class="mb-4">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm mb-2">
+        <i class="bi bi-arrow-left me-1"></i>Quay lại
+    </a>
+    <h2 class="h4 mb-1">
+        <i class="bi bi-file-text me-2"></i>Chi tiết phiếu yêu cầu #@(header != null ? header.Id.ToString() : "")
+    </h2>
+</div>
+
+@if (header == null)
+{
+    <div class="alert alert-danger">Không tìm thấy thông tin phiếu yêu cầu.</div>
+}
+else
+{
+    <div class="row">
+        <!-- Thông tin phiếu -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-info-circle me-2"></i>Thông tin phiếu
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless mb-0">
+                        <tr>
+                            <td class="text-muted">Mã phiếu:</td>
+                            <td><strong>#@header.Id</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Trạng thái:</td>
+                            <td>
+                                <span class="badge @header.StatusBadgeClass">@header.StatusDisplayName</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Kho xuất:</td>
+                            <td>@header.WarehouseName</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Chi nhánh:</td>
+                            <td>@header.BranchName</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Ngày tạo:</td>
+                            <td>@header.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Cập nhật:</td>
+                            <td>@header.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                        @if (!string.IsNullOrEmpty(header.Notes))
+                        {
+                            <tr>
+                                <td class="text-muted">Ghi chú:</td>
+                                <td>@header.Notes</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                @if (header.Status == "Requested")
+                {
+                    <div class="card-footer bg-light">
+                        <a href="@Url.Action("AddItems", new { id = header.Id })" class="btn btn-success btn-sm w-100">
+                            <i class="bi bi-plus-lg me-1"></i>Thêm sản phẩm
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Danh sách sản phẩm -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <i class="bi bi-list-ul me-2"></i>Danh sách sản phẩm (@Model.Details.Count SP)
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Sản phẩm</th>
+                                <th>SKU</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Details.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                                        Chưa có sản phẩm nào trong phiếu
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                var index = 1;
+                                foreach (var item in Model.Details)
+                                {
+                                    <tr>
+                                        <td>@(index++)</td>
+                                        <td>
+                                            <strong>@item.ProductName</strong>
+                                            <br/><small class="text-muted">@item.VariantName</small>
+                                        </td>
+                                        <td><code>@item.Sku</code></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary fs-6">@item.Quantity</span>
+                                        </td>
+                                        <td class="text-end">@item.Price.ToString("N0") đ</td>
+                                        <td class="text-end"><strong>@item.LineTotal.ToString("N0") đ</strong></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        @if (Model.Details.Any())
+                        {
+                            <tfoot class="table-dark">
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>TỔNG CỘNG:</strong></td>
+                                    <td class="text-center"><strong>@Model.Details.Sum(d => d.Quantity)</strong></td>
+                                    <td></td>
+                                    <td class="text-end"><strong>@Model.Details.Sum(d => d.LineTotal).ToString("N0") đ</strong></td>
+                                </tr>
+                            </tfoot>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}

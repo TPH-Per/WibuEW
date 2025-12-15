@@ -1,0 +1,349 @@
+@model DoAnLTWHQT.warehouse_transfers
+
+@{
+    ViewBag.Title = "Chi Tiết Phiếu Chuyển Kho #" + Model.id;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fa fa-file-text"></i> Phiếu Chuyển Kho #@Model.id</h4>
+                    <span class="badge badge-light">@Model.status</span>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["Success"]</div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Thông Tin Chung</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Kho Nguồn:</th>
+                                    <td>@Model.warehouse.name</td>
+                                </tr>
+                                <tr>
+                                    <th>Chi Nhánh Đích:</th>
+                                    <td>@Model.branch.name</td>
+                                </tr>
+                                <tr>
+                                    <th>Trạng Thái:</th>
+                                    <td>
+                                        @switch (Model.status)
+                                        {
+                                            case "Requested":
+                                                <span class="badge badge-info">Yêu Cầu Nhập</span>
+                                                break;
+                                            case "Approved":
+                                                <span class="badge badge-primary">Đã Duyệt</span>
+                                                break;
+                                            case "pending":
+                                                <span class="badge badge-warning">Chờ Xuất</span>
+                                                break;
+                                            case "shipping":
+                                                <span class="badge badge-primary">Đang Vận Chuyển</span>
+                                                break;
+                                            case "Completed":
+                                            case "completed":
+                                                <span class="badge badge-success">Hoàn Thành</span>
+                                                break;
+                                            case "Rejected":
+                                                <span class="badge badge-danger">Từ Chối</span>
+                                                break;
+                                            case "returned":
+                                                <span class="badge badge-danger">Đã Hoàn Trả</span>
+                                                break;
+                                            case "cancelled":
+                                                <span class="badge badge-secondary">Đã Hủy</span>
+                                                break;
+                                            default:
+                                                <span class="badge badge-secondary">@Model.status</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Thời Gian</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Ngày Tạo:</th>
+                                    <td>@(Model.created_at.HasValue ? Model.created_at.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                </tr>
+                                <tr>
+                                    <th>Ngày Chuyển:</th>
+                                    <td>@(Model.transfer_date.HasValue ? Model.transfer_date.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                </tr>
+                                <tr>
+                                    <th>Cập Nhật:</th>
+                                    <td>@(Model.updated_at.HasValue ? Model.updated_at.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.notes))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted">Ghi Chú</h6>
+                                <p class="border p-2 bg-light">@Model.notes</p>
+                            </div>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <h5 class="mb-3">Chi Tiết Sản Phẩm</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Sản Phẩm</th>
+                                    <th>SKU</th>
+                                    <th class="text-right">Số Lượng</th>
+                                    <th>Ghi Chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int index = 1;
+                                    int totalQty = 0;
+                                }
+                                @if (Model.warehouse_transfer_details != null && Model.warehouse_transfer_details.Any())
+                                {
+                                    foreach (var detail in Model.warehouse_transfer_details)
+                                    {
+                                        totalQty += detail.quantity;
+                                        <tr>
+                                            <td>@index</td>
+                                            <td>@detail.product_variants.name</td>
+                                            <td><code>@detail.product_variants.sku</code></td>
+                                            <td class="text-right"><strong>@detail.quantity</strong></td>
+                                            <td>@detail.notes</td>
+                                        </tr>
+                                        index++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="fa fa-inbox fa-2x mb-2"></i>
+                                            <p>Chưa có sản phẩm nào trong phiếu chuyển</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-right">Tổng Số Lượng:</th>
+                                    <th class="text-right">@totalQty</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="fa fa-arrow-left"></i> Quay Lại
+                        </a>
+                        
+                        <div>
+                            @if (Model.status == "Requested")
+                            {
+                                <button type="button" class="btn btn-danger" onclick="rejectTransfer()">
+                                    <i class="fa fa-times"></i> Từ Chối
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="approveTransfer()">
+                                    <i class="fa fa-check"></i> Duyệt Yêu Cầu
+                                </button>
+                            }
+                            else if (Model.status == "Approved")
+                            {
+                                <button type="button" class="btn btn-primary" onclick="completeTransfer()">
+                                    <i class="fa fa-truck"></i> Xuất Kho & Hoàn Thành
+                                </button>
+                            }
+                            else if (Model.status == "pending")
+                            {
+                                <button type="button" class="btn btn-danger" onclick="updateStatus('cancelled')">
+                                    <i class="fa fa-ban"></i> Hủy Phiếu
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="updateStatus('shipping')">
+                                    <i class="fa fa-truck"></i> Xuất Kho
+                                </button>
+                            }
+                            else if (Model.status == "shipping")
+                            {
+                                <button type="button" class="btn btn-warning" onclick="updateStatus('returned')">
+                                    <i class="fa fa-undo"></i> Hoàn Trả
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="updateStatus('completed')">
+                                    <i class="fa fa-check"></i> Xác Nhận Nhận Hàng
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Từ chối -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Từ chối yêu cầu</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Lý do từ chối <span class="text-danger">*</span></label>
+                    <textarea id="rejectReason" class="form-control" rows="3" placeholder="Nhập lý do từ chối..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="submitReject()">Xác nhận từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function updateStatus(newStatus) {
+        var statusNames = {
+            'shipping': 'Xuất kho và chuyển hàng',
+            'completed': 'Xác nhận đã nhận hàng',
+            'returned': 'Hoàn trả về kho',
+            'cancelled': 'Hủy phiếu chuyển'
+        };
+
+        if (!confirm('Bạn có chắc muốn ' + statusNames[newStatus] + '?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("UpdateStatus")',
+            type: 'POST',
+            data: {
+                id: @Model.id,
+                newStatus: newStatus
+            },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+
+    // Duyệt yêu cầu từ Branch
+    function approveTransfer() {
+        if (!confirm('Bạn có chắc muốn DUYỆT yêu cầu nhập hàng này?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("Approve")',
+            type: 'POST',
+            data: { id: @Model.id },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+
+    // Hoàn thành phiếu (xuất kho + cập nhật tồn kho)
+    function completeTransfer() {
+        if (!confirm('Bạn có chắc muốn XUẤT KHO và HOÀN THÀNH phiếu này?\n\nHàng sẽ được trừ khỏi kho và cộng vào chi nhánh.')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("Complete")',
+            type: 'POST',
+            data: { id: @Model.id },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+
+    // Mở modal từ chối
+    function rejectTransfer() {
+        $('#rejectModal').modal('show');
+    }
+
+    // Submit từ chối
+    function submitReject() {
+        var reason = $('#rejectReason').val().trim();
+        if (!reason) {
+            alert('Vui lòng nhập lý do từ chối!');
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("Reject")',
+            type: 'POST',
+            data: {
+                id: @Model.id,
+                reason: reason
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#rejectModal').modal('hide');
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+</script>
+}

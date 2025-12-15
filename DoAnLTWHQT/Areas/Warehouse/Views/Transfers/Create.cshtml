@@ -1,0 +1,195 @@
+@{
+    ViewBag.Title = "Tạo Phiếu Chuyển Kho";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fa fa-truck"></i> Tạo Phiếu Chuyển Kho</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
+                    
+                    <form id="transferForm" method="post" action="@Url.Action("Create")">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="warehouseId">Kho Nguồn <span class="text-danger">*</span></label>
+                                    @Html.DropDownList("warehouseId", (List<SelectListItem>)ViewBag.Warehouses, 
+                                        "-- Chọn kho --", new { @class = "form-control", required = "required" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="branchId">Chi Nhánh Đích <span class="text-danger">*</span></label>
+                                    @Html.DropDownList("branchId", (List<SelectListItem>)ViewBag.Branches, 
+                                        "-- Chọn chi nhánh --", new { @class = "form-control", required = "required" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Ghi Chú</label>
+                            <textarea id="notes" name="notes" class="form-control" rows="2" placeholder="Ghi chú về phiếu chuyển kho..."></textarea>
+                        </div>
+
+                        <hr />
+
+                        <h5 class="mb-3">Chi Tiết Sản Phẩm</h5>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="productTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th width="40%">Sản Phẩm</th>
+                                        <th width="15%">Tồn Kho</th>
+                                        <th width="15%">Số Lượng</th>
+                                        <th width="25%">Ghi Chú</th>
+                                        <th width="5%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productTableBody">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button type="button" class="btn btn-secondary" id="addProductBtn">
+                            <i class="fa fa-plus"></i> Thêm Sản Phẩm
+                        </button>
+
+                        <input type="hidden" id="detailsJson" name="detailsJson" />
+
+                        <hr />
+
+                        <div class="text-right">
+                            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                                <i class="fa fa-times"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fa fa-save"></i> Tạo Phiếu Chuyển
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function () {
+        var detailsArray = [];
+        var rowIndex = 0;
+
+        // Add product row
+        $('#addProductBtn').click(function () {
+            rowIndex++;
+            var row = `
+                <tr data-row-index="${rowIndex}">
+                    <td>
+                        <select class="form-control product-select" data-row-index="${rowIndex}" required>
+                            <option value="">-- Chọn sản phẩm --</option>
+                            @foreach (var item in (List<SelectListItem>)ViewBag.ProductVariants)
+                            {
+                                <text><option value="@item.Value">@item.Text</option></text>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control stock-display" data-row-index="${rowIndex}" readonly placeholder="--" />
+                    </td>
+                    <td>
+                        <input type="number" class="form-control quantity-input" data-row-index="${rowIndex}" min="1" required />
+                    </td>
+                    <td>
+                        <input type="text" class="form-control notes-input" data-row-index="${rowIndex}" placeholder="Ghi chú..." />
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-danger remove-row" data-row-index="${rowIndex}">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            $('#productTableBody').append(row);
+        });
+
+        // Remove row
+        $(document).on('click', '.remove-row', function () {
+            var index = $(this).data('row-index');
+            $(`tr[data-row-index="${index}"]`).remove();
+        });
+
+        // Check inventory when product selected
+        $(document).on('change', '.product-select', function () {
+            var variantId = $(this).val();
+            var rowIndex = $(this).data('row-index');
+            var warehouseId = $('#warehouseId').val();
+
+            if (!warehouseId) {
+                alert('Vui lòng chọn kho nguồn trước!');
+                $(this).val('');
+                return;
+            }
+
+            if (variantId) {
+                $.get('@Url.Action("CheckInventory")', { 
+                    warehouseId: warehouseId, 
+                    variantId: variantId 
+                }, function (data) {
+                    $(`.stock-display[data-row-index="${rowIndex}"]`).val(data.available);
+                    
+                    if (data.available === 0) {
+                        alert('Sản phẩm này không có trong kho!');
+                    }
+                });
+            }
+        });
+
+        // Submit form
+        $('#transferForm').submit(function (e) {
+            e.preventDefault();
+
+            // Collect data
+            detailsArray = [];
+            $('#productTableBody tr').each(function () {
+                var rowIndex = $(this).data('row-index');
+                var variantId = $(`.product-select[data-row-index="${rowIndex}"]`).val();
+                var quantity = $(`.quantity-input[data-row-index="${rowIndex}"]`).val();
+                var notes = $(`.notes-input[data-row-index="${rowIndex}"]`).val();
+
+                if (variantId && quantity) {
+                    detailsArray.push({
+                        ProductVariantId: parseInt(variantId),
+                        Quantity: parseInt(quantity),
+                        Notes: notes
+                    });
+                }
+            });
+
+            if (detailsArray.length === 0) {
+                alert('Vui lòng thêm ít nhất một sản phẩm!');
+                return false;
+            }
+
+            // Set JSON
+            $('#detailsJson').val(JSON.stringify(detailsArray));
+
+            // Submit
+            this.submit();
+        });
+
+        // Auto add first row
+        $('#addProductBtn').click();
+    });
+</script>
+}

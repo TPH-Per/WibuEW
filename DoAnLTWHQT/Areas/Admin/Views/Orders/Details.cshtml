@@ -1,0 +1,82 @@
+@model Ltwhqt.ViewModels.Admin.OrderManagementViewModel
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h2 class="h5 mb-1">Đơn hàng #@Model.OrderCode</h2>
+                <p class="text-secondary mb-0">Khách: @Model.Customer • Chi nhánh: @Model.Branch</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-light text-dark text-uppercase">@Model.Status</span>
+                <div class="fw-semibold mt-2">@Model.TotalAmount.ToString("c0")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0">
+        <h3 class="h6 mb-0">Sản phẩm</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Variant</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var line in Model.Lines)
+                {
+                    <tr>
+                        <td>@line.ProductName</td>
+                        <td>@line.VariantName</td>
+                        <td>@line.Quantity</td>
+                        <td>@line.UnitPrice.ToString("c0")</td>
+                        <td>@(line.UnitPrice * line.Quantity).ToString("c0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+        <h3 class="h6 mb-0">Thanh toán</h3>
+        <span>@Model.Payment?.CreatedAt:dd/MM HH:mm</span>
+    </div>
+    <div class="card-body">
+        @if (Model.Payment != null)
+        {
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Mã giao dịch</dt>
+                <dd class="col-sm-9">@Model.Payment.Id</dd>
+                <dt class="col-sm-3">Phương thức</dt>
+                <dd class="col-sm-9">@Model.Payment.Method</dd>
+                <dt class="col-sm-3">Số tiền</dt>
+                <dd class="col-sm-9">@Model.Payment.Amount.ToString("c0")</dd>
+                <dt class="col-sm-3">Trạng thái</dt>
+                <dd class="col-sm-9">
+                    <span class="badge bg-light text-dark text-uppercase">@Model.Payment.Status</span>
+                    @if (Model.Payment.IsDeposit)
+                    {
+                        <span class="badge bg-warning text-dark ms-1">Pre-order 50%</span>
+                    }
+                </dd>
+            </dl>
+        }
+        else
+        {
+            <p class="mb-0 text-secondary">Chưa có thanh toán.</p>
+        }
+    </div>
+</div>

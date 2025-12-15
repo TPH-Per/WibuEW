@@ -1,0 +1,54 @@
+@model IEnumerable<Ltwhqt.ViewModels.Warehouse.WarehouseTransactionViewModel>
+@{
+    ViewBag.Title = "Nhật ký kho";
+    var typeFilter = ViewBag.TypeFilter as string ?? "all";
+}
+
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="h4 mb-1">Inventory transactions</h2>
+            <p class="text-secondary mb-0">Inbound / Outbound / Adjustment</p>
+        </div>
+        <form method="get">
+            <select class="form-select" name="type" onchange="this.form.submit()">
+                <option value="all" @(typeFilter == "all" ? "selected" : null)>Tất cả</option>
+                <option value="inbound" @(typeFilter == "inbound" ? "selected" : null)>Inbound</option>
+                <option value="outbound" @(typeFilter == "outbound" ? "selected" : null)>Outbound</option>
+                <option value="adjustment" @(typeFilter == "adjustment" ? "selected" : null)>Adjustment</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Loại</th>
+                    <th>Variant</th>
+                    <th>Số lượng</th>
+                    <th>Tham chiếu</th>
+                    <th>Thời gian</th>
+                    <th>Thực hiện bởi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var txn in Model)
+                {
+                    <tr>
+                        <td>#@txn.Id</td>
+                        <td><span class="badge bg-light text-dark text-uppercase">@txn.Type</span></td>
+                        <td>@txn.Variant</td>
+                        <td>@txn.Quantity</td>
+                        <td>@txn.Reference</td>
+                        <td>@txn.OccurredAt:dd/MM HH:mm</td>
+                        <td>@txn.PerformedBy</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.BranchInventoryViewModel>
+@{
+    ViewBag.Title = "Tồn kho chi nhánh";
+}
+
+<div class="mb-4">
+    <h2 class="h4 mb-1">Theo dõi branch_inventories</h2>
+    <p class="text-secondary mb-0">So sánh tồn mỗi chi nhánh &amp; variant.</p>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Chi nhánh</th>
+                    <th>Variant</th>
+                    <th>Tồn hiện tại</th>
+                    <th>Đang giữ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.BranchName</td>
+                        <td>@item.Variant</td>
+                        <td>@item.QuantityOnHand</td>
+                        <td>@item.QuantityReserved</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

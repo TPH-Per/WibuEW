@@ -1,0 +1,134 @@
+@using System.Linq
+@using Ltwhqt.ViewModels.Shared
+@model Ltwhqt.ViewModels.Admin.AdminReportViewModel
+@{
+    ViewBag.Title = "Admin Dashboard";
+    ViewBag.Breadcrumb = "Tổng quan KPI & báo cáo nhanh";
+}
+
+@section Styles {
+    <link href="@Url.Content("~/wwwroot/css/areas/admin-dashboard.css")" rel="stylesheet" />
+}
+
+@Html.Partial("~/Views/Components/_StatisticCards.cshtml", Model.Widgets.Select(w => new StatisticCardViewModel
+{
+    Label = w.Title,
+    SubLabel = w.Subtitle,
+    Value = w.Value,
+    Trend = w.TrendValue,
+    Icon = "bi-graph-up",
+    Context = "primary"
+}))
+
+<div class="row g-4 mt-1">
+    <div class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">Doanh thu theo thời gian</h5>
+                        <small class="text-secondary">Theo filter @(Model.Filters.FromDate?.ToString("dd/MM") ?? "--") - @(Model.Filters.ToDate?.ToString("dd/MM") ?? "--")</small>
+                    </div>
+                    <div>
+                        <select class="form-select form-select-sm">
+                            @foreach (var opt in Model.Filters.BranchOptions)
+                            {
+                                <option value="@opt.Value" selected="@(opt.Selected ? "selected" : null)">@opt.Label</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="ratio ratio-21x9 bg-light rounded-4 d-flex align-items-center justify-content-center text-secondary">
+                    <span>Placeholder biểu đồ doanh thu</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="card-title mb-0">Trạng thái đơn</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var status in Model.Filters.StatusOptions)
+                    {
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fw-semibold">@status.Label</div>
+                                <small class="text-secondary">@status.Description</small>
+                            </div>
+                            <span class="badge bg-light text-dark">@status.Value</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="card-title mb-0">Top sản phẩm bán chạy</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    @foreach (var product in Model.BestSellers.Take(5))
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">@product.Name</div>
+                                <small class="text-muted">@product.Category • @product.Supplier</small>
+                            </div>
+                            <span class="badge bg-primary-subtle text-primary">@product.SKUCountLabel</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4 admin-orders-table">
+    <div class="card-header bg-white border-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-title mb-0">Đơn hàng mới nhất</h5>
+                <small class="text-secondary">Theo filter thời gian bạn chọn</small>
+            </div>
+            <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","Orders", new { area = "Admin" })">
+                Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Chi nhánh</th>
+                    <th>Khách</th>
+                    <th>Trạng thái</th>
+                    <th>Tổng tiền</th>
+                    <th>Ngày tạo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.TopOrders)
+                {
+                    <tr>
+                        <td class="fw-semibold">@order.OrderCode</td>
+                        <td>@order.Branch</td>
+                        <td>@order.Customer</td>
+                        <td><span class="status-pill @order.Status">@order.Status</span></td>
+                        <td>@order.TotalAmount.ToString("c0")</td>
+                        <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td class="text-end">
+                            <a class="btn btn-light btn-sm" href="@Url.Action("Detail","Orders", new { area = "Admin", id = order.Id })">Chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

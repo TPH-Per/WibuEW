@@ -1,0 +1,31 @@
+@model Ltwhqt.ViewModels.Admin.PaymentManagementViewModel
+@{
+    ViewBag.Title = "Chi tiết thanh toán";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-1">Payment #@Model.Id</h2>
+        <p class="text-secondary mb-4">Đơn hàng: @Model.OrderCode</p>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Phương thức</dt>
+            <dd class="col-sm-9">@Model.Method</dd>
+
+            <dt class="col-sm-3">Số tiền</dt>
+            <dd class="col-sm-9">@Model.Amount.ToString("c0")</dd>
+
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                <span class="badge bg-light text-dark text-uppercase">@Model.Status</span>
+                @if (Model.IsDeposit)
+                {
+                    <span class="badge bg-warning text-dark ms-1">Pre-order</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Ngày tạo</dt>
+            <dd class="col-sm-9">@Model.CreatedAt:dd/MM/yyyy HH:mm</dd>
+        </dl>
+    </div>
+</div>

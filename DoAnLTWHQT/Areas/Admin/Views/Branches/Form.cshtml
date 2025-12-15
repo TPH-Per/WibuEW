@@ -1,0 +1,45 @@
+@using Ltwhqt.ViewModels.Shared
+@model Ltwhqt.ViewModels.Admin.BranchFormViewModel
+@{
+    ViewBag.Title = ViewBag.Title ?? "Thông tin chi nhánh";
+    var managerOptions = Model.ManagerOptions ?? Enumerable.Empty<SelectOptionViewModel>();
+    var warehouseOptions = Model.WarehouseOptions ?? Enumerable.Empty<SelectOptionViewModel>();
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">@ViewBag.Title</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Tên chi nhánh</label>
+                <input class="form-control" value="@Model.Name" placeholder="Chi nhánh Quận 1" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Địa chỉ</label>
+                <input class="form-control" value="@Model.Location" placeholder="45 Nguyễn Huệ..." />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Quản lý</label>
+                <select class="form-select">
+                    @foreach (var option in managerOptions)
+                    {
+                        <option value="@option.Value" selected="@(option.Value == Model.ManagerUserId?.ToString() ? "selected" : null)">@option.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Kho nguồn</label>
+                <select class="form-select">
+                    @foreach (var option in warehouseOptions)
+                    {
+                        <option value="@option.Value" selected="@(option.Value == Model.WarehouseId?.ToString() ? "selected" : null)">@option.Label</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+            <button class="btn btn-primary" type="button">Lưu</button>
+        </div>
+    </div>
+</div>

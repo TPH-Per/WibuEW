@@ -1,0 +1,336 @@
+﻿@{
+    var title = ViewBag.Title ?? "Bảng điều khiển PERW";
+    var breadcrumb = ViewBag.Breadcrumb ?? string.Empty;
+    var currentArea = (string)(ViewContext.RouteData.DataTokens["area"] ?? string.Empty);
+    var currentController = (string)(ViewContext.RouteData.Values["controller"] ?? string.Empty);
+    Func<string, string, string> navClass = (area, controller) =>
+        string.Equals(area, currentArea, StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(controller, currentController, StringComparison.OrdinalIgnoreCase)
+            ? "active"
+            : string.Empty;
+    var currentAreaLower = currentArea?.ToLowerInvariant() ?? string.Empty;
+    Func<string, string, string> navLinkClass = (area, controller) =>
+    {
+        var active = navClass(area, controller);
+        return string.IsNullOrEmpty(active) ? "nav-link" : $"nav-link {active}";
+    };
+    var userDisplayName = User?.Identity?.Name ?? "Người dùng";
+    var userRoleLabel = (User?.IsInRole("admin") ?? false) ? "Quản trị viên" : (User?.Identity?.Name ?? "perw@app");
+
+    // --- START: Logic to keep sidebar state ---
+    Func<string[], bool> isControllerIn = (controllers) =>
+        controllers.Any(c => string.Equals(c, currentController, StringComparison.OrdinalIgnoreCase));
+
+    var adminManagementOpen = currentArea == "Admin" && isControllerIn(new[] { "Users", "Branches", "Suppliers" });
+    var adminCatalogOpen = currentArea == "Admin" && isControllerIn(new[] { "Categories", "Products" });
+
+    var warehouseOpen = currentArea == "Warehouse";
+    var branchOpen = currentArea == "Branch";
+    // --- END: Logic to keep sidebar state ---
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")" rel="stylesheet" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div class="d-flex app-shell">
+        <aside class="app-sidebar d-flex flex-column py-4">
+            <div class="px-4 mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-primary bg-opacity-25 text-primary d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="fw-semibold">Nền tảng PERW</div>
+                        <small class="text-secondary">Trung tâm điều hành</small>
+                    </div>
+                </div>
+            </div>
+            <nav class="px-2 flex-grow-1 overflow-auto" id="app-main-nav" aria-label="Điều hướng chính">
+                @if (currentAreaLower == "warehouse")
+                {
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">Quản lý kho</div>
+                        <div class="sidebar-subtitle">Tổng quan</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Dashboard")' href="@Url.Action("Index", "Dashboard", new { area = "Warehouse" })"><i class="bi bi-speedometer2 me-2"></i>Dashboard kho</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Nhập kho</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Shipments")' href="@Url.Action("Index", "Shipments", new { area = "Warehouse" })"><i class="bi bi-arrow-down-square me-2"></i>Phiếu nhập kho</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Shipments")' href="@Url.Action("Create", "Shipments", new { area = "Warehouse" })"><i class="bi bi-plus-square me-2"></i>Tạo phiếu nhập mới</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Tồn kho kho trung tâm</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Inventory")' href="@Url.Action("Index", "Inventory", new { area = "Warehouse" })"><i class="bi bi-box2-heart me-2"></i>Danh sách tồn kho</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Inventory")' href="@Url.Content("~/Warehouse/Inventory/Detail/{variantId}")"><i class="bi bi-info-circle me-2"></i>Chi tiết tồn từng sản phẩm</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Điều chỉnh tồn</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Adjustments")' href="@Url.Action("Index", "Adjustments", new { area = "Warehouse" })"><i class="bi bi-shuffle me-2"></i>Danh sách phiếu điều chỉnh</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Inventory")' href="@Url.Content("~/Warehouse/Inventory/Adjust/{variantId}")"><i class="bi bi-tools me-2"></i>Tạo điều chỉnh tồn</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Chuyển hàng sang chi nhánh</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Transfers")' href="@Url.Action("Index", "Transfers", new { area = "Warehouse" })"><i class="bi bi-arrow-left-right me-2"></i>Danh sách phiếu chuyển</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Transfers")' href="@Url.Action("Create", "Transfers", new { area = "Warehouse" })"><i class="bi bi-plus-circle me-2"></i>Tạo phiếu chuyển mới</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Transfers")' href="@Url.Content("~/Warehouse/Transfers/Detail/{id}")"><i class="bi bi-journal-text me-2"></i>Chi tiết phiếu chuyển</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Hàng giữ chỗ & nhật ký</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Reservations")' href="@Url.Action("Index", "Reservations", new { area = "Warehouse" })"><i class="bi bi-bookmark-check me-2"></i>Hàng đang reserve</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Transactions")' href="@Url.Action("Index", "Transactions", new { area = "Warehouse" })"><i class="bi bi-clock-history me-2"></i>Nhật ký giao dịch kho</a></li>
+                        </ul>
+                    </div>
+                }
+                else if (currentAreaLower == "branch")
+                {
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">Quản lý chi nhánh</div>
+                        <div class="sidebar-subtitle">Tổng quan</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Dashboard")' href="@Url.Action("Index", "Dashboard", new { area = "Branch" })"><i class="bi bi-shop-window me-2"></i>Dashboard chi nhánh</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Bán hàng</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "POS")' href="@Url.Action("Index", "POS", new { area = "Branch" })"><i class="bi bi-cash-coin me-2"></i>Thanh toán tại quầy</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Hàng hóa chi nhánh</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Inventory")' href="@Url.Action("Index", "Inventory", new { area = "Branch" })"><i class="bi bi-box-seam me-2"></i>Tồn kho chi nhánh</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Inventory")' href="@Url.Content("~/Branch/Inventory/Details/{variantId}")"><i class="bi bi-info-circle me-2"></i>Chi tiết tồn 1 SKU</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Nhận hàng từ kho trung tâm</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Transfers")' href="@Url.Action("Index", "Transfers", new { area = "Branch" })"><i class="bi bi-box-arrow-in-down me-2"></i>Phiếu hàng từ kho trung tâm</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Transfers")' href="@Url.Content("~/Branch/Transfers/Details/{id}")"><i class="bi bi-journal-text me-2"></i>Chi tiết phiếu chuyển về chi nhánh</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Đơn hàng</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Orders")' href="@Url.Action("Index", "Orders", new { area = "Branch" })"><i class="bi bi-receipt me-2"></i>Danh sách đơn hàng</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Orders")' href="@Url.Content("~/Branch/Orders/Details/{id}")"><i class="bi bi-card-text me-2"></i>Chi tiết đơn hàng</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Pre-order</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "PreOrders")' href="@Url.Action("Index", "PreOrders", new { area = "Branch" })"><i class="bi bi-calendar2-check me-2"></i>Danh sách Pre-order</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "PreOrders")' href="@Url.Action("Create", "PreOrders", new { area = "Branch" })"><i class="bi bi-plus-circle me-2"></i>Tạo pre-order mới</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "PreOrders")' href="@Url.Content("~/Branch/PreOrders/Details/{id}")"><i class="bi bi-journal-text me-2"></i>Chi tiết pre-order</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Thanh toán & khuyến mãi</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Payments")' href="@Url.Action("Index", "Payments", new { area = "Branch" })"><i class="bi bi-credit-card me-2"></i>Thanh toán</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Payments")' href="@Url.Content("~/Branch/Payments/Details/{id}")"><i class="bi bi-wallet2 me-2"></i>Chi tiết payment</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Discounts")' href="@Url.Action("Index", "Discounts", new { area = "Branch" })"><i class="bi bi-ticket-perforated me-2"></i>Mã giảm giá áp dụng</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Báo cáo</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Reports")' href="@Url.Action("Index", "Reports", new { area = "Branch" })"><i class="bi bi-bar-chart me-2"></i>Báo cáo chi nhánh</a></li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">Khối quản trị</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Dashboard")' href="@Url.Action("Index", "Dashboard", new { area = "Admin" })"><i class="bi bi-speedometer2 me-2"></i>Tổng quan</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Quản lý chung</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Users")' href="@Url.Action("Index", "Users", new { area = "Admin" })"><i class="bi bi-people me-2"></i>Tài khoản</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Branches")' href="@Url.Action("Index", "Branches", new { area = "Admin" })"><i class="bi bi-building me-2"></i>Chi nhánh</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Suppliers")' href="@Url.Action("Index", "Suppliers", new { area = "Admin" })"><i class="bi bi-truck me-2"></i>Nhà cung cấp</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Danh mục & sản phẩm</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Categories")' href="@Url.Action("Index", "Categories", new { area = "Admin" })"><i class="bi bi-diagram-3 me-2"></i>Danh mục</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Products")' href="@Url.Action("Index", "Products", new { area = "Admin" })"><i class="bi bi-boxes me-2"></i>Sản phẩm</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Inventories")' href="@Url.Action("Index", "Inventories", new { area = "Admin" })"><i class="bi bi-hdd-stack me-2"></i>Tồn kho</a></li>
+                        </ul>
+                        <div class="sidebar-subtitle">Vận hành</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Orders")' href="@Url.Action("Index", "Orders", new { area = "Admin" })"><i class="bi bi-cart-check me-2"></i>Đơn hàng</a></li>
+                            <li class="nav-item"><a class='@navLinkClass("Admin", "Reports")' href="@Url.Action("Index", "Reports", new { area = "Admin" })"><i class="bi bi-graph-up-arrow me-2"></i>Báo cáo</a></li>
+                        </ul>
+                    </div>
+                }
+            </nav>
+            <div class="px-4 mt-4 mt-lg-auto">
+                <div class="bg-dark rounded-4 p-3">
+                    <div class="d-flex align-items-center">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+                             data-src="https://ui-avatars.com/api/?name=@(userDisplayName)"
+                             class="rounded-circle me-3 sidebar-avatar"
+                             width="40"
+                             height="40"
+                             alt="avatar"
+                             loading="lazy"
+                             decoding="async" />
+                        <div>
+                            <div class="fw-semibold">@userDisplayName</div>
+                            <small class="text-secondary">@userRoleLabel</small>
+                        </div>
+                    </div>
+                    <a href="@Url.Content("~/login?logout=success")" class="btn btn-sm btn-outline-light w-100 mt-3">
+                        <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </aside>
+        <main class="content-wrapper">
+            <div class="page-hero mb-4 d-flex justify-content-between align-items-center @(ViewContext.RouteData.DataTokens["area"]?.ToString().ToLower() == "warehouse" ? "warehouse-dashboard-header" : ViewContext.RouteData.DataTokens["area"]?.ToString().ToLower() == "branch" ? "branch-dashboard-header" : "")">
+                <div>
+                    <p class="text-uppercase small mb-1 text-white-50">Không gian vận hành</p>
+                    <h1 class="display-6 fw-bold text-white mb-1">@title</h1>
+                    <p class="mb-0 text-white-50">@breadcrumb</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light rounded-pill px-4 d-flex align-items-center gap-2" data-alert="notifications">
+                        <i class="bi bi-bell"></i> Thông báo
+                    </button>
+                    <button class="btn-gradient d-flex align-items-center gap-2" data-alert="quick-action">
+                        <i class="bi bi-magic"></i> Thao tác nhanh
+                    </button>
+                </div>
+            </div>
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sidebar intro animation - avoid layout shift by fading instead of slide
+            const markSidebarStable = () => document.body.classList.add('no-sidebar-animation');
+
+            if (!sessionStorage.getItem('perw_visited')) {
+                gsap.fromTo('.app-sidebar',
+                    { opacity: 0, filter: 'blur(6px)', y: -20 },
+                    {
+                        duration: 0.6,
+                        opacity: 1,
+                        filter: 'blur(0)',
+                        y: 0,
+                        ease: 'power2.out',
+                        onComplete: markSidebarStable
+                    });
+            } else {
+                markSidebarStable();
+            }
+
+            sessionStorage.setItem('perw_visited', 'true');
+
+            const lazySidebarImages = document.querySelectorAll('.sidebar-avatar[data-src]');
+            if (lazySidebarImages.length) {
+                const activateImage = (img) => {
+                    const dataSrc = img.getAttribute('data-src');
+                    if (!dataSrc) {
+                        return;
+                    }
+                    img.src = dataSrc;
+                    img.removeAttribute('data-src');
+                };
+
+                if ('IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries, obs) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                activateImage(entry.target);
+                                obs.unobserve(entry.target);
+                            }
+                        });
+                    }, { rootMargin: '80px' });
+
+                    lazySidebarImages.forEach(img => observer.observe(img));
+                } else {
+                    lazySidebarImages.forEach(activateImage);
+                }
+            }
+
+            gsap.from('.page-hero', { duration: 1.2, opacity: 0, y: 50, ease: 'power4.out', delay: 0.3 });
+
+            anime({
+                targets: '.card, .stat-card, table',
+                opacity: [0, 1],
+                translateY: [32, 0],
+                duration: 800,
+                easing: 'easeOutExpo',
+                delay: anime.stagger(80, { start: 500 })
+            });
+
+            document.querySelectorAll('[data-confirm]').forEach(function (btn) {
+                btn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const message = btn.getAttribute('data-confirm') || 'Bạn chắc chắn thực hiện thao tác này?';
+                    Swal.fire({
+                        title: 'Xác nhận',
+                        text: message,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Đồng ý',
+                        cancelButtonText: 'Huỷ',
+                        confirmButtonColor: '#3b82f6'
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            if (btn.dataset.submitForm && btn.closest('form')) {
+                                btn.closest('form').submit();
+                            } else if (btn.getAttribute('href')) {
+                                window.location.href = btn.getAttribute('href');
+                            }
+                        }
+                    });
+                });
+            });
+
+            document.querySelectorAll('[data-alert]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const type = btn.getAttribute('data-alert');
+                    if (type === 'notifications') {
+                        Swal.fire({
+                            title: 'Thông báo mới',
+                            text: 'Bạn chưa có thông báo nào.',
+                            icon: 'info',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Thao tác nhanh',
+                            text: 'Chức năng đang được triển khai.',
+                            icon: 'success',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    }
+                });
+            });
+
+            window.AppAlerts = {
+                toast: function (message, icon = 'success') {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon,
+                        title: message,
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                }
+            };
+
+            // No JavaScript needed for logout since we're using a direct link
+        });
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
