@@ -2,69 +2,136 @@
 @{
     ViewBag.Title = ViewBag.Title ?? "Thông tin tài khoản";
     var heading = Model.Id.HasValue ? "Cập nhật tài khoản" : "Tạo tài khoản mới";
+    var actionUrl = Model.Id.HasValue 
+        ? Url.Action("Edit", "Users", new { area = "Admin", id = Model.Id }) 
+        : Url.Action("Create", "Users", new { area = "Admin" });
 }
 
 <div class="card border-0 shadow-sm">
     <div class="card-body">
         <h2 class="h5 mb-4">@heading</h2>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label">Username</label>
-                <input class="form-control" value="@Model.Name" placeholder="perw.admin" />
+        
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.ErrorMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Tên hiển thị</label>
-                <input class="form-control" value="@Model.FullName" placeholder="Họ và tên" />
+        }
+        
+        @if (ViewBag.SuccessMessage != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@ViewBag.SuccessMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Email đăng nhập</label>
-                <input class="form-control" type="email" value="@Model.Email" placeholder="admin@perw.vn" />
+        }
+        
+        <form action="@actionUrl" method="post" id="userForm">
+            @Html.AntiForgeryToken()
+            
+            @if (Model.Id.HasValue)
+            {
+                <input type="hidden" name="Id" value="@Model.Id" />
+            }
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Username <span class="text-danger">*</span></label>
+                    <input class="form-control" name="Name" value="@Model.Name" placeholder="perw.admin" required />
+                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tên hiển thị <span class="text-danger">*</span></label>
+                    <input class="form-control" name="FullName" value="@Model.FullName" placeholder="Họ và tên" required />
+                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
+                    <input class="form-control" type="email" name="Email" value="@Model.Email" placeholder="admin@perw.vn" required />
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Số điện thoại</label>
+                    <input class="form-control" name="PhoneNumber" value="@Model.PhoneNumber" placeholder="09xx xxx xxx" />
+                </div>
+                
+                @if (!Model.Id.HasValue)
+                {
+                    <div class="col-md-6">
+                        <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                        <input class="form-control" type="password" name="Password" placeholder="Nhập mật khẩu" required minlength="6" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                        <input class="form-control" type="password" name="ConfirmPassword" placeholder="Nhập lại mật khẩu" required />
+                    </div>
+                }
+                
+                <div class="col-md-4">
+                    <label class="form-label">Role <span class="text-danger">*</span></label>
+                    <select class="form-select" name="Role" required>
+                        <option value="">-- Chọn role --</option>
+                        @foreach (var role in Model.RoleOptions)
+                        {
+                            <option value="@role.Value" @(role.Value == Model.Role ? "selected" : "")>@role.Label</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Kho quản lý</label>
+                    <select class="form-select" name="WarehouseId">
+                        <option value="">-- Không gán --</option>
+                        @foreach (var warehouse in Model.WarehouseOptions)
+                        {
+                            <option value="@warehouse.Value" @(warehouse.Value == Model.WarehouseId?.ToString() ? "selected" : "")>@warehouse.Label</option>
+                        }
+                    </select>
+                    <small class="text-secondary">Áp dụng nếu role là warehouse_manager</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Chi nhánh quản lý</label>
+                    <select class="form-select" name="BranchId">
+                        <option value="">-- Không gán --</option>
+                        @foreach (var branch in Model.BranchOptions)
+                        {
+                            <option value="@branch.Value" @(branch.Value == Model.BranchId?.ToString() ? "selected" : "")>@branch.Label</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" name="Status">
+                        <option value="active" @(Model.Status == "active" ? "selected" : "")>Active</option>
+                        <option value="inactive" @(Model.Status == "inactive" ? "selected" : "")>Inactive</option>
+                    </select>
+                </div>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Số điện thoại</label>
-                <input class="form-control" value="@Model.PhoneNumber" placeholder="09xx xxx xxx" />
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+                <button class="btn btn-primary" type="submit" id="submitBtn">
+                    <i class="fas fa-save me-2"></i>Lưu thông tin
+                </button>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Role</label>
-                <select class="form-select">
-                    @foreach (var role in Model.RoleOptions)
-                    {
-                        <option value="@role.Value" selected="@(role.Value == Model.Role ? "selected" : null)">@role.Label</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Kho quản lý</label>
-                <select class="form-select">
-                    <option value="">-- Không gán --</option>
-                    @foreach (var warehouse in Model.WarehouseOptions)
-                    {
-                        <option value="@warehouse.Value" selected="@(warehouse.Value == Model.WarehouseId?.ToString() ? "selected" : null)">@warehouse.Label</option>
-                    }
-                </select>
-                <small class="text-secondary">Áp dụng nếu role là warehouse_manager</small>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Chi nhánh quản lý</label>
-                <select class="form-select">
-                    <option value="">-- Không gán --</option>
-                    @foreach (var branch in Model.BranchOptions)
-                    {
-                        <option value="@branch.Value" selected="@(branch.Value == Model.BranchId?.ToString() ? "selected" : null)">@branch.Label</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Trạng thái</label>
-                <select class="form-select">
-                    <option value="active" @(Model.Status == "active" ? "selected" : null)>Active</option>
-                    <option value="inactive" @(Model.Status == "inactive" ? "selected" : null)>Inactive</option>
-                </select>
-            </div>
-        </div>
-        <div class="d-flex justify-content-end gap-2 mt-4">
-            <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
-            <button class="btn btn-primary" type="button">Lưu thông tin</button>
-        </div>
+        </form>
     </div>
 </div>
+
+<script>
+    document.getElementById('userForm').addEventListener('submit', function(e) {
+        var password = document.querySelector('input[name="Password"]');
+        var confirmPassword = document.querySelector('input[name="ConfirmPassword"]');
+        
+        if (password && confirmPassword && password.value !== confirmPassword.value) {
+            e.preventDefault();
+            alert('Mật khẩu xác nhận không khớp!');
+            return false;
+        }
+        
+        // Disable button to prevent double submit
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+        
+        return true;
+    });
+</script>

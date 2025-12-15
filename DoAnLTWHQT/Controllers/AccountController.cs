@@ -1,11 +1,15 @@
 using System;
+using System.Configuration;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
 using System.Web.Security;
 using DoAnLTWHQT.Security;
+using Ltwhqt.ViewModels.Admin;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace DoAnLTWHQT.Controllers
@@ -186,6 +190,129 @@ namespace DoAnLTWHQT.Controllers
         
             // Redirect to login page with logout parameter
             return RedirectToAction("Login", new { logout = "success" });
+        }
+
+        // GET: /Account/Register - Form đăng ký (CaoQuocPhu)
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("register")]
+        public ActionResult Register()
+        {
+            // Nếu đã đăng nhập, redirect về dashboard
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                var customPrincipal = User as CustomPrincipal;
+                var role = customPrincipal?.Role ?? "admin";
+                return RedirectToDashboard(role);
+            }
+
+            return View(new RegisterViewModel());
+        }
+
+        // POST: /Account/Register - Xử lý đăng ký (CaoQuocPhu)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("register")]
+        [ValidateAntiForgeryToken]
+        public ActionResult Register(RegisterViewModel model)
+        {
+            System.Diagnostics.Debug.WriteLine("========== REGISTER POST CALLED ==========");
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                // Kiểm tra email đã tồn tại
+                var normalizedEmail = model.Email.Trim().ToLowerInvariant();
+                var existingUser = _db.users.FirstOrDefault(u => u.email.ToLower() == normalizedEmail && u.deleted_at == null);
+                if (existingUser != null)
+                {
+                    ViewBag.ErrorMessage = "Email này đã được đăng ký. Vui lòng sử dụng email khác.";
+                    return View(model);
+                }
+
+                // Kiểm tra username đã tồn tại
+                var existingUsername = _db.users.FirstOrDefault(u => u.name.ToLower() == model.Username.ToLower() && u.deleted_at == null);
+                if (existingUsername != null)
+                {
+                    ViewBag.ErrorMessage = "Tên đăng nhập này đã tồn tại. Vui lòng chọn tên khác.";
+                    return View(model);
+                }
+
+                // Lấy role Customer (mặc định cho người đăng ký công khai)
+                var customerRole = _db.roles.FirstOrDefault(r => r.name == "client" || r.name == "customer");
+                if (customerRole == null)
+                {
+                    ViewBag.ErrorMessage = "Lỗi hệ thống: Không tìm thấy role phù hợp.";
+                    return View(model);
+                }
+
+                // Hash mật khẩu
+                var hashedPassword = BCryptNet.HashPassword(model.Password);
+
+                // Tạo user mới
+                var newUser = new user
+                {
+                    name = model.Username,
+                    full_name = model.FullName,
+                    email = model.Email,
+                    password = hashedPassword,
+                    phone_number = model.PhoneNumber,
+                    role_id = customerRole.id,
+                    status = "active",
+                    created_at = DateTime.Now,
+                    updated_at = DateTime.Now
+                };
+
+                _db.users.Add(newUser);
+                _db.SaveChanges();
+
+                System.Diagnostics.Debug.WriteLine($"User created: {newUser.email} with ID: {newUser.id}");
+
+                // Gọi stored procedure tạo SQL User (nếu cần)
+                try
+                {
+                    CreateSQLUser(model.Username, model.Password, "Customer");
+                }
+                catch (Exception spEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"SP Error (non-critical): {spEx.Message}");
+                    // Không throw lỗi vì user đã được tạo trong DB
+                }
+
+                ViewBag.SuccessMessage = "Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.";
+                return RedirectToAction("Login");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Register error: {ex.Message}");
+                ViewBag.ErrorMessage = $"Đã xảy ra lỗi: {ex.Message}";
+                return View(model);
+            }
+        }
+
+        // Gọi stored procedure sp_System_CreateSQLUser (CaoQuocPhu)
+        private void CreateSQLUser(string username, string password, string roleType)
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings["PerwDbContext"]?.ConnectionString;
+            if (string.IsNullOrEmpty(connectionString)) return;
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_System_CreateSQLUser", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    cmd.Parameters.AddWithValue("@Password", password);
+                    cmd.Parameters.AddWithValue("@RoleType", roleType);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         // GET: /Account/TestPost - Simple test page

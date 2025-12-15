@@ -71,6 +71,7 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
 
         /// <summary>
         /// POST: Branch/Transfers/Create - Tạo yêu cầu với chi tiết products
+        /// SỬ DỤNG STORED PROCEDURE: sp_Branch_CreateTransferRequest và sp_Branch_AddTransferRequestDetail
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -92,44 +93,23 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                     return RedirectToAction("Create");
                 }
 
-                // Tạo phiếu yêu cầu với status = 'Requested'
-                var transfer = new warehouse_transfers
-                {
-                    from_warehouse_id = warehouseId,
-                    to_branch_id = branchId,
-                    transfer_date = DateTime.Now,
-                    status = "Requested",  // LUÔN LÀ REQUESTED
-                    notes = notes,
-                    created_at = DateTime.Now,
-                    updated_at = DateTime.Now
-                };
+                // SỬ DỤNG STORED PROCEDURE ĐỂ TẠO PHIẾU YÊU CẦU
+                long newTransferId = CreateTransferRequestViaSP(warehouseId, branchId, notes);
 
-                _db.warehouse_transfers.Add(transfer);
-                _db.SaveChanges();
-
-                // Lưu chi tiết sản phẩm
-                foreach (var item in details)
+                if (newTransferId <= 0)
                 {
-                    var variant = _db.product_variants.Find(item.ProductVariantId);
-                    
-                    var detail = new warehouse_transfer_details
-                    {
-                        transfer_id = transfer.id,
-                        product_variant_id = item.ProductVariantId,
-                        quantity = item.Quantity,
-                        price = variant?.price ?? 0,
-                        notes = item.Notes,
-                        created_at = DateTime.Now,
-                        updated_at = DateTime.Now
-                    };
-                    
-                    _db.warehouse_transfer_details.Add(detail);
+                    TempData["Error"] = "Không thể tạo phiếu yêu cầu.";
+                    return RedirectToAction("Create");
                 }
 
-                _db.SaveChanges();
+                // SỬ DỤNG STORED PROCEDURE ĐỂ THÊM CHI TIẾT SẢN PHẨM
+                foreach (var item in details)
+                {
+                    AddTransferDetailViaSP(newTransferId, item.ProductVariantId, item.Quantity, item.Notes);
+                }
 
-                TempData["Success"] = $"Đã tạo yêu cầu nhập hàng #{transfer.id} thành công! Chờ Kho duyệt.";
-                return RedirectToAction("Details", new { id = transfer.id });
+                TempData["Success"] = $"Đã tạo yêu cầu nhập hàng #{newTransferId} thành công! Chờ Kho duyệt.";
+                return RedirectToAction("Details", new { id = newTransferId });
             }
             catch (Exception ex)
             {
@@ -175,6 +155,7 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
 
         /// <summary>
         /// POST: Branch/Transfers/AddItems
+        /// SỬ DỤNG STORED PROCEDURE: sp_Branch_AddTransferRequestDetail
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -188,7 +169,8 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
 
             try
             {
-                AddTransferRequestDetail(model.TransferId, model.ProductVariantId, model.Quantity, model.Notes);
+                // SỬ DỤNG STORED PROCEDURE
+                AddTransferDetailViaSP(model.TransferId, model.ProductVariantId, model.Quantity, model.Notes);
                 TempData["Success"] = "Đã thêm sản phẩm vào phiếu yêu cầu!";
                 return RedirectToAction("AddItems", new { id = model.TransferId });
             }
@@ -236,8 +218,61 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
 
         #endregion
 
-        #region Private Methods - Call Stored Procedures
+        #region Stored Procedure Calls using ADO.NET
 
+        /// <summary>
+        /// Gọi sp_Branch_CreateTransferRequest để tạo phiếu yêu cầu
+        /// </summary>
+        private long CreateTransferRequestViaSP(long warehouseId, long branchId, string notes)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_Branch_CreateTransferRequest", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@from_warehouse_id", warehouseId);
+                    cmd.Parameters.AddWithValue("@to_branch_id", branchId);
+                    cmd.Parameters.AddWithValue("@notes", (object)notes ?? DBNull.Value);
+                    
+                    // Output parameter
+                    var outputParam = new SqlParameter("@new_transfer_id", SqlDbType.BigInt)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(outputParam);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+
+                    return outputParam.Value != DBNull.Value ? Convert.ToInt64(outputParam.Value) : 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gọi sp_Branch_AddTransferRequestDetail để thêm chi tiết sản phẩm
+        /// </summary>
+        private void AddTransferDetailViaSP(long transferId, long productVariantId, int quantity, string notes)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_Branch_AddTransferRequestDetail", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@transfer_id", transferId);
+                    cmd.Parameters.AddWithValue("@product_variant_id", productVariantId);
+                    cmd.Parameters.AddWithValue("@quantity", quantity);
+                    cmd.Parameters.AddWithValue("@notes", (object)notes ?? DBNull.Value);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gọi sp_Branch_GetMyTransferRequests để lấy danh sách yêu cầu
+        /// </summary>
         private List<TransferRequestListViewModel> GetMyTransferRequests(long branchId)
         {
             var result = new List<TransferRequestListViewModel>();
@@ -277,6 +312,9 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             return result;
         }
 
+        /// <summary>
+        /// Gọi sp_Branch_GetTransferRequestDetails để lấy chi tiết phiếu
+        /// </summary>
         private TransferRequestFullViewModel GetTransferRequestDetails(long transferId)
         {
             var result = new TransferRequestFullViewModel();
@@ -334,24 +372,6 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             }
 
             return result;
-        }
-
-        private void AddTransferRequestDetail(long transferId, long productVariantId, int quantity, string notes)
-        {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                using (var cmd = new SqlCommand("sp_Branch_AddTransferRequestDetail", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@transfer_id", transferId);
-                    cmd.Parameters.AddWithValue("@product_variant_id", productVariantId);
-                    cmd.Parameters.AddWithValue("@quantity", quantity);
-                    cmd.Parameters.AddWithValue("@notes", (object)notes ?? DBNull.Value);
-
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                }
-            }
         }
 
         #endregion

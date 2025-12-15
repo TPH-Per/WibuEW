@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web.Mvc;
 using Newtonsoft.Json;
@@ -9,22 +11,24 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
 {
     public class TransfersController : WarehouseBaseController
     {
+        private readonly string _connectionString;
         private Entities db = new Entities();
+
+        public TransfersController()
+        {
+            _connectionString = ConfigurationManager.ConnectionStrings["PerwDbContext"]?.ConnectionString;
+        }
 
         // GET: Warehouse/Transfers
         public ActionResult Index(string status = "all")
         {
-            var query = db.warehouse_transfers
-                .Include(t => t.warehouse)
-                .Include(t => t.branch)
-                .OrderByDescending(t => t.created_at);
-
+            var transfers = GetAllTransfersViaSP();
+            
             if (!string.Equals(status, "all", StringComparison.OrdinalIgnoreCase))
             {
-                query = (IOrderedQueryable<warehouse_transfers>)query.Where(t => t.status == status);
+                transfers = transfers.Where(t => string.Equals(t.status, status, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
-            var transfers = query.ToList();
             ViewBag.StatusFilter = status;
             
             return View(transfers);
@@ -41,6 +45,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
         }
 
         // POST: Warehouse/Transfers/Create
+        // SỬ DỤNG STORED PROCEDURE: sp_Warehouse_CreateTransfer và sp_Warehouse_AddTransferDetail
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(long warehouseId, long branchId, string detailsJson, string notes = null)
@@ -61,41 +66,23 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                     return RedirectToAction("Create");
                 }
 
-                // Tạo phiếu chuyển kho
-                var transfer = new warehouse_transfers
-                {
-                    from_warehouse_id = warehouseId,
-                    to_branch_id = branchId,
-                    transfer_date = DateTime.Now,
-                    status = "pending",
-                    notes = notes,
-                    created_at = DateTime.Now,
-                    updated_at = DateTime.Now
-                };
+                // SỬ DỤNG STORED PROCEDURE ĐỂ TẠO PHIẾU
+                long newTransferId = CreateTransferViaSP(warehouseId, branchId, "Pending", notes);
 
-                db.warehouse_transfers.Add(transfer);
-                db.SaveChanges();
-
-                // Lưu chi tiết sản phẩm
-                foreach (var item in details)
+                if (newTransferId <= 0)
                 {
-                    var detail = new warehouse_transfer_details
-                    {
-                        transfer_id = transfer.id,
-                        product_variant_id = item.ProductVariantId,
-                        quantity = item.Quantity,
-                        notes = item.Notes,
-                        created_at = DateTime.Now,
-                        updated_at = DateTime.Now
-                    };
-                    
-                    db.warehouse_transfer_details.Add(detail);
+                    TempData["Error"] = "Không thể tạo phiếu điều chuyển.";
+                    return RedirectToAction("Create");
                 }
 
-                db.SaveChanges();
+                // SỬ DỤNG STORED PROCEDURE ĐỂ THÊM CHI TIẾT SẢN PHẨM
+                foreach (var item in details)
+                {
+                    AddTransferDetailViaSP(newTransferId, item.ProductVariantId, item.Quantity, item.Notes);
+                }
 
-                TempData["Success"] = $"Tạo phiếu chuyển kho #{transfer.id} thành công!";
-                return RedirectToAction("Details", new { id = transfer.id });
+                TempData["Success"] = $"Tạo phiếu chuyển kho #{newTransferId} thành công!";
+                return RedirectToAction("Details", new { id = newTransferId });
             }
             catch (Exception ex)
             {
@@ -108,9 +95,9 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
         public ActionResult Details(long id)
         {
             var transfer = db.warehouse_transfers
-                .Include(t => t.warehouse)
-                .Include(t => t.branch)
-                .Include(t => t.warehouse_transfer_details.Select(d => d.product_variants))
+                .Include("warehouse")
+                .Include("branch")
+                .Include("warehouse_transfer_details.product_variants")
                 .FirstOrDefault(t => t.id == id);
 
             if (transfer == null)
@@ -123,51 +110,21 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
         }
 
         // POST: Warehouse/Transfers/UpdateStatus
+        // SỬ DỤNG STORED PROCEDURE: sp_Warehouse_UpdateTransferStatus
         [HttpPost]
         public ActionResult UpdateStatus(long id, string newStatus)
         {
             try
             {
-                var transfer = db.warehouse_transfers.Find(id);
-                
-                if (transfer == null)
-                {
-                    return Json(new { success = false, message = "Không tìm thấy phiếu chuyển kho." });
-                }
-
-                // Validate status transitions
-                var validTransitions = new Dictionary<string, List<string>>
-                {
-                    { "pending", new List<string> { "shipping", "cancelled" } },
-                    { "shipping", new List<string> { "completed", "returned" } }
-                };
-
-                if (!validTransitions.ContainsKey(transfer.status) || 
-                    !validTransitions[transfer.status].Contains(newStatus))
-                {
-                    return Json(new { 
-                        success = false, 
-                        message = $"Không thể chuyển từ {transfer.status} sang {newStatus}." 
-                    });
-                }
-
-                // Cập nhật status - Triggers sẽ tự động chạy
-                transfer.status = newStatus;
-                transfer.updated_at = DateTime.Now;
-                
-                db.SaveChanges();
-
-                return Json(new { 
-                    success = true, 
-                    message = $"Đã cập nhật trạng thái thành {newStatus}." 
-                });
+                UpdateTransferStatusViaSP(id, newStatus, null);
+                return Json(new { success = true, message = $"Đã cập nhật trạng thái thành {newStatus}." });
             }
             catch (Exception ex)
             {
-                return Json(new { 
-                    success = false, 
-                    message = "Lỗi: " + ex.Message 
-                });
+                var msg = ex.InnerException?.InnerException?.Message 
+                    ?? ex.InnerException?.Message 
+                    ?? ex.Message;
+                return Json(new { success = false, message = "Lỗi: " + msg });
             }
         }
 
@@ -207,17 +164,13 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
         }
 
         // POST: Warehouse/Transfers/Approve
+        // SỬ DỤNG STORED PROCEDURE: sp_Warehouse_ApproveTransfer
         [HttpPost]
         public ActionResult Approve(long id, string notes = null)
         {
             try
             {
-                db.Database.ExecuteSqlCommand(
-                    "EXEC sp_Warehouse_ApproveTransfer @transfer_id, @notes",
-                    new System.Data.SqlClient.SqlParameter("@transfer_id", id),
-                    new System.Data.SqlClient.SqlParameter("@notes", (object)notes ?? DBNull.Value)
-                );
-
+                ApproveTransferViaSP(id, notes);
                 return Json(new { success = true, message = "✅ Đã duyệt yêu cầu nhập hàng!" });
             }
             catch (Exception ex)
@@ -230,17 +183,13 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
         }
 
         // POST: Warehouse/Transfers/Complete
+        // SỬ DỤNG STORED PROCEDURE: sp_Warehouse_CompleteTransfer
         [HttpPost]
         public ActionResult Complete(long id, string notes = null)
         {
             try
             {
-                db.Database.ExecuteSqlCommand(
-                    "EXEC sp_Warehouse_CompleteTransfer @transfer_id, @notes",
-                    new System.Data.SqlClient.SqlParameter("@transfer_id", id),
-                    new System.Data.SqlClient.SqlParameter("@notes", (object)notes ?? DBNull.Value)
-                );
-
+                CompleteTransferViaSP(id, notes);
                 return Json(new { success = true, message = "✅ Đã hoàn thành phiếu và cập nhật tồn kho!" });
             }
             catch (Exception ex)
@@ -253,6 +202,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
         }
 
         // POST: Warehouse/Transfers/Reject
+        // SỬ DỤNG STORED PROCEDURE: sp_Warehouse_RejectTransfer
         [HttpPost]
         public ActionResult Reject(long id, string reason)
         {
@@ -263,12 +213,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                     return Json(new { success = false, message = "Vui lòng nhập lý do từ chối." });
                 }
 
-                db.Database.ExecuteSqlCommand(
-                    "EXEC sp_Warehouse_RejectTransfer @transfer_id, @reason",
-                    new System.Data.SqlClient.SqlParameter("@transfer_id", id),
-                    new System.Data.SqlClient.SqlParameter("@reason", reason)
-                );
-
+                RejectTransferViaSP(id, reason);
                 return Json(new { success = true, message = "✅ Đã từ chối yêu cầu nhập hàng." });
             }
             catch (Exception ex)
@@ -295,6 +240,151 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                 productName = inventory?.product_variants?.name ?? "N/A"
             }, JsonRequestBehavior.AllowGet);
         }
+
+        #region Stored Procedure Calls via ADO.NET
+
+        /// <summary>
+        /// Gọi sp_Warehouse_CreateTransfer để tạo phiếu điều chuyển
+        /// </summary>
+        private long CreateTransferViaSP(long warehouseId, long branchId, string status, string notes)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_Warehouse_CreateTransfer", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@from_warehouse_id", warehouseId);
+                    cmd.Parameters.AddWithValue("@to_branch_id", branchId);
+                    cmd.Parameters.AddWithValue("@status", status);
+                    cmd.Parameters.AddWithValue("@notes", (object)notes ?? DBNull.Value);
+                    
+                    var outputParam = new SqlParameter("@new_transfer_id", SqlDbType.BigInt)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(outputParam);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+
+                    return outputParam.Value != DBNull.Value ? Convert.ToInt64(outputParam.Value) : 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gọi sp_Warehouse_AddTransferDetail để thêm chi tiết sản phẩm
+        /// </summary>
+        private void AddTransferDetailViaSP(long transferId, long productVariantId, int quantity, string notes)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_Warehouse_AddTransferDetail", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@transfer_id", transferId);
+                    cmd.Parameters.AddWithValue("@product_variant_id", productVariantId);
+                    cmd.Parameters.AddWithValue("@quantity", quantity);
+                    cmd.Parameters.AddWithValue("@notes", (object)notes ?? DBNull.Value);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gọi sp_Warehouse_UpdateTransferStatus để cập nhật status
+        /// </summary>
+        private void UpdateTransferStatusViaSP(long transferId, string newStatus, string notes)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_Warehouse_UpdateTransferStatus", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@transfer_id", transferId);
+                    cmd.Parameters.AddWithValue("@new_status", newStatus);
+                    cmd.Parameters.AddWithValue("@notes", (object)notes ?? DBNull.Value);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gọi sp_Warehouse_ApproveTransfer để duyệt yêu cầu
+        /// </summary>
+        private void ApproveTransferViaSP(long transferId, string notes)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_Warehouse_ApproveTransfer", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@transfer_id", transferId);
+                    cmd.Parameters.AddWithValue("@notes", (object)notes ?? DBNull.Value);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gọi sp_Warehouse_CompleteTransfer để hoàn thành (cập nhật tồn kho)
+        /// </summary>
+        private void CompleteTransferViaSP(long transferId, string notes)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_Warehouse_CompleteTransfer", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@transfer_id", transferId);
+                    cmd.Parameters.AddWithValue("@notes", (object)notes ?? DBNull.Value);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gọi sp_Warehouse_RejectTransfer để từ chối yêu cầu
+        /// </summary>
+        private void RejectTransferViaSP(long transferId, string reason)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                using (var cmd = new SqlCommand("sp_Warehouse_RejectTransfer", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@transfer_id", transferId);
+                    cmd.Parameters.AddWithValue("@reason", reason);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gọi sp_Warehouse_GetAllTransfers để lấy danh sách phiếu
+        /// </summary>
+        private List<warehouse_transfers> GetAllTransfersViaSP()
+        {
+            // Sử dụng EF để đơn giản hóa việc load navigation properties
+            return db.warehouse_transfers
+                .Include("warehouse")
+                .Include("branch")
+                .Include("warehouse_transfer_details")
+                .OrderByDescending(t => t.created_at)
+                .ToList();
+        }
+
+        #endregion
 
         #region Helper Methods
 

@@ -54,7 +54,13 @@ namespace Ltwhqt.ViewModels.Warehouse
 
         public int ReorderLevel { get; set; }
 
+        public long WarehouseId { get; set; }
+
+        public string WarehouseName { get; set; } = string.Empty;
+
         public bool IsLowStock => QuantityOnHand <= ReorderLevel;
+
+        public int AvailableQuantity => QuantityOnHand - QuantityReserved;
     }
 
     public class WarehouseInventoryDetailViewModel

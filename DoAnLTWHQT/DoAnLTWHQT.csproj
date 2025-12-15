@@ -260,6 +260,7 @@
     <Compile Include="ViewModels\Admin\AdminManagementViewModels.cs" />
     <Compile Include="ViewModels\Admin\AdminReportViewModel.cs" />
     <Compile Include="ViewModels\Admin\LoginViewModel.cs" />
+    <Compile Include="ViewModels\Admin\RegisterViewModel.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
