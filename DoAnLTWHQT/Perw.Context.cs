@@ -48,6 +48,7 @@ namespace DoAnLTWHQT
         public virtual DbSet<sysdiagram> sysdiagrams { get; set; }
         public virtual DbSet<user> users { get; set; }
         public virtual DbSet<warehouse_transfers> warehouse_transfers { get; set; }
+        public virtual DbSet<warehouse_transfer_details> warehouse_transfer_details { get; set; }
         public virtual DbSet<warehouse> warehouses { get; set; }
         public virtual DbSet<product_reviews> product_reviews { get; set; }
     

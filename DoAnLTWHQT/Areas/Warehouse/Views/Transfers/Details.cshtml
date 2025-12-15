@@ -1,30 +1,216 @@
-@model Ltwhqt.ViewModels.Admin.WarehouseTransferViewModel
+@model DoAnLTWHQT.warehouse_transfers
+
 @{
-    ViewBag.Title = "Chi tiết phiếu xuất kho";
+    ViewBag.Title = "Chi Tiết Phiếu Chuyển Kho #" + Model.id;
 }
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body">
-        <div class="d-flex justify-content-between mb-3">
-            <div>
-                <h2 class="h5 mb-1">Transfer #@Model.Id</h2>
-                <p class="text-secondary mb-0">Tới: @Model.ToBranch</p>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fa fa-file-text"></i> Phiếu Chuyển Kho #@Model.id</h4>
+                    <span class="badge badge-light">@Model.status</span>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["Success"]</div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Thông Tin Chung</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Kho Nguồn:</th>
+                                    <td>@Model.warehouse.name</td>
+                                </tr>
+                                <tr>
+                                    <th>Chi Nhánh Đích:</th>
+                                    <td>@Model.branch.name</td>
+                                </tr>
+                                <tr>
+                                    <th>Trạng Thái:</th>
+                                    <td>
+                                        @if (Model.status == "pending")
+                                        {
+                                            <span class="badge badge-warning">Chờ Xuất</span>
+                                        }
+                                        else if (Model.status == "shipping")
+                                        {
+                                            <span class="badge badge-primary">Đang Vận Chuyển</span>
+                                        }
+                                        else if (Model.status == "completed")
+                                        {
+                                            <span class="badge badge-success">Đã Nhận</span>
+                                        }
+                                        else if (Model.status == "returned")
+                                        {
+                                            <span class="badge badge-danger">Đã Hoàn Trả</span>
+                                        }
+                                        else if (Model.status == "cancelled")
+                                        {
+                                            <span class="badge badge-secondary">Đã Hủy</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Thời Gian</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Ngày Tạo:</th>
+                                    <td>@Model.created_at?.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <th>Ngày Chuyển:</th>
+                                    <td>@Model.transfer_date?.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <th>Cập Nhật:</th>
+                                    <td>@Model.updated_at?.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.notes))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted">Ghi Chú</h6>
+                                <p class="border p-2 bg-light">@Model.notes</p>
+                            </div>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <h5 class="mb-3">Chi Tiết Sản Phẩm</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Sản Phẩm</th>
+                                    <th>SKU</th>
+                                    <th class="text-right">Số Lượng</th>
+                                    <th>Ghi Chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int index = 1;
+                                    int totalQty = 0;
+                                }
+                                @if (Model.warehouse_transfer_details != null && Model.warehouse_transfer_details.Any())
+                                {
+                                    foreach (var detail in Model.warehouse_transfer_details)
+                                    {
+                                        totalQty += detail.quantity;
+                                        <tr>
+                                            <td>@index</td>
+                                            <td>@detail.product_variants.name</td>
+                                            <td><code>@detail.product_variants.sku</code></td>
+                                            <td class="text-right"><strong>@detail.quantity</strong></td>
+                                            <td>@detail.notes</td>
+                                        </tr>
+                                        index++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="fa fa-inbox fa-2x mb-2"></i>
+                                            <p>Chưa có sản phẩm nào trong phiếu chuyển</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-right">Tổng Số Lượng:</th>
+                                    <th class="text-right">@totalQty</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="fa fa-arrow-left"></i> Quay Lại
+                        </a>
+                        
+                        <div>
+                            @if (Model.status == "pending")
+                            {
+                                <button type="button" class="btn btn-danger" onclick="updateStatus('cancelled')">
+                                    <i class="fa fa-ban"></i> Hủy Phiếu
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="updateStatus('shipping')">
+                                    <i class="fa fa-truck"></i> Xuất Kho
+                                </button>
+                            }
+                            else if (Model.status == "shipping")
+                            {
+                                <button type="button" class="btn btn-warning" onclick="updateStatus('returned')">
+                                    <i class="fa fa-undo"></i> Hoàn Trả
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="updateStatus('completed')">
+                                    <i class="fa fa-check"></i> Xác Nhận Nhận Hàng
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
-            <span class="badge bg-light text-dark text-uppercase">@Model.Status</span>
         </div>
-
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Kho xuất</dt>
-            <dd class="col-sm-9">@Model.FromWarehouse</dd>
-
-            <dt class="col-sm-3">Variant</dt>
-            <dd class="col-sm-9">@Model.Variant</dd>
-
-            <dt class="col-sm-3">Số lượng</dt>
-            <dd class="col-sm-9">@Model.Quantity</dd>
-
-            <dt class="col-sm-3">Ngày tạo</dt>
-            <dd class="col-sm-9">@Model.CreatedAt:dd/MM/yyyy HH:mm</dd>
-        </dl>
     </div>
 </div>
+
+@section Scripts {
+<script>
+    function updateStatus(newStatus) {
+        var statusNames = {
+            'shipping': 'Xuất kho và chuyển hàng',
+            'completed': 'Xác nhận đã nhận hàng',
+            'returned': 'Hoàn trả về kho',
+            'cancelled': 'Hủy phiếu chuyển'
+        };
+
+        if (!confirm('Bạn có chắc muốn ' + statusNames[newStatus] + '?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("UpdateStatus")',
+            type: 'POST',
+            data: {
+                id: @Model.id,
+                newStatus: newStatus
+            },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+</script>
+}
