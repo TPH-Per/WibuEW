@@ -1,70 +1,132 @@
 @model Ltwhqt.ViewModels.Admin.UserFormViewModel
 @{
-    ViewBag.Title = ViewBag.Title ?? "Thông tin tài khoản";
-    var heading = Model.Id.HasValue ? "Cập nhật tài khoản" : "Tạo tài khoản mới";
+    ViewBag.Title = ViewBag.Title ?? "User Information";
+    var heading = Model.Id.HasValue ? "Edit User" : "Create New User";
+    var isEdit = Model.Id.HasValue;
 }
 
 <div class="card border-0 shadow-sm">
     <div class="card-body">
         <h2 class="h5 mb-4">@heading</h2>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label">Username</label>
-                <input class="form-control" value="@Model.Name" placeholder="perw.admin" />
+
+        @* Display validation errors *@
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @Html.ValidationSummary(true, "Please check the form:")
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Tên hiển thị</label>
-                <input class="form-control" value="@Model.FullName" placeholder="Họ và tên" />
+        }
+
+        @* Display success/warning messages *@
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Email đăng nhập</label>
-                <input class="form-control" type="email" value="@Model.Email" placeholder="admin@perw.vn" />
+        }
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                @TempData["WarningMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Số điện thoại</label>
-                <input class="form-control" value="@Model.PhoneNumber" placeholder="09xx xxx xxx" />
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Role</label>
-                <select class="form-select">
-                    @foreach (var role in Model.RoleOptions)
+        }
+
+        @using (Html.BeginForm(isEdit ? "Edit" : "Create", "Users", FormMethod.Post, new { id = "userForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Username <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "e.g. admin_user", required = "required", autocomplete = "off" })
+                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Full name", required = "required" })
+                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", placeholder = "admin@perw.vn", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone Number</label>
+                    @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", placeholder = "09xx xxx xxx" })
+                    @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger small" })
+                </div>
+
+                @* Password fields *@
+                <div class="col-md-6">
+                    <label class="form-label">Password @(isEdit ? "(leave blank to keep current)" : "<span class='text-danger'>*</span>")</label>
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "••••••••", autocomplete = "new-password", required = isEdit ? (object)null : "required" })
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Confirm Password</label>
+                    @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "••••••••", autocomplete = "new-password" })
+                    @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Role <span class="text-danger">*</span></label>
+                    @Html.DropDownListFor(m => m.Role, 
+                        Model.RoleOptions.Select(r => new SelectListItem { Value = r.Value, Text = r.Label, Selected = r.Value == Model.Role }),
+                        new { @class = "form-select", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Role, "", new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Warehouse</label>
+                    @Html.DropDownListFor(m => m.WarehouseId, 
+                        Model.WarehouseOptions.Select(w => new SelectListItem { Value = w.Value, Text = w.Label, Selected = w.Value == Model.WarehouseId?.ToString() }),
+                        "-- Not assigned --",
+                        new { @class = "form-select" })
+                    <small class="text-secondary">For warehouse_manager role</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Branch</label>
+                    @Html.DropDownListFor(m => m.BranchId, 
+                        Model.BranchOptions.Select(b => new SelectListItem { Value = b.Value, Text = b.Label, Selected = b.Value == Model.BranchId?.ToString() }),
+                        "-- Not assigned --",
+                        new { @class = "form-select" })
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    @Html.DropDownListFor(m => m.Status, new List<SelectListItem>
                     {
-                        <option value="@role.Value" selected="@(role.Value == Model.Role ? "selected" : null)">@role.Label</option>
-                    }
-                </select>
+                        new SelectListItem { Value = "active", Text = "Active", Selected = Model.Status == "active" },
+                        new SelectListItem { Value = "inactive", Text = "Inactive", Selected = Model.Status == "inactive" }
+                    }, new { @class = "form-select" })
+                </div>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Kho quản lý</label>
-                <select class="form-select">
-                    <option value="">-- Không gán --</option>
-                    @foreach (var warehouse in Model.WarehouseOptions)
-                    {
-                        <option value="@warehouse.Value" selected="@(warehouse.Value == Model.WarehouseId?.ToString() ? "selected" : null)">@warehouse.Label</option>
-                    }
-                </select>
-                <small class="text-secondary">Áp dụng nếu role là warehouse_manager</small>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-light" href="@Url.Action("Index")">Cancel</a>
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check-lg me-1"></i>Save
+                </button>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Chi nhánh quản lý</label>
-                <select class="form-select">
-                    <option value="">-- Không gán --</option>
-                    @foreach (var branch in Model.BranchOptions)
-                    {
-                        <option value="@branch.Value" selected="@(branch.Value == Model.BranchId?.ToString() ? "selected" : null)">@branch.Label</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Trạng thái</label>
-                <select class="form-select">
-                    <option value="active" @(Model.Status == "active" ? "selected" : null)>Active</option>
-                    <option value="inactive" @(Model.Status == "inactive" ? "selected" : null)>Inactive</option>
-                </select>
-            </div>
-        </div>
-        <div class="d-flex justify-content-end gap-2 mt-4">
-            <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
-            <button class="btn btn-primary" type="button">Lưu thông tin</button>
-        </div>
+        }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Password match validation
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            var password = document.getElementById('Password').value;
+            var confirmPassword = document.getElementById('ConfirmPassword').value;
+            
+            if (password && password !== confirmPassword) {
+                e.preventDefault();
+                alert('Password confirmation does not match!');
+                return false;
+            }
+        });
+    </script>
+}

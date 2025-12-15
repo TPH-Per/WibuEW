@@ -1,11 +1,14 @@
 using System;
+using System.Configuration;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
 using System.Web.Security;
 using DoAnLTWHQT.Security;
+using Ltwhqt.ViewModels.Admin;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace DoAnLTWHQT.Controllers
@@ -21,6 +24,13 @@ namespace DoAnLTWHQT.Controllers
         public ActionResult Login(string logout = null)
         {
             System.Diagnostics.Debug.WriteLine("========== LOGIN GET CALLED ==========");
+            
+            // Check for success message from registration
+            if (TempData["SuccessMessage"] != null)
+            {
+                ViewBag.SuccessMessage = TempData["SuccessMessage"].ToString();
+            }
+            
             if (!string.IsNullOrEmpty(logout))
             {
                 System.Diagnostics.Debug.WriteLine("Logout flag detected - clearing auth state before showing login page.");
@@ -186,6 +196,133 @@ namespace DoAnLTWHQT.Controllers
         
             // Redirect to login page with logout parameter
             return RedirectToAction("Login", new { logout = "success" });
+        }
+
+        // GET: /Account/Register
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("register")]
+        public ActionResult Register()
+        {
+            System.Diagnostics.Debug.WriteLine("========== REGISTER GET CALLED ==========");
+            
+            // If already logged in, redirect to dashboard
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                var customPrincipal = User as CustomPrincipal;
+                var role = customPrincipal?.Role ?? "client";
+                return RedirectToDashboard(role);
+            }
+
+            return View(new RegisterViewModel());
+        }
+
+        // POST: /Account/Register
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("register")]
+        [ValidateAntiForgeryToken]
+        public ActionResult Register(RegisterViewModel model)
+        {
+            System.Diagnostics.Debug.WriteLine("========== REGISTER POST CALLED ==========");
+
+            try
+            {
+                // Validate model
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                // Normalize inputs
+                var normalizedEmail = model.Email.Trim().ToLowerInvariant();
+                var normalizedUsername = model.Username.Trim().ToLowerInvariant();
+
+                // Check if email already exists
+                if (_db.users.Any(u => u.email.ToLower() == normalizedEmail && u.deleted_at == null))
+                {
+                    ModelState.AddModelError("Email", "Email này đã được sử dụng.");
+                    return View(model);
+                }
+
+                // Check if username already exists
+                if (_db.users.Any(u => u.name.ToLower() == normalizedUsername && u.deleted_at == null))
+                {
+                    ModelState.AddModelError("Username", "Tên đăng nhập này đã được sử dụng.");
+                    return View(model);
+                }
+
+                // Step 1: Create SQL User using stored procedure (plain password for SQL Login)
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"Creating SQL User: {normalizedUsername}");
+                    
+                    // Get plain connection string from Web.config (not Entity Framework format)
+                    var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["PerwDbContext"]?.ConnectionString;
+                    
+                    if (string.IsNullOrEmpty(connectionString))
+                    {
+                        throw new Exception("Connection string 'PerwDbContext' not found in Web.config");
+                    }
+                    
+                    using (var connection = new SqlConnection(connectionString))
+                    {
+                        connection.Open();
+                        using (var command = new SqlCommand("sp_System_CreateSQLUser", connection))
+                        {
+                            command.CommandType = System.Data.CommandType.StoredProcedure;
+                            command.Parameters.AddWithValue("@Username", normalizedUsername);
+                            command.Parameters.AddWithValue("@Password", model.Password); // Plain password for SQL login
+                            command.Parameters.AddWithValue("@RoleType", "Customer"); // Default role for web registration
+                            
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    
+                    System.Diagnostics.Debug.WriteLine($"SQL User created successfully: {normalizedUsername}");
+                }
+                catch (SqlException sqlEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"SQL Error creating user: {sqlEx.Message}");
+                    // Throw error to user instead of silently continuing
+                    throw new Exception($"Không thể tạo SQL User: {sqlEx.Message}. Hãy kiểm tra stored procedure 'sp_System_CreateSQLUser' đã được tạo chưa.");
+                }
+
+                // Step 2: Hash password using BCrypt for the users table
+                var hashedPassword = BCryptNet.HashPassword(model.Password, BCryptNet.GenerateSalt(12));
+                System.Diagnostics.Debug.WriteLine($"Password hashed successfully");
+
+                // Step 3: Create new user in users table
+                var newUser = new user
+                {
+                    name = normalizedUsername,
+                    full_name = model.FullName.Trim(),
+                    email = normalizedEmail,
+                    phone_number = !string.IsNullOrWhiteSpace(model.PhoneNumber) ? model.PhoneNumber.Trim() : null,
+                    password = hashedPassword,
+                    role_id = 4, // Customer role (role_id = 4)
+                    status = "active",
+                    created_at = DateTime.Now,
+                    updated_at = DateTime.Now
+                };
+
+                _db.users.Add(newUser);
+                _db.SaveChanges();
+
+                System.Diagnostics.Debug.WriteLine($"User created in database: {newUser.id}");
+
+                // Success - redirect to login with success message
+                TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                return RedirectToAction("Login");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Register error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                ModelState.AddModelError("", $"Đã xảy ra lỗi khi đăng ký: {ex.Message}");
+                return View(model);
+            }
         }
 
         // GET: /Account/TestPost - Simple test page

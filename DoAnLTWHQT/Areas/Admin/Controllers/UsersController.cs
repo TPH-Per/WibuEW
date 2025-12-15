@@ -1,27 +1,46 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web.Mvc;
 using Ltwhqt.ViewModels.Admin;
 using Ltwhqt.ViewModels.Shared;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace DoAnLTWHQT.Areas.Admin.Controllers
 {
     public class UsersController : AdminBaseController
     {
+        private readonly DoAnLTWHQT.Entities _db = new DoAnLTWHQT.Entities();
+
+        // GET: Admin/Users
         public ActionResult Index(string role = "all", string status = "all")
         {
-            var users = BuildSampleUsers();
+            var query = _db.users.Include("role").Where(u => u.deleted_at == null);
 
             if (!string.IsNullOrWhiteSpace(role) && !string.Equals(role, "all", StringComparison.OrdinalIgnoreCase))
             {
-                users = users.Where(u => string.Equals(u.Role, role, StringComparison.OrdinalIgnoreCase)).ToList();
+                query = query.Where(u => u.role.name == role);
             }
 
             if (!string.IsNullOrWhiteSpace(status) && !string.Equals(status, "all", StringComparison.OrdinalIgnoreCase))
             {
-                users = users.Where(u => string.Equals(u.Status, status, StringComparison.OrdinalIgnoreCase)).ToList();
+                query = query.Where(u => u.status == status);
             }
+
+            var users = query.OrderByDescending(u => u.created_at).ToList().Select(u => new UserListItemViewModel
+            {
+                Id = u.id,
+                Name = u.name,
+                FullName = u.full_name,
+                Email = u.email,
+                PhoneNumber = u.phone_number ?? "",
+                Role = u.role?.name ?? "client",
+                Status = u.status ?? "active",
+                WarehouseName = u.warehouse?.name ?? "",
+                CreatedAt = u.created_at.HasValue ? new DateTimeOffset(u.created_at.Value) : DateTimeOffset.MinValue
+            }).ToList();
 
             ViewBag.RoleFilter = role;
             ViewBag.StatusFilter = status;
@@ -29,6 +48,7 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
             return View(users);
         }
 
+        // GET: Admin/Users/Create
         public ActionResult Create()
         {
             var vm = BuildUserForm();
@@ -36,81 +56,203 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
             return View("Form", vm);
         }
 
+        // POST: Admin/Users/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(UserFormViewModel model)
+        {
+            try
+            {
+                // Basic validation
+                if (string.IsNullOrWhiteSpace(model.Name))
+                {
+                    ModelState.AddModelError("Name", "Vui lòng nhập tên đăng nhập.");
+                }
+                if (string.IsNullOrWhiteSpace(model.Email))
+                {
+                    ModelState.AddModelError("Email", "Vui lòng nhập email.");
+                }
+                if (string.IsNullOrWhiteSpace(model.Password))
+                {
+                    ModelState.AddModelError("Password", "Vui lòng nhập mật khẩu.");
+                }
+                if (model.Password != model.ConfirmPassword)
+                {
+                    ModelState.AddModelError("ConfirmPassword", "Mật khẩu xác nhận không khớp.");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    model.RoleOptions = BuildRoleOptions();
+                    model.WarehouseOptions = BuildWarehouseOptions();
+                    model.BranchOptions = BuildBranchOptions();
+                    return View("Form", model);
+                }
+
+                // Normalize inputs
+                var normalizedEmail = model.Email.Trim().ToLowerInvariant();
+                var normalizedUsername = model.Name.Trim().ToLowerInvariant();
+
+                // Check if email already exists
+                if (_db.users.Any(u => u.email.ToLower() == normalizedEmail && u.deleted_at == null))
+                {
+                    ModelState.AddModelError("Email", "Email này đã được sử dụng.");
+                    model.RoleOptions = BuildRoleOptions();
+                    model.WarehouseOptions = BuildWarehouseOptions();
+                    model.BranchOptions = BuildBranchOptions();
+                    return View("Form", model);
+                }
+
+                // Check if username already exists
+                if (_db.users.Any(u => u.name.ToLower() == normalizedUsername && u.deleted_at == null))
+                {
+                    ModelState.AddModelError("Name", "Tên đăng nhập này đã được sử dụng.");
+                    model.RoleOptions = BuildRoleOptions();
+                    model.WarehouseOptions = BuildWarehouseOptions();
+                    model.BranchOptions = BuildBranchOptions();
+                    return View("Form", model);
+                }
+
+                // Determine SQL Server role type from application role
+                string sqlRoleType = GetSqlRoleType(model.Role);
+
+                // Step 1: Create SQL User using stored procedure
+                var connectionString = ConfigurationManager.ConnectionStrings["PerwDbContext"]?.ConnectionString;
+                if (!string.IsNullOrEmpty(connectionString))
+                {
+                    try
+                    {
+                        using (var connection = new SqlConnection(connectionString))
+                        {
+                            connection.Open();
+                            using (var command = new SqlCommand("sp_System_CreateSQLUser", connection))
+                            {
+                                command.CommandType = System.Data.CommandType.StoredProcedure;
+                                command.Parameters.AddWithValue("@Username", normalizedUsername);
+                                command.Parameters.AddWithValue("@Password", model.Password);
+                                command.Parameters.AddWithValue("@RoleType", sqlRoleType);
+
+                                command.ExecuteNonQuery();
+                            }
+                        }
+                        System.Diagnostics.Debug.WriteLine($"SQL User created: {normalizedUsername} with role {sqlRoleType}");
+                    }
+                    catch (SqlException sqlEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"SQL Error creating user: {sqlEx.Message}");
+                        TempData["WarningMessage"] = $"SQL User không thể tạo: {sqlEx.Message}. User vẫn được tạo trong hệ thống.";
+                    }
+                }
+
+                // Step 2: Get role_id from role name
+                var dbRole = _db.roles.FirstOrDefault(r => r.name == model.Role);
+                long roleId = dbRole?.id ?? 4; // Default to customer (4)
+
+                // Step 3: Hash password using BCrypt
+                var hashedPassword = BCryptNet.HashPassword(model.Password, BCryptNet.GenerateSalt(12));
+
+                // Step 4: Create new user in users table
+                var newUser = new DoAnLTWHQT.user
+                {
+                    name = normalizedUsername,
+                    full_name = model.FullName?.Trim() ?? normalizedUsername,
+                    email = normalizedEmail,
+                    phone_number = !string.IsNullOrWhiteSpace(model.PhoneNumber) ? model.PhoneNumber.Trim() : null,
+                    password = hashedPassword,
+                    role_id = roleId,
+                    warehouse_id = model.WarehouseId,
+                    status = model.Status ?? "active",
+                    created_at = DateTime.Now,
+                    updated_at = DateTime.Now
+                };
+
+                _db.users.Add(newUser);
+                _db.SaveChanges();
+
+                TempData["SuccessMessage"] = $"Đã tạo tài khoản '{normalizedUsername}' thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error creating user: {ex.Message}");
+                ModelState.AddModelError("", $"Đã xảy ra lỗi: {ex.Message}");
+                model.RoleOptions = BuildRoleOptions();
+                model.WarehouseOptions = BuildWarehouseOptions();
+                model.BranchOptions = BuildBranchOptions();
+                return View("Form", model);
+            }
+        }
+
+        // GET: Admin/Users/Edit/{id}
         public ActionResult Edit(long id)
         {
-            var vm = BuildUserForm(id);
-            vm.Id = id;
-            vm.Status = "active";
-            vm.Name = "perw.admin";
-            vm.FullName = "Quản trị PERW";
-            vm.Email = "admin@perw.vn";
-            vm.PhoneNumber = "0901 234 567";
-            vm.Role = "admin";
+            var user = _db.users.Include("role").FirstOrDefault(u => u.id == id && u.deleted_at == null);
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+
+            var vm = new UserFormViewModel
+            {
+                Id = user.id,
+                Name = user.name,
+                FullName = user.full_name,
+                Email = user.email,
+                PhoneNumber = user.phone_number,
+                Role = user.role?.name ?? "client",
+                WarehouseId = user.warehouse_id,
+                Status = user.status,
+                RoleOptions = BuildRoleOptions(),
+                WarehouseOptions = BuildWarehouseOptions(),
+                BranchOptions = BuildBranchOptions()
+            };
+
             ViewBag.Title = "Cập nhật tài khoản";
             return View("Form", vm);
         }
 
+        // GET: Admin/Users/Details/{id}
         public ActionResult Details(long id)
         {
-            var user = BuildSampleUsers().FirstOrDefault(u => u.Id == id) ?? BuildSampleUsers().First();
-            return View(user);
-        }
-
-        private static List<UserListItemViewModel> BuildSampleUsers()
-        {
-            return new List<UserListItemViewModel>
+            var user = _db.users.Include("role").Include("warehouse").FirstOrDefault(u => u.id == id && u.deleted_at == null);
+            if (user == null)
             {
-                new UserListItemViewModel
-                {
-                    Id = 1,
-                    Name = "perw.admin",
-                    FullName = "Quản trị PERW",
-                    Email = "admin@perw.vn",
-                    PhoneNumber = "0987 654 321",
-                    Role = "admin",
-                    Status = "active",
-                    WarehouseName = "Kho trung tâm",
-                    CreatedAt = DateTimeOffset.UtcNow.AddMonths(-6)
-                },
-                new UserListItemViewModel
-                {
-                    Id = 2,
-                    Name = "warehouse.thuy",
-                    FullName = "Thúy Kho",
-                    Email = "warehouse@perw.vn",
-                    PhoneNumber = "0903 111 222",
-                    Role = "warehouse_manager",
-                    Status = "active",
-                    WarehouseName = "Kho trung tâm",
-                    CreatedAt = DateTimeOffset.UtcNow.AddMonths(-4)
-                },
-                new UserListItemViewModel
-                {
-                    Id = 3,
-                    Name = "branch.q1",
-                    FullName = "Nguyễn An",
-                    Email = "branch.q1@perw.vn",
-                    PhoneNumber = "0933 444 555",
-                    Role = "branch_manager",
-                    Status = "inactive",
-                    BranchName = "Chi nhánh Quận 1",
-                    CreatedAt = DateTimeOffset.UtcNow.AddMonths(-3)
-                },
-                new UserListItemViewModel
-                {
-                    Id = 4,
-                    Name = "client.hn",
-                    FullName = "Trần Bình",
-                    Email = "client@perw.vn",
-                    PhoneNumber = "0911 222 333",
-                    Role = "client",
-                    Status = "active",
-                    CreatedAt = DateTimeOffset.UtcNow.AddMonths(-1)
-                }
+                return HttpNotFound();
+            }
+
+            var vm = new UserListItemViewModel
+            {
+                Id = user.id,
+                Name = user.name,
+                FullName = user.full_name,
+                Email = user.email,
+                PhoneNumber = user.phone_number ?? "",
+                Role = user.role?.name ?? "client",
+                Status = user.status ?? "active",
+                WarehouseName = user.warehouse?.name ?? "",
+                CreatedAt = user.created_at.HasValue ? new DateTimeOffset(user.created_at.Value) : DateTimeOffset.MinValue
             };
+
+            return View(vm);
         }
 
-        private static UserFormViewModel BuildUserForm(long? id = null)
+        private string GetSqlRoleType(string appRole)
+        {
+            switch (appRole?.ToLower())
+            {
+                case "admin":
+                    return "Admin";
+                case "warehouse_manager":
+                    return "Warehouse";
+                case "branch_manager":
+                    return "Branch";
+                case "client":
+                default:
+                    return "Customer";
+            }
+        }
+
+        private UserFormViewModel BuildUserForm(long? id = null)
         {
             return new UserFormViewModel
             {
@@ -121,32 +263,54 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
             };
         }
 
-        private static IEnumerable<SelectOptionViewModel> BuildRoleOptions()
+        private IEnumerable<SelectOptionViewModel> BuildRoleOptions()
         {
-            return new List<SelectOptionViewModel>
+            var roles = _db.roles.Where(r => r.deleted_at == null).ToList();
+            return roles.Select(r => new SelectOptionViewModel
             {
-                new SelectOptionViewModel { Value = "admin", Label = "Admin" },
-                new SelectOptionViewModel { Value = "warehouse_manager", Label = "Warehouse Manager" },
-                new SelectOptionViewModel { Value = "branch_manager", Label = "Branch Manager" },
-                new SelectOptionViewModel { Value = "client", Label = "Khách hàng" }
-            };
+                Value = r.name,
+                Label = GetRoleLabel(r.name)
+            }).ToList();
         }
 
-        private static IEnumerable<SelectOptionViewModel> BuildWarehouseOptions()
+        private string GetRoleLabel(string roleName)
         {
-            return new List<SelectOptionViewModel>
+            switch (roleName?.ToLower())
             {
-                new SelectOptionViewModel { Value = "1", Label = "Kho trung tâm" }
-            };
+                case "admin": return "Quản trị viên";
+                case "warehouse_manager": return "Quản lý kho";
+                case "branch_manager": return "Quản lý chi nhánh";
+                case "client": return "Khách hàng";
+                default: return roleName;
+            }
         }
 
-        private static IEnumerable<SelectOptionViewModel> BuildBranchOptions()
+        private IEnumerable<SelectOptionViewModel> BuildWarehouseOptions()
         {
-            return new List<SelectOptionViewModel>
+            return _db.warehouses.Where(w => w.deleted_at == null).ToList().Select(w => new SelectOptionViewModel
             {
-                new SelectOptionViewModel { Value = "1", Label = "Chi nhánh Quận 1" },
-                new SelectOptionViewModel { Value = "2", Label = "Chi nhánh Hà Đông" }
-            };
+                Value = w.id.ToString(),
+                Label = w.name
+            }).ToList();
+        }
+
+        private IEnumerable<SelectOptionViewModel> BuildBranchOptions()
+        {
+            return _db.branches.ToList().Select(b => new SelectOptionViewModel
+            {
+                Value = b.id.ToString(),
+                Label = b.name
+            }).ToList();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }
+
