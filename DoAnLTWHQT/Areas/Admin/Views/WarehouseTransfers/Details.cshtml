@@ -1,0 +1,29 @@
+@model Ltwhqt.ViewModels.Admin.WarehouseTransferViewModel
+@{
+    ViewBag.Title = "Chi tiết phiếu xuất kho";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between mb-3">
+            <div>
+                <h2 class="h5 mb-1">Transfer #@Model.Id</h2>
+                <p class="text-secondary mb-0">Trạng thái: <span class="badge bg-light text-dark text-uppercase">@Model.Status</span></p>
+            </div>
+            <span class="text-secondary">@Model.CreatedAt:dd/MM/yyyy HH:mm</span>
+        </div>
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Từ kho</dt>
+            <dd class="col-sm-9">@Model.FromWarehouse</dd>
+
+            <dt class="col-sm-3">Chi nhánh nhận</dt>
+            <dd class="col-sm-9">@Model.ToBranch</dd>
+
+            <dt class="col-sm-3">Variant</dt>
+            <dd class="col-sm-9">@Model.Variant</dd>
+
+            <dt class="col-sm-3">Số lượng</dt>
+            <dd class="col-sm-9">@Model.Quantity</dd>
+        </dl>
+    </div>
+</div>

@@ -1,0 +1,31 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.ReportIndicatorViewModel>
+@{
+    ViewBag.Title = "Báo cáo KPI";
+}
+
+<div class="row g-4">
+    @foreach (var indicator in Model)
+    {
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-secondary text-uppercase small mb-1">@indicator.Label</p>
+                    <h3 class="mb-0">@indicator.Value</h3>
+                    <div class="mt-2 text-success">@indicator.Trend</div>
+                    <p class="text-secondary small mb-0">@indicator.Description</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-body">
+        <h3 class="h6 mb-3">Gợi ý tiếp theo</h3>
+        <ul class="mb-0">
+            <li>Xuất báo cáo doanh thu theo chi nhánh</li>
+            <li>Xác định SKU tồn kho chậm luân chuyển</li>
+            <li>Giám sát tỷ lệ hoàn thành đơn hàng / huỷ</li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+@model Ltwhqt.ViewModels.Warehouse.WarehouseAdjustmentViewModel
+@{
+    ViewBag.Title = "Phiếu điều chỉnh tồn kho";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">Điền thông tin điều chỉnh</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Variant</label>
+                <input class="form-control" value="@Model.Variant" readonly />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Số lượng hiện tại</label>
+                <input class="form-control" value="@Model.CurrentQuantity" readonly />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Điều chỉnh (+/-)</label>
+                <input class="form-control" type="number" value="@Model.Adjustment" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Lý do</label>
+                <textarea class="form-control" rows="3" placeholder="Kiểm kê lệch, hư hỏng, thất lạc...">@Model.Reason</textarea>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+            <button class="btn btn-primary" type="button">Xác nhận điều chỉnh</button>
+        </div>
+    </div>
+</div>

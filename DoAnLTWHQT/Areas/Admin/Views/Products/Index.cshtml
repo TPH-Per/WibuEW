@@ -1,0 +1,104 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.ProductManagementViewModel>
+@{
+    ViewBag.Title = "Sản phẩm";
+    var statusFilter = ViewBag.StatusFilter as string ?? "all";
+    var statusOptions = ViewBag.StatusOptions as IEnumerable<Ltwhqt.ViewModels.Shared.SelectOptionViewModel>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Danh sách sản phẩm</h2>
+        <p class="text-secondary mb-0">Quản lý lifecycle draft/published/archived.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Trạng thái</label>
+        <form method="get">
+            <select class="form-select" name="status" onchange="this.form.submit()">
+                <option value="all" @(statusFilter == "all" ? "selected" : null)>Tất cả</option>
+                @if (statusOptions != null)
+                {
+                    foreach (var option in statusOptions)
+                    {
+                        <option value="@option.Value" @(statusFilter == option.Value ? "selected" : null)>@option.Label</option>
+                    }
+                }
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Sản phẩm</th>
+                    <th>Danh mục</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Biến thể</th>
+                    <th>Trạng thái</th>
+                    <th>Cập nhật</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var product in Model)
+                    {
+                        <tr>
+                            <td>@product.Id</td>
+                            <td>@product.Name</td>
+                            <td>@product.Category</td>
+                            <td>@product.Supplier</td>
+                            <td>@product.VariantCount</td>
+                            <td><span class="badge bg-light text-dark text-uppercase">@product.Status</span></td>
+                            <td>@product.UpdatedAt.ToString("dd/MM HH:mm")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Details", new { id = product.Id })">Chi tiết</a>
+                                <a class="btn btn-sm btn-light ms-1" href="@Url.Action("Edit", new { id = product.Id })">Sửa</a>
+                                @using (Html.BeginForm("Delete", "Products", new { id = product.Id }, FormMethod.Post, new { style = "display:inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger ms-1" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">Xóa</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Chưa có sản phẩm nào. <a href="@Url.Action("Create")">Thêm sản phẩm đầu tiên</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

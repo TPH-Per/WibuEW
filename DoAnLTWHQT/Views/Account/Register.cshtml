@@ -1,0 +1,269 @@
+@model Ltwhqt.ViewModels.Admin.RegisterViewModel
+
+@{
+    ViewBag.Title = "Đăng ký tài khoản";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - Hệ thống quản lý kho</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .register-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .register-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .register-header h2 {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .register-header p {
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+        .register-body {
+            padding: 2rem;
+        }
+        .form-floating > label {
+            padding-left: 1rem;
+        }
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            z-index: 10;
+        }
+        .password-toggle:hover {
+            color: #667eea;
+        }
+        .form-check-label a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .form-check-label a:hover {
+            text-decoration: underline;
+        }
+        .login-link {
+            color: #667eea;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .login-link:hover {
+            text-decoration: underline;
+        }
+        .field-validation-error {
+            color: #dc3545;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="register-card">
+                    <div class="register-header">
+                        <i class="fas fa-user-plus fa-3x mb-3"></i>
+                        <h2>Đăng ký tài khoản</h2>
+                        <p>Tạo tài khoản mới để sử dụng hệ thống.</p>
+                    </div>
+                    <div class="register-body">
+                        @if (ViewBag.ErrorMessage != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.ErrorMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        @if (ViewBag.SuccessMessage != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>@ViewBag.SuccessMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        <form action="@Url.Action("Register", "Account")" method="post" id="registerForm">
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="Username" name="Username" 
+                                       placeholder="Tên đăng nhập" autofocus required
+                                       value="@Model.Username" />
+                                <label for="Username">Tên đăng nhập</label>
+                                @Html.ValidationMessageFor(m => m.Username, "", new { @class = "field-validation-error" })
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="FullName" name="FullName" 
+                                       placeholder="Họ và tên" required
+                                       value="@Model.FullName" />
+                                <label for="FullName">Họ và tên</label>
+                                @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "field-validation-error" })
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="Email" name="Email" 
+                                       placeholder="Email" required
+                                       value="@Model.Email" />
+                                <label for="Email">Email</label>
+                                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-validation-error" })
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input type="tel" class="form-control" id="PhoneNumber" name="PhoneNumber" 
+                                       placeholder="Số điện thoại"
+                                       value="@Model.PhoneNumber" />
+                                <label for="PhoneNumber">Số điện thoại (tùy chọn)</label>
+                                @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "field-validation-error" })
+                            </div>
+
+                            <div class="form-floating mb-3 position-relative">
+                                <input type="password" class="form-control" id="Password" name="Password" 
+                                       placeholder="Mật khẩu" required minlength="6" />
+                                <label for="Password">Mật khẩu</label>
+                                <span class="password-toggle" onclick="togglePassword('Password', this)">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-validation-error" })
+                            </div>
+
+                            <div class="form-floating mb-3 position-relative">
+                                <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword" 
+                                       placeholder="Xác nhận mật khẩu" required />
+                                <label for="ConfirmPassword">Xác nhận mật khẩu</label>
+                                <span class="password-toggle" onclick="togglePassword('ConfirmPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                                @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "field-validation-error" })
+                            </div>
+
+                            <div class="form-check mb-4">
+                                <input type="checkbox" class="form-check-input" id="AgreeTerms" name="AgreeTerms" value="true" />
+                                <label class="form-check-label" for="AgreeTerms">
+                                    Tôi đồng ý với <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">điều khoản sử dụng</a>
+                                </label>
+                                @Html.ValidationMessageFor(m => m.AgreeTerms, "", new { @class = "field-validation-error d-block" })
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-register w-100 mb-3" id="submitBtn">
+                                <i class="fas fa-user-plus me-2"></i>Đăng ký
+                            </button>
+
+                            <div class="text-center">
+                                <span class="text-muted">Đã có tài khoản?</span>
+                                <a href="@Url.Action("Login", "Account")" class="login-link">Đăng nhập</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Điều khoản sử dụng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Quyền và trách nhiệm</h6>
+                    <p>Người dùng cam kết sử dụng hệ thống đúng mục đích và tuân thủ các quy định của pháp luật.</p>
+                    
+                    <h6>2. Bảo mật thông tin</h6>
+                    <p>Chúng tôi cam kết bảo mật thông tin cá nhân của người dùng. Thông tin chỉ được sử dụng cho mục đích vận hành hệ thống.</p>
+                    
+                    <h6>3. Quyền sử dụng</h6>
+                    <p>Tài khoản đăng ký chỉ được sử dụng bởi chủ sở hữu. Không được chia sẻ thông tin đăng nhập cho người khác.</p>
+                    
+                    <h6>4. Chấm dứt dịch vụ</h6>
+                    <p>Chúng tôi có quyền tạm ngừng hoặc chấm dứt tài khoản nếu phát hiện vi phạm điều khoản sử dụng.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đã hiểu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePassword(inputId, toggleElement) {
+            var input = document.getElementById(inputId);
+            var icon = toggleElement.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Basic form validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            var password = document.getElementById('Password').value;
+            var confirmPassword = document.getElementById('ConfirmPassword').value;
+            var agreeTerms = document.getElementById('AgreeTerms').checked;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Mật khẩu xác nhận không khớp!');
+                return false;
+            }
+            
+            if (!agreeTerms) {
+                e.preventDefault();
+                alert('Bạn phải đồng ý với điều khoản sử dụng!');
+                return false;
+            }
+            
+            // Disable button to prevent double submit
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+            
+            return true;
+        });
+    </script>
+</body>
+</html>

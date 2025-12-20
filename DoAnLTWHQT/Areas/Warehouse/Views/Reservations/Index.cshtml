@@ -1,0 +1,39 @@
+@model IEnumerable<Ltwhqt.ViewModels.Warehouse.WarehouseReservationViewModel>
+@{
+    ViewBag.Title = "Sản phẩm đang giữ cho đơn";
+}
+
+<div class="mb-4">
+    <h2 class="h4 mb-1">Reserved items</h2>
+    <p class="text-secondary mb-0">Hỗ trợ quyết định nhập/xuất.</p>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Đơn</th>
+                    <th>Kênh</th>
+                    <th>Variant</th>
+                    <th>Số lượng giữ</th>
+                    <th>Trạng thái</th>
+                    <th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var res in Model)
+                {
+                    <tr>
+                        <td>@res.OrderCode</td>
+                        <td>@res.Channel</td>
+                        <td>@res.Variant</td>
+                        <td>@res.ReservedQuantity</td>
+                        <td><span class="badge bg-light text-dark text-uppercase">@res.Status</span></td>
+                        <td>@res.ReservedAt:dd/MM HH:mm</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

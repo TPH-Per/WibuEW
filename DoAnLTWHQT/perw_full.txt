@@ -1,0 +1,547 @@
+IF DB_ID('perw') IS NULL
+    CREATE DATABASE [perw];
+GO
+
+USE [perw];
+GO
+
+------------------------------------------------------------
+-- BẢNG CƠ BẢN
+------------------------------------------------------------
+
+CREATE TABLE [roles] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [name] NVARCHAR(50) NOT NULL,
+    [description] NVARCHAR(MAX) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_roles] PRIMARY KEY ([id])
+);
+
+CREATE TABLE [warehouses] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [name] NVARCHAR(100) NOT NULL,
+    [location] NVARCHAR(255) NOT NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_warehouses] PRIMARY KEY ([id])
+);
+
+CREATE TABLE [suppliers] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [name] NVARCHAR(100) NOT NULL,
+    [contact_info] NVARCHAR(MAX) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_suppliers] PRIMARY KEY ([id])
+);
+
+CREATE TABLE [categories] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [parent_id] BIGINT NULL,
+    [name] NVARCHAR(100) NOT NULL,
+    [slug] NVARCHAR(100) NOT NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_categories] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_categories_slug] UNIQUE ([slug])
+);
+
+CREATE TABLE [payment_methods] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [name] NVARCHAR(100) NOT NULL,
+    [code] NVARCHAR(50) NOT NULL,
+    [is_active] BIT NOT NULL DEFAULT (1),
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_payment_methods] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_payment_methods_name_code] UNIQUE ([name],[code])
+);
+
+CREATE TABLE [users] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [name] NVARCHAR(255) NOT NULL,
+    [full_name] NVARCHAR(255) NOT NULL,
+    [email] NVARCHAR(255) NOT NULL,
+    [email_verified_at] DATETIME2 NULL,
+    [password] NVARCHAR(255) NOT NULL,
+    [remember_token] NVARCHAR(100) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [role_id] BIGINT NOT NULL,
+    [warehouse_id] BIGINT NULL,
+    [phone_number] NVARCHAR(255) NULL,
+    [status] NVARCHAR(255) NOT NULL DEFAULT ('active'),
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_users] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_users_email] UNIQUE ([email])
+);
+
+CREATE TABLE [addresses] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [user_id] BIGINT NOT NULL,
+    [recipient_name] NVARCHAR(100) NOT NULL,
+    [recipient_phone] NVARCHAR(20) NOT NULL,
+    [street_address] NVARCHAR(255) NOT NULL,
+    [ward] NVARCHAR(100) NOT NULL,
+    [district] NVARCHAR(100) NOT NULL,
+    [city] NVARCHAR(100) NOT NULL,
+    [is_default] BIT NOT NULL DEFAULT (0),
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_addresses] PRIMARY KEY ([id])
+);
+
+------------------------------------------------------------
+-- SẢN PHẨM & BIẾN THỂ (MỖI VARIANT 1 ẢNH)
+------------------------------------------------------------
+
+CREATE TABLE [products] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [category_id] BIGINT NOT NULL,
+    [supplier_id] BIGINT NOT NULL,
+    [name] NVARCHAR(255) NOT NULL,
+    [description] NVARCHAR(MAX) NULL,
+    [slug] NVARCHAR(255) NOT NULL,
+    [status] NVARCHAR(20) NOT NULL DEFAULT ('draft'), -- draft/published/archived
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_products] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_products_slug] UNIQUE ([slug])
+);
+
+CREATE TABLE [product_variants] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [product_id] BIGINT NOT NULL,
+    [name] NVARCHAR(100) NOT NULL,
+    [sku] NVARCHAR(100) NOT NULL,
+    [price] DECIMAL(10,2) NOT NULL,
+    [original_price] DECIMAL(10,2) NULL,
+    [image_url] NVARCHAR(500) NULL,      -- mỗi variant 1 ảnh
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_product_variants] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_product_variants_sku] UNIQUE ([sku])
+);
+
+CREATE TABLE [product_reviews] (
+    [user_id] BIGINT NOT NULL,
+    [product_id] BIGINT NOT NULL,
+    [rating] TINYINT NOT NULL,
+    [comment] NVARCHAR(MAX) NULL,
+    [is_approved] BIT NOT NULL DEFAULT (0),
+    [status] NVARCHAR(255) NOT NULL DEFAULT ('pending'),
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL
+    -- Không có PK, giống bản gốc MySQL
+);
+
+------------------------------------------------------------
+-- GIỎ HÀNG: GỘP THÀNH 1 BẢNG
+------------------------------------------------------------
+
+CREATE TABLE [carts] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [user_id] BIGINT NOT NULL,
+    [product_variant_id] BIGINT NOT NULL,
+    [quantity] INT NOT NULL DEFAULT (1),
+    [price] DECIMAL(18,2) NOT NULL DEFAULT (0), -- giá tại thời điểm cho vào giỏ
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_carts] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_carts_user_variant_deleted] UNIQUE ([user_id],[product_variant_id],[deleted_at])
+);
+
+------------------------------------------------------------
+-- TỒN KHO KHO TRUNG TÂM
+------------------------------------------------------------
+
+CREATE TABLE [inventories] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [product_variant_id] BIGINT NOT NULL,
+    [warehouse_id] BIGINT NOT NULL,
+    [quantity_on_hand] INT NOT NULL DEFAULT (0),
+    [quantity_reserved] INT NOT NULL DEFAULT (0),
+    [reorder_level] INT NOT NULL DEFAULT (10),
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_inventories] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_inventories_variant_warehouse] UNIQUE ([product_variant_id],[warehouse_id])
+);
+
+------------------------------------------------------------
+-- MÃ GIẢM GIÁ
+------------------------------------------------------------
+
+CREATE TABLE [discounts] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [code] NVARCHAR(50) NOT NULL,          -- Mã giảm giá: SALE50, NEWUSER...
+    [type] NVARCHAR(20) NOT NULL,          -- 'fixed' hoặc 'percent'
+    [value] DECIMAL(10,2) NOT NULL,        -- 50.000 hoặc 10 (%)
+    [min_order_amount] DECIMAL(12,2) NULL, -- Đơn tối thiểu để áp dụng
+    [max_uses] INT NULL,                   -- Số lần dùng tối đa
+    [used_count] INT NOT NULL DEFAULT (0), -- Đã dùng bao nhiêu lần
+    [start_at] DATETIME2 NULL,             -- Ngày bắt đầu
+    [end_at] DATETIME2 NULL,               -- Ngày hết hạn
+    [is_active] BIT NOT NULL DEFAULT (1),
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    CONSTRAINT [PK_discounts] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_discounts_code] UNIQUE ([code])
+);
+
+------------------------------------------------------------
+-- ĐƠN HÀNG, CHI TIẾT ĐƠN, GIAO DỊCH KHO, THANH TOÁN
+------------------------------------------------------------
+
+CREATE TABLE [purchase_orders] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [user_id] BIGINT NULL,
+    [order_code] NVARCHAR(50) NOT NULL,
+    [status] NVARCHAR(20) NOT NULL DEFAULT ('pending'), -- pending/processing/shipped/delivered/cancelled/...
+    [shipping_recipient_name] NVARCHAR(100) NULL,
+    [shipping_recipient_phone] NVARCHAR(20) NULL,
+    [shipping_address] NVARCHAR(MAX) NULL,
+    [sub_total] DECIMAL(12,2) NOT NULL,
+    [shipping_fee] DECIMAL(12,2) NOT NULL,
+    [discount_amount] DECIMAL(12,2) NOT NULL DEFAULT (0.00),
+    [total_amount] DECIMAL(12,2) NOT NULL,
+    [discount_id] BIGINT NULL,                       -- FK sang discounts
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_purchase_orders] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_purchase_orders_order_code] UNIQUE ([order_code])
+);
+
+CREATE TABLE [purchase_order_details] (
+    [order_id] BIGINT NOT NULL,
+    [product_variant_id] BIGINT NOT NULL,
+    [quantity] INT NOT NULL,
+    [price_at_purchase] DECIMAL(10,2) NOT NULL,
+    [subtotal] DECIMAL(10,2) NOT NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_purchase_order_details] PRIMARY KEY ([order_id],[product_variant_id])
+);
+
+CREATE TABLE [inventory_transactions] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [product_variant_id] BIGINT NOT NULL,
+    [warehouse_id] BIGINT NOT NULL,
+    [order_id] BIGINT NULL,
+    [quantity] INT NOT NULL,
+    [type] NVARCHAR(20) NOT NULL, -- inbound/outbound/adjustment
+    [notes] NVARCHAR(MAX) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_inventory_transactions] PRIMARY KEY ([id])
+);
+
+CREATE TABLE [payments] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [order_id] BIGINT NOT NULL,
+    [payment_method_id] BIGINT NOT NULL,
+    [amount] DECIMAL(12,2) NOT NULL,
+    [status] NVARCHAR(20) NOT NULL DEFAULT ('pending'), -- pending/completed/failed/refunded
+    [transaction_code] NVARCHAR(100) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    [deleted_at] DATETIME2 NULL,
+    CONSTRAINT [PK_payments] PRIMARY KEY ([id])
+);
+
+------------------------------------------------------------
+-- PHẦN MỞ RỘNG: CHI NHÁNH & LUỒNG NHẬP/XUẤT
+-- Supplier -> Warehouse -> Branch -> Client
+------------------------------------------------------------
+
+CREATE TABLE [branches] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [name] NVARCHAR(200) NOT NULL,
+    [warehouse_id] BIGINT NULL,
+    [location] NVARCHAR(255) NULL,
+    [manager_user_id] BIGINT NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    CONSTRAINT [PK_branches] PRIMARY KEY ([id])
+);
+
+CREATE TABLE [supplier_shipments] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [supplier_id] BIGINT NOT NULL,
+    [warehouse_id] BIGINT NOT NULL,
+    [product_variant_id] BIGINT NOT NULL,
+    [quantity] INT NOT NULL DEFAULT (0),
+    [received_at] DATETIME2 NULL,
+    [status] NVARCHAR(50) NOT NULL DEFAULT ('received'), -- received/pending/cancelled
+    [notes] NVARCHAR(MAX) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    CONSTRAINT [PK_supplier_shipments] PRIMARY KEY ([id])
+);
+
+CREATE TABLE [warehouse_transfers] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [from_warehouse_id] BIGINT NOT NULL,
+    [to_branch_id] BIGINT NOT NULL,
+    [product_variant_id] BIGINT NOT NULL,
+    [quantity] INT NOT NULL DEFAULT (0),
+    [transfer_date] DATETIME2 NULL,
+    [status] NVARCHAR(50) NOT NULL DEFAULT ('transferred'), -- pending/transferred/received/cancelled
+    [notes] NVARCHAR(MAX) NULL,
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    CONSTRAINT [PK_warehouse_transfers] PRIMARY KEY ([id])
+);
+
+CREATE TABLE [branch_inventories] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [branch_id] BIGINT NOT NULL,
+    [product_variant_id] BIGINT NOT NULL,
+    [quantity_on_hand] INT NOT NULL DEFAULT (0),
+    [quantity_reserved] INT NOT NULL DEFAULT (0),
+    [reorder_level] INT NOT NULL DEFAULT (5),
+    [created_at] DATETIME2 NULL,
+    [updated_at] DATETIME2 NULL,
+    CONSTRAINT [PK_branch_inventories] PRIMARY KEY ([id]),
+    CONSTRAINT [UQ_branch_inventories_branch_variant] UNIQUE ([branch_id],[product_variant_id])
+);
+GO
+
+------------------------------------------------------------
+-- FOREIGN KEYS
+------------------------------------------------------------
+
+ALTER TABLE [users]
+    ADD CONSTRAINT [FK_users_roles]
+        FOREIGN KEY ([role_id]) REFERENCES [roles]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [users]
+    ADD CONSTRAINT [FK_users_warehouses]
+        FOREIGN KEY ([warehouse_id]) REFERENCES [warehouses]([id]) ON DELETE SET NULL;
+
+ALTER TABLE [addresses]
+    ADD CONSTRAINT [FK_addresses_users]
+        FOREIGN KEY ([user_id]) REFERENCES [users]([id]) ON DELETE CASCADE;
+
+-- SELF-FK: KHÔNG DÙNG ON DELETE / ON UPDATE ĐỂ TRÁNH LỖI 1785
+ALTER TABLE [categories]
+    ADD CONSTRAINT [FK_categories_parent]
+        FOREIGN KEY ([parent_id]) REFERENCES [categories]([id]);
+GO
+
+ALTER TABLE [products]
+    ADD CONSTRAINT [FK_products_categories]
+        FOREIGN KEY ([category_id]) REFERENCES [categories]([id]);
+
+ALTER TABLE [products]
+    ADD CONSTRAINT [FK_products_suppliers]
+        FOREIGN KEY ([supplier_id]) REFERENCES [suppliers]([id]);
+
+ALTER TABLE [product_variants]
+    ADD CONSTRAINT [FK_product_variants_products]
+        FOREIGN KEY ([product_id]) REFERENCES [products]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [product_reviews]
+    ADD CONSTRAINT [FK_product_reviews_users]
+        FOREIGN KEY ([user_id]) REFERENCES [users]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [product_reviews]
+    ADD CONSTRAINT [FK_product_reviews_products]
+        FOREIGN KEY ([product_id]) REFERENCES [products]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [carts]
+    ADD CONSTRAINT [FK_carts_users]
+        FOREIGN KEY ([user_id]) REFERENCES [users]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [carts]
+    ADD CONSTRAINT [FK_carts_product_variants]
+        FOREIGN KEY ([product_variant_id]) REFERENCES [product_variants]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [inventories]
+    ADD CONSTRAINT [FK_inventories_product_variants]
+        FOREIGN KEY ([product_variant_id]) REFERENCES [product_variants]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [inventories]
+    ADD CONSTRAINT [FK_inventories_warehouses]
+        FOREIGN KEY ([warehouse_id]) REFERENCES [warehouses]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [purchase_orders]
+    ADD CONSTRAINT [FK_purchase_orders_users]
+        FOREIGN KEY ([user_id]) REFERENCES [users]([id]);
+
+ALTER TABLE [purchase_orders]
+    ADD CONSTRAINT [FK_purchase_orders_discounts]
+        FOREIGN KEY ([discount_id]) REFERENCES [discounts]([id]);
+
+ALTER TABLE [purchase_order_details]
+    ADD CONSTRAINT [FK_purchase_order_details_purchase_orders]
+        FOREIGN KEY ([order_id]) REFERENCES [purchase_orders]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [purchase_order_details]
+    ADD CONSTRAINT [FK_purchase_order_details_product_variants]
+        FOREIGN KEY ([product_variant_id]) REFERENCES [product_variants]([id]);
+
+ALTER TABLE [inventory_transactions]
+    ADD CONSTRAINT [FK_inventory_transactions_product_variants]
+        FOREIGN KEY ([product_variant_id]) REFERENCES [product_variants]([id]);
+
+ALTER TABLE [inventory_transactions]
+    ADD CONSTRAINT [FK_inventory_transactions_warehouses]
+        FOREIGN KEY ([warehouse_id]) REFERENCES [warehouses]([id]);
+
+ALTER TABLE [inventory_transactions]
+    ADD CONSTRAINT [FK_inventory_transactions_purchase_orders]
+        FOREIGN KEY ([order_id]) REFERENCES [purchase_orders]([id]) ON DELETE SET NULL;
+
+ALTER TABLE [payments]
+    ADD CONSTRAINT [FK_payments_purchase_orders]
+        FOREIGN KEY ([order_id]) REFERENCES [purchase_orders]([id]) ON DELETE CASCADE;
+
+ALTER TABLE [payments]
+    ADD CONSTRAINT [FK_payments_payment_methods]
+        FOREIGN KEY ([payment_method_id]) REFERENCES [payment_methods]([id]);
+
+-- branches
+ALTER TABLE [branches]
+    ADD CONSTRAINT [FK_branches_warehouses]
+        FOREIGN KEY ([warehouse_id]) REFERENCES [warehouses]([id]);
+
+ALTER TABLE [branches]
+    ADD CONSTRAINT [FK_branches_users_manager]
+        FOREIGN KEY ([manager_user_id]) REFERENCES [users]([id]);
+
+-- supplier_shipments
+ALTER TABLE [supplier_shipments]
+    ADD CONSTRAINT [FK_supplier_shipments_suppliers]
+        FOREIGN KEY ([supplier_id]) REFERENCES [suppliers]([id]);
+
+ALTER TABLE [supplier_shipments]
+    ADD CONSTRAINT [FK_supplier_shipments_warehouses]
+        FOREIGN KEY ([warehouse_id]) REFERENCES [warehouses]([id]);
+
+ALTER TABLE [supplier_shipments]
+    ADD CONSTRAINT [FK_supplier_shipments_product_variants]
+        FOREIGN KEY ([product_variant_id]) REFERENCES [product_variants]([id]);
+
+-- warehouse_transfers
+ALTER TABLE [warehouse_transfers]
+    ADD CONSTRAINT [FK_warehouse_transfers_from_warehouses]
+        FOREIGN KEY ([from_warehouse_id]) REFERENCES [warehouses]([id]);
+
+ALTER TABLE [warehouse_transfers]
+    ADD CONSTRAINT [FK_warehouse_transfers_to_branches]
+        FOREIGN KEY ([to_branch_id]) REFERENCES [branches]([id]);
+
+ALTER TABLE [warehouse_transfers]
+    ADD CONSTRAINT [FK_warehouse_transfers_product_variants]
+        FOREIGN KEY ([product_variant_id]) REFERENCES [product_variants]([id]);
+
+-- branch_inventories
+ALTER TABLE [branch_inventories]
+    ADD CONSTRAINT [FK_branch_inventories_branches]
+        FOREIGN KEY ([branch_id]) REFERENCES [branches]([id]);
+
+ALTER TABLE [branch_inventories]
+    ADD CONSTRAINT [FK_branch_inventories_product_variants]
+        FOREIGN KEY ([product_variant_id]) REFERENCES [product_variants]([id]);
+GO
+
+------------------------------------------------------------
+-- INDEXES (NON-UNIQUE)
+------------------------------------------------------------
+
+CREATE INDEX [IX_addresses_user_id] ON [addresses]([user_id]);
+
+CREATE INDEX [IX_categories_parent_id] ON [categories]([parent_id]);
+
+CREATE INDEX [IX_products_category_id] ON [products]([category_id]);
+CREATE INDEX [IX_products_supplier_id] ON [products]([supplier_id]);
+
+CREATE INDEX [IX_product_variants_product_id] ON [product_variants]([product_id]);
+
+CREATE INDEX [IX_product_reviews_user_id] ON [product_reviews]([user_id]);
+CREATE INDEX [IX_product_reviews_product_id] ON [product_reviews]([product_id]);
+
+CREATE INDEX [IX_carts_user_id] ON [carts]([user_id]);
+CREATE INDEX [IX_carts_product_variant_id] ON [carts]([product_variant_id]);
+
+CREATE INDEX [IX_inventories_product_variant_id] ON [inventories]([product_variant_id]);
+CREATE INDEX [IX_inventories_warehouse_id] ON [inventories]([warehouse_id]);
+
+CREATE INDEX [IX_purchase_orders_user_id] ON [purchase_orders]([user_id]);
+CREATE INDEX [IX_purchase_orders_discount_id] ON [purchase_orders]([discount_id]);
+
+CREATE INDEX [IX_purchase_order_details_product_variant_id] ON [purchase_order_details]([product_variant_id]);
+
+CREATE INDEX [IX_inventory_transactions_product_variant_id] ON [inventory_transactions]([product_variant_id]);
+CREATE INDEX [IX_inventory_transactions_warehouse_id] ON [inventory_transactions]([warehouse_id]);
+CREATE INDEX [IX_inventory_transactions_order_id] ON [inventory_transactions]([order_id]);
+
+CREATE INDEX [IX_payments_order_id] ON [payments]([order_id]);
+CREATE INDEX [IX_payments_payment_method_id] ON [payments]([payment_method_id]);
+
+CREATE INDEX [IX_users_role_id] ON [users]([role_id]);
+CREATE INDEX [IX_users_warehouse_id] ON [users]([warehouse_id]);
+
+-- branches
+CREATE INDEX [IX_branches_warehouse_id] ON [branches]([warehouse_id]);
+CREATE INDEX [IX_branches_manager_user_id] ON [branches]([manager_user_id]);
+
+-- supplier_shipments
+CREATE INDEX [IX_supplier_shipments_supplier_id] ON [supplier_shipments]([supplier_id]);
+CREATE INDEX [IX_supplier_shipments_warehouse_id] ON [supplier_shipments]([warehouse_id]);
+CREATE INDEX [IX_supplier_shipments_product_variant_id] ON [supplier_shipments]([product_variant_id]);
+
+-- warehouse_transfers
+CREATE INDEX [IX_warehouse_transfers_from_warehouse_id] ON [warehouse_transfers]([from_warehouse_id]);
+CREATE INDEX [IX_warehouse_transfers_to_branch_id] ON [warehouse_transfers]([to_branch_id]);
+CREATE INDEX [IX_warehouse_transfers_product_variant_id] ON [warehouse_transfers]([product_variant_id]);
+
+-- branch_inventories
+CREATE INDEX [IX_branch_inventories_branch_id] ON [branch_inventories]([branch_id]);
+CREATE INDEX [IX_branch_inventories_product_variant_id] ON [branch_inventories]([product_variant_id]);
+GO
+
+------------------------------------------------------------
+-- THÊM CÁC ROLE MẶC ĐỊNH
+------------------------------------------------------------
+
+IF NOT EXISTS (SELECT 1 FROM [roles] WHERE [name] = 'admin')
+BEGIN
+    INSERT INTO [roles] ([name], [description], [created_at])
+    VALUES ('admin', N'admin', GETDATE());
+END;
+
+IF NOT EXISTS (SELECT 1 FROM [roles] WHERE [name] = 'warehouse_manager')
+BEGIN
+    INSERT INTO [roles] ([name], [description], [created_at])
+    VALUES ('warehouse_manager', N'Người quản lý kho', GETDATE());
+END;
+
+IF NOT EXISTS (SELECT 1 FROM [roles] WHERE [name] = 'branch_manager')
+BEGIN
+    INSERT INTO [roles] ([name], [description], [created_at])
+    VALUES ('branch_manager', N'Người quản lý chi nhánh', GETDATE());
+END;
+
+IF NOT EXISTS (SELECT 1 FROM [roles] WHERE [name] = 'client')
+BEGIN
+    INSERT INTO [roles] ([name], [description], [created_at])
+    VALUES ('client', N'Khách hàng cuối', GETDATE());
+END;
+GO

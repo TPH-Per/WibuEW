@@ -1,0 +1,36 @@
+@model Ltwhqt.ViewModels.Admin.SupplierFormViewModel
+@{
+    ViewBag.Title = ViewBag.Title ?? "Nhà cung cấp";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">@ViewBag.Title</h2>
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+        
+        @using (Html.BeginForm(Model.Id.HasValue ? "Edit" : "Create", "Suppliers", FormMethod.Post, new { @class = "needs-validation" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+            
+            <div class="mb-3">
+                <label class="form-label">Tên <span class="text-danger">*</span></label>
+                @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Tên nhà cung cấp", required = "required" })
+                @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Thông tin liên hệ</label>
+                @Html.TextAreaFor(m => m.ContactInfo, new { @class = "form-control", rows = "4", placeholder = "Email, SĐT, địa chỉ..." })
+                @Html.ValidationMessageFor(m => m.ContactInfo, "", new { @class = "text-danger" })
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+                <button class="btn btn-primary" type="submit">Lưu</button>
+            </div>
+        }
+    </div>
+</div>

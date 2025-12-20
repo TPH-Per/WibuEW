@@ -1,0 +1,42 @@
+@model Ltwhqt.ViewModels.Warehouse.WarehouseDashboardViewModel
+@{
+    ViewBag.Title = $"Kho {Model.WarehouseName}";
+    ViewBag.Breadcrumb = "Warehouse Manager › Dashboard";
+}
+@section Styles {
+    <link href="@Url.Content("~/wwwroot/css/areas/warehouse-dashboard.css")" rel="stylesheet" />
+}
+
+@Html.Partial("~/Views/Components/_StatisticCards.cshtml", Model.Statistics)
+
+<div class="card border-0 shadow-sm mt-4 warehouse-transaction-table">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Giao dịch gần đây</h5>
+        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","Transactions", new { area = "Warehouse" })">Xem tất cả</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>SKU</th>
+                    <th>Loại</th>
+                    <th>Số lượng</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var txn in Model.RecentTransactions)
+                {
+                    <tr>
+                        <td>@txn.HappenedAt.ToString("dd/MM HH:mm")</td>
+                        <td>@txn.Variant</td>
+                        <td><span class="badge bg-light text-dark text-uppercase">@txn.Type</span></td>
+                        <td>@txn.Quantity</td>
+                        <td>@txn.Reference</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

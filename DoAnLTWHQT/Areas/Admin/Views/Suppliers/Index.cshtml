@@ -1,0 +1,77 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.SupplierViewModel>
+@{
+    ViewBag.Title = "Nhà cung cấp";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Danh sách nhà cung cấp</h2>
+        <p class="text-secondary mb-0">Quản lý thông tin liên hệ.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="bi bi-plus-lg me-2"></i>Thêm nhà cung cấp
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tên</th>
+                    <th>Liên hệ</th>
+                    <th>Ngày tạo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var supplier in Model)
+                    {
+                        <tr>
+                            <td>@supplier.Id</td>
+                            <td class="fw-semibold">@supplier.Name</td>
+                            <td>@supplier.ContactInfo</td>
+                            <td>@supplier.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-light" href="@Url.Action("Edit", new { id = supplier.Id })">Sửa</a>
+                                @using (Html.BeginForm("Delete", "Suppliers", new { id = supplier.Id }, FormMethod.Post, new { style = "display:inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa nhà cung cấp này?')">Xóa</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Chưa có nhà cung cấp nào. <a href="@Url.Action("Create")">Thêm nhà cung cấp đầu tiên</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

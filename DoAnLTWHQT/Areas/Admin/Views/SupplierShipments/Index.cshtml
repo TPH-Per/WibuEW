@@ -1,0 +1,63 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.SupplierShipmentViewModel>
+@{
+    ViewBag.Title = "Phiếu nhập NCC";
+    var statusFilter = ViewBag.StatusFilter as string ?? "all";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Nhập kho từ nhà cung cấp</h2>
+        <p class="text-secondary mb-0">Theo dõi trạng thái và cập nhật tồn kho.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="bi bi-plus-lg me-2"></i>Tạo phiếu nhập
+    </a>
+</div>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-select" name="status" onchange="this.form.submit()">
+            <option value="all" @(statusFilter == "all" ? "selected" : null)>Tất cả</option>
+            <option value="pending" @(statusFilter == "pending" ? "selected" : null)>Pending</option>
+            <option value="quality_check" @(statusFilter == "quality_check" ? "selected" : null)>Quality check</option>
+            <option value="received" @(statusFilter == "received" ? "selected" : null)>Đã nhập</option>
+        </select>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Kho</th>
+                    <th>Variant</th>
+                    <th>Số lượng</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày nhập</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var shipment in Model)
+                {
+                    <tr>
+                        <td>#@shipment.Id</td>
+                        <td>@shipment.Supplier</td>
+                        <td>@shipment.Warehouse</td>
+                        <td>@shipment.Variant</td>
+                        <td>@shipment.Quantity</td>
+                        <td><span class="badge bg-light text-dark text-uppercase">@shipment.Status</span></td>
+                        <td>@shipment.ReceivedAt:dd/MM HH:mm</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Details", new { id = shipment.Id })">Chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

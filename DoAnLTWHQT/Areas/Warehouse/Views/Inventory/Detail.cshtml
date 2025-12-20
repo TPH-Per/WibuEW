@@ -1,0 +1,89 @@
+@model Ltwhqt.ViewModels.Warehouse.WarehouseInventoryDetailViewModel
+@{
+    ViewBag.Title = "Chi tiết tồn kho";
+}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h5 mb-1">@Model.Summary.ProductName</h2>
+        <p class="text-secondary mb-0">Variant: @Model.Summary.VariantName • SKU: @Model.Summary.Sku</p>
+        <div class="d-flex gap-4 mt-3">
+            <div>
+                <span class="text-secondary small">On hand</span>
+                <div class="h4 mb-0">@Model.Summary.QuantityOnHand</div>
+            </div>
+            <div>
+                <span class="text-secondary small">Reserved</span>
+                <div class="h4 mb-0">@Model.Summary.QuantityReserved</div>
+            </div>
+            <div>
+                <span class="text-secondary small">Reorder level</span>
+                <div class="h4 mb-0">@Model.Summary.ReorderLevel</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h3 class="h6 mb-0">Giao dịch gần đây</h3>
+                <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Index", "Transactions", new { area = "Warehouse" })">Xem tất cả</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Loại</th>
+                            <th>Số lượng</th>
+                            <th>Tham chiếu</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var txn in Model.Transactions)
+                        {
+                            <tr>
+                                <td><span class="badge bg-light text-dark text-uppercase">@txn.Type</span></td>
+                                <td>@txn.Quantity</td>
+                                <td>@txn.Reference</td>
+                                <td>@txn.OccurredAt:dd/MM HH:mm</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h3 class="h6 mb-0">Đang giữ cho đơn hàng</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Đơn</th>
+                            <th>Kênh</th>
+                            <th>SL</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var res in Model.Reservations)
+                        {
+                            <tr>
+                                <td>@res.OrderCode</td>
+                                <td>@res.Channel</td>
+                                <td>@res.ReservedQuantity</td>
+                                <td><span class="badge bg-light text-dark text-uppercase">@res.Status</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
