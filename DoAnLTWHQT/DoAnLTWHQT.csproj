@@ -212,7 +212,11 @@
     <Compile Include="category.cs">
       <DependentUpon>Perw.tt</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\ApiAuthControllerController.cs" />
+    <Compile Include="Controllers\ApiAuthController.cs" />
+    <Compile Include="Controllers\ApiBranchesController.cs" />
+    <Compile Include="Controllers\ApiCategoriesController.cs" />
+    <Compile Include="Controllers\ApiProductsController.cs" />
+    <Compile Include="Controllers\ApiSuppliersController.cs" />
     <Compile Include="discount.cs">
       <DependentUpon>Perw.tt</DependentUpon>
     </Compile>
@@ -462,6 +466,10 @@
     <Folder Include="Areas\Warehouse\Data\" />
     <Folder Include="Areas\Warehouse\Views\Shared\" />
     <Folder Include="Views\ApiAuthController\" />
+    <Folder Include="Views\ApiBranches\" />
+    <Folder Include="Views\ApiCategories\" />
+    <Folder Include="Views\ApiProducts\" />
+    <Folder Include="Views\ApiSuppliers\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
