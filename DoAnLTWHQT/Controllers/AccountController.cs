@@ -1,5 +1,6 @@
+using DoAnLTWHQT.Security;
+using Ltwhqt.ViewModels.Admin;
 using System;
-using System.Configuration;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
@@ -7,8 +8,6 @@ using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
 using System.Web.Security;
-using DoAnLTWHQT.Security;
-using Ltwhqt.ViewModels.Admin;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace DoAnLTWHQT.Controllers
@@ -24,13 +23,13 @@ namespace DoAnLTWHQT.Controllers
         public ActionResult Login(string logout = null)
         {
             System.Diagnostics.Debug.WriteLine("========== LOGIN GET CALLED ==========");
-            
+
             // Check for success message from registration
             if (TempData["SuccessMessage"] != null)
             {
                 ViewBag.SuccessMessage = TempData["SuccessMessage"].ToString();
             }
-            
+
             if (!string.IsNullOrEmpty(logout))
             {
                 System.Diagnostics.Debug.WriteLine("Logout flag detected - clearing auth state before showing login page.");
@@ -45,7 +44,7 @@ namespace DoAnLTWHQT.Controllers
             {
                 var customPrincipal = User as CustomPrincipal;
                 // Lấy role từ principal, nếu không có thì mặc định là "admin" để an toàn
-                var role = customPrincipal?.Role ?? "admin"; 
+                var role = customPrincipal?.Role ?? "admin";
                 return RedirectToDashboard(role);
             }
 
@@ -179,11 +178,11 @@ namespace DoAnLTWHQT.Controllers
         {
             // Sign out and clear all authentication data
             ClearAuthenticationData();
-        
+
             // Redirect to login page with logout parameter
             return RedirectToAction("Login", new { logout = "success" });
         }
-        
+
         // POST: /Account/Logout
         [HttpPost]
         [Authorize]
@@ -193,7 +192,7 @@ namespace DoAnLTWHQT.Controllers
         {
             // Sign out and clear all authentication data
             ClearAuthenticationData();
-        
+
             // Redirect to login page with logout parameter
             return RedirectToAction("Login", new { logout = "success" });
         }
@@ -205,7 +204,7 @@ namespace DoAnLTWHQT.Controllers
         public ActionResult Register()
         {
             System.Diagnostics.Debug.WriteLine("========== REGISTER GET CALLED ==========");
-            
+
             // If already logged in, redirect to dashboard
             if (User?.Identity?.IsAuthenticated == true)
             {
@@ -256,15 +255,15 @@ namespace DoAnLTWHQT.Controllers
                 try
                 {
                     System.Diagnostics.Debug.WriteLine($"Creating SQL User: {normalizedUsername}");
-                    
+
                     // Get plain connection string from Web.config (not Entity Framework format)
                     var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["PerwDbContext"]?.ConnectionString;
-                    
+
                     if (string.IsNullOrEmpty(connectionString))
                     {
                         throw new Exception("Connection string 'PerwDbContext' not found in Web.config");
                     }
-                    
+
                     using (var connection = new SqlConnection(connectionString))
                     {
                         connection.Open();
@@ -274,11 +273,11 @@ namespace DoAnLTWHQT.Controllers
                             command.Parameters.AddWithValue("@Username", normalizedUsername);
                             command.Parameters.AddWithValue("@Password", model.Password); // Plain password for SQL login
                             command.Parameters.AddWithValue("@RoleType", "Customer"); // Default role for web registration
-                            
+
                             command.ExecuteNonQuery();
                         }
                     }
-                    
+
                     System.Diagnostics.Debug.WriteLine($"SQL User created successfully: {normalizedUsername}");
                 }
                 catch (SqlException sqlEx)
@@ -391,7 +390,7 @@ namespace DoAnLTWHQT.Controllers
                 {
                     result.AppendLine("Admin test account NOT FOUND in database");
                 }
-                
+
                 var warehouseUser = _db.users.FirstOrDefault(u => u.email.ToLower() == "warehouse@test.local");
                 if (warehouseUser != null)
                 {
@@ -404,7 +403,7 @@ namespace DoAnLTWHQT.Controllers
                 {
                     result.AppendLine("\nWarehouse manager test account NOT FOUND in database");
                 }
-                
+
                 var branchUser = _db.users.FirstOrDefault(u => u.email.ToLower() == "branch@test.local");
                 if (branchUser != null)
                 {
@@ -417,12 +416,12 @@ namespace DoAnLTWHQT.Controllers
                 {
                     result.AppendLine("\nBranch manager test account NOT FOUND in database");
                 }
-                
+
                 result.AppendLine("\n--- Role Check ---");
                 var adminRole = _db.roles.FirstOrDefault(r => r.name == "admin");
                 var warehouseRole = _db.roles.FirstOrDefault(r => r.name == "warehouse_manager");
                 var branchRole = _db.roles.FirstOrDefault(r => r.name == "branch_manager");
-                
+
                 result.AppendLine($"Admin Role: {(adminRole != null ? adminRole.name : "NOT FOUND")}");
                 result.AppendLine($"Warehouse Manager Role: {(warehouseRole != null ? warehouseRole.name : "NOT FOUND")}");
                 result.AppendLine($"Branch Manager Role: {(branchRole != null ? branchRole.name : "NOT FOUND")}");

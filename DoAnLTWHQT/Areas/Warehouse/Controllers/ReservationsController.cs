@@ -1,6 +1,6 @@
+using Ltwhqt.ViewModels.Warehouse;
 using System.Collections.Generic;
 using System.Web.Mvc;
-using Ltwhqt.ViewModels.Warehouse;
 
 namespace DoAnLTWHQT.Areas.Warehouse.Controllers
 {

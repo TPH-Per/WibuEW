@@ -1,9 +1,9 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
-using Newtonsoft.Json;
 
 namespace DoAnLTWHQT.Areas.Warehouse.Controllers
 {
@@ -26,7 +26,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
 
             var transfers = query.ToList();
             ViewBag.StatusFilter = status;
-            
+
             return View(transfers);
         }
 
@@ -36,7 +36,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
             ViewBag.Warehouses = GetWarehouseOptions();
             ViewBag.Branches = GetBranchOptions();
             ViewBag.ProductVariants = GetProductVariantOptions();
-            
+
             return View();
         }
 
@@ -54,7 +54,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                 }
 
                 var details = JsonConvert.DeserializeObject<List<TransferDetailItem>>(detailsJson);
-                
+
                 if (details == null || !details.Any())
                 {
                     TempData["Error"] = "Dữ liệu sản phẩm không hợp lệ.";
@@ -88,7 +88,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                         created_at = DateTime.Now,
                         updated_at = DateTime.Now
                     };
-                    
+
                     db.warehouse_transfer_details.Add(detail);
                 }
 
@@ -129,7 +129,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
             try
             {
                 var transfer = db.warehouse_transfers.Find(id);
-                
+
                 if (transfer == null)
                 {
                     return Json(new { success = false, message = "Không tìm thấy phiếu chuyển kho." });
@@ -142,31 +142,34 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                     { "shipping", new List<string> { "completed", "returned" } }
                 };
 
-                if (!validTransitions.ContainsKey(transfer.status) || 
+                if (!validTransitions.ContainsKey(transfer.status) ||
                     !validTransitions[transfer.status].Contains(newStatus))
                 {
-                    return Json(new { 
-                        success = false, 
-                        message = $"Không thể chuyển từ {transfer.status} sang {newStatus}." 
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Không thể chuyển từ {transfer.status} sang {newStatus}."
                     });
                 }
 
                 // Cập nhật status - Triggers sẽ tự động chạy
                 transfer.status = newStatus;
                 transfer.updated_at = DateTime.Now;
-                
+
                 db.SaveChanges();
 
-                return Json(new { 
-                    success = true, 
-                    message = $"Đã cập nhật trạng thái thành {newStatus}." 
+                return Json(new
+                {
+                    success = true,
+                    message = $"Đã cập nhật trạng thái thành {newStatus}."
                 });
             }
             catch (Exception ex)
             {
-                return Json(new { 
-                    success = false, 
-                    message = "Lỗi: " + ex.Message 
+                return Json(new
+                {
+                    success = false,
+                    message = "Lỗi: " + ex.Message
                 });
             }
         }
@@ -184,23 +187,23 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                     new System.Data.SqlClient.SqlParameter("@AutoComplete", autoComplete)
                 );
 
-                var message = autoComplete 
-                    ? "✅ Giao hàng thành công! Hàng đã đến chi nhánh." 
+                var message = autoComplete
+                    ? "✅ Giao hàng thành công! Hàng đã đến chi nhánh."
                     : "📦 Đã xuất hàng! Phiếu đang trên đường giao.";
 
                 return Json(new { success = true, message = message });
             }
             catch (System.Data.Entity.Infrastructure.DbUpdateException dbEx)
             {
-                var innerMsg = dbEx.InnerException?.InnerException?.Message 
-                    ?? dbEx.InnerException?.Message 
+                var innerMsg = dbEx.InnerException?.InnerException?.Message
+                    ?? dbEx.InnerException?.Message
                     ?? dbEx.Message;
                 return Json(new { success = false, message = "DB Error: " + innerMsg });
             }
             catch (Exception ex)
             {
-                var msg = ex.InnerException?.InnerException?.Message 
-                    ?? ex.InnerException?.Message 
+                var msg = ex.InnerException?.InnerException?.Message
+                    ?? ex.InnerException?.Message
                     ?? ex.Message;
                 return Json(new { success = false, message = "Lỗi: " + msg });
             }
@@ -211,12 +214,13 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
         public JsonResult CheckInventory(long warehouseId, long variantId)
         {
             var inventory = db.inventories
-                .FirstOrDefault(i => i.warehouse_id == warehouseId 
+                .FirstOrDefault(i => i.warehouse_id == warehouseId
                     && i.product_variant_id == variantId);
 
             var available = inventory?.quantity_on_hand ?? 0;
 
-            return Json(new { 
+            return Json(new
+            {
                 available = available,
                 productName = inventory?.product_variants?.name ?? "N/A"
             }, JsonRequestBehavior.AllowGet);

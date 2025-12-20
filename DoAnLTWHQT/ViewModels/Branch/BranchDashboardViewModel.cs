@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using Ltwhqt.ViewModels.Admin;
 using Ltwhqt.ViewModels.Shared;
+using System.Collections.Generic;
 
 namespace Ltwhqt.ViewModels.Branch
 {

@@ -1,11 +1,11 @@
+using Ltwhqt.ViewModels.Admin;
+using Ltwhqt.ViewModels.Shared;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web.Mvc;
-using Ltwhqt.ViewModels.Admin;
-using Ltwhqt.ViewModels.Shared;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace DoAnLTWHQT.Areas.Admin.Controllers

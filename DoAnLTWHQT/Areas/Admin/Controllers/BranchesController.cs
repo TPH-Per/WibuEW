@@ -1,8 +1,8 @@
+using Ltwhqt.ViewModels.Admin;
+using Ltwhqt.ViewModels.Shared;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
-using Ltwhqt.ViewModels.Admin;
-using Ltwhqt.ViewModels.Shared;
 
 namespace DoAnLTWHQT.Areas.Admin.Controllers
 {

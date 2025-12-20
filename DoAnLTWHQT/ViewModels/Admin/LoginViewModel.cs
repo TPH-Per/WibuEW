@@ -1,6 +1,6 @@
+using Ltwhqt.ViewModels.Shared;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Ltwhqt.ViewModels.Shared;
 
 namespace Ltwhqt.ViewModels.Admin
 {

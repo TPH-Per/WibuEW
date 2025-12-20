@@ -2,17 +2,17 @@ using System.Web.Mvc;
 
 namespace DoAnLTWHQT.Areas.Branch
 {
-    public class BranchAreaRegistration : AreaRegistration 
+    public class BranchAreaRegistration : AreaRegistration
     {
-        public override string AreaName 
+        public override string AreaName
         {
-            get 
+            get
             {
                 return "Branch";
             }
         }
 
-        public override void RegisterArea(AreaRegistrationContext context) 
+        public override void RegisterArea(AreaRegistrationContext context)
         {
             context.MapRoute(
                 "Branch_default",

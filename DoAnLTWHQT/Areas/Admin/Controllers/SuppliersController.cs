@@ -1,9 +1,8 @@
+using Ltwhqt.ViewModels.Admin;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
-using Ltwhqt.ViewModels.Admin;
 
 namespace DoAnLTWHQT.Areas.Admin.Controllers
 {
@@ -143,7 +142,7 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
 
                 // Cascade soft-delete: Supplier → Products → Variants
                 var now = DateTime.UtcNow;
-                
+
                 // Get all products of this supplier
                 var products = _db.products
                     .Include(p => p.product_variants)
@@ -154,7 +153,7 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 foreach (var product in products)
                 {
                     product.deleted_at = now;
-                    
+
                     // Soft delete all variants of this product
                     foreach (var variant in product.product_variants.Where(v => v.deleted_at == null))
                     {

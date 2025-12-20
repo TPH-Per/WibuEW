@@ -19,13 +19,13 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                                    .Where(p => p.is_active)
                                    .Select(p => new { p.id, p.name })
                                    .ToList();
-            
+
             ViewBag.PaymentMethods = new SelectList(paymentMethods, "id", "name");
 
             // TODO: Get real BranchID and UserID from Session/Auth
             // For now, hardcode or pass via ViewBag
             // Giả sử branch 1 = Chi Nhánh Quận 1
-            ViewBag.CurrentBranchID = 1; 
+            ViewBag.CurrentBranchID = 1;
             ViewBag.CurrentUserID = 3; // Branch Manager DEV (existing user)
             ViewBag.BranchName = GetBranchName(1);
 
@@ -39,9 +39,9 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                                    .Where(p => p.is_active)
                                    .Select(p => new { p.id, p.name })
                                    .ToList();
-            
+
             ViewBag.PaymentMethods = new SelectList(paymentMethods, "id", "name");
-            ViewBag.CurrentBranchID = 1; 
+            ViewBag.CurrentBranchID = 1;
             ViewBag.CurrentUserID = 3; // Branch Manager DEV (existing user)
             ViewBag.BranchName = GetBranchName(1);
 
@@ -59,7 +59,7 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             try
             {
                 var products = db.product_variants
-                    .Where(p => p.deleted_at == null && 
+                    .Where(p => p.deleted_at == null &&
                                (p.name.Contains(query) || p.sku.Contains(query)))
                     .Select(p => new
                     {
@@ -141,9 +141,9 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             catch (Exception ex)
             {
                 var msg = ex.Message;
-                if (ex.InnerException != null) 
+                if (ex.InnerException != null)
                     msg += " - " + ex.InnerException.Message;
-                
+
                 return Json(new { success = false, message = "Lỗi: " + msg });
             }
         }

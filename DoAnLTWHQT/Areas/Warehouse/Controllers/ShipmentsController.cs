@@ -1,10 +1,10 @@
+using Ltwhqt.ViewModels.Warehouse;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
-using Ltwhqt.ViewModels.Warehouse;
-using Newtonsoft.Json;
 
 namespace DoAnLTWHQT.Areas.Warehouse.Controllers
 {
@@ -82,7 +82,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
             {
                 // Parse details JSON
                 var details = JsonConvert.DeserializeObject<List<InboundReceiptDetailItemViewModel>>(model.DetailsJson ?? "[]");
-                
+
                 if (details == null || !details.Any())
                 {
                     TempData["ErrorMessage"] = "Vui lòng thêm ít nhất một sản phẩm vào phiếu nhập.";
@@ -252,8 +252,8 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
             }
 
             var variants = _db.product_variants
-                .Where(v => v.deleted_at == null 
-                         && v.product.deleted_at == null 
+                .Where(v => v.deleted_at == null
+                         && v.product.deleted_at == null
                          && v.product.supplier_id == supplierId.Value)
                 .OrderBy(v => v.product.name)
                 .ThenBy(v => v.name)
@@ -321,7 +321,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
             foreach (var detail in details)
             {
                 var inventory = _db.inventories
-                    .FirstOrDefault(i => i.product_variant_id == detail.product_variant_id 
+                    .FirstOrDefault(i => i.product_variant_id == detail.product_variant_id
                                       && i.warehouse_id == warehouseId);
 
                 if (inventory == null)

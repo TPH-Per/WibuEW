@@ -1,6 +1,6 @@
+using Ltwhqt.ViewModels.Branch;
 using System.Collections.Generic;
 using System.Web.Mvc;
-using Ltwhqt.ViewModels.Branch;
 
 namespace DoAnLTWHQT.Areas.Branch.Controllers
 {

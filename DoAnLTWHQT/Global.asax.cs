@@ -1,12 +1,11 @@
+﻿using DoAnLTWHQT.Security;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Helpers;
+using System.Web.Http;
 using System.Web.Mvc;
-using System.Web.Optimization;
 using System.Web.Routing;
-using DoAnLTWHQT.Security;
 using System.Web.Security;
 
 namespace DoAnLTWHQT
@@ -16,13 +15,37 @@ namespace DoAnLTWHQT
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
-            // �ang k� global filters (HandleError, v.v.) n?u c?n
-            // FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            // Ðang ký global filters (HandleError, v.v.) n?u c?n
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            GlobalConfiguration.Configure(WebApiConfig.Register);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            // WebApiConfig.Register(GlobalConfiguration.Configuration); // n?u c� d�ng Web API
+            //WebApiConfig.Register(GlobalConfiguration.Configuration); // n?u có dùng Web API
+
             EnsureTestAdminAccount();
             EnsureTestWarehouseManagerAccount();
             EnsureTestBranchManagerAccount();
+        }
+
+        protected void Application_BeginRequest(object sender, EventArgs e)
+        {
+            var context = HttpContext.Current;
+            var origin = context.Request.Headers["Origin"];
+
+            // Cho phép origin từ Vue dev server
+            if (origin == "http://localhost:3000")
+            {
+                context.Response.AddHeader("Access-Control-Allow-Origin", origin);
+                context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
+                context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
+                context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            }
+
+            // Xử lý preflight request (OPTIONS)
+            if (context.Request.HttpMethod == "OPTIONS")
+            {
+                context.Response.StatusCode = 200;
+                context.Response.End();
+            }
         }
 
         protected void Application_PostAuthenticateRequest(object sender, EventArgs e)

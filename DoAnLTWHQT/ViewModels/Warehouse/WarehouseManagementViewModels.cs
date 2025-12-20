@@ -1,6 +1,6 @@
+using Ltwhqt.ViewModels.Shared;
 using System;
 using System.Collections.Generic;
-using Ltwhqt.ViewModels.Shared;
 
 namespace Ltwhqt.ViewModels.Warehouse
 {

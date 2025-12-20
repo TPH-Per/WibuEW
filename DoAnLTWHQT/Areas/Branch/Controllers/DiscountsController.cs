@@ -1,5 +1,5 @@
-using System.Web.Mvc;
 using Ltwhqt.ViewModels.Branch;
+using System.Web.Mvc;
 
 namespace DoAnLTWHQT.Areas.Branch.Controllers
 {

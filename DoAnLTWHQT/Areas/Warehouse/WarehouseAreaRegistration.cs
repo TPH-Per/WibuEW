@@ -2,17 +2,17 @@ using System.Web.Mvc;
 
 namespace DoAnLTWHQT.Areas.Warehouse
 {
-    public class WarehouseAreaRegistration : AreaRegistration 
+    public class WarehouseAreaRegistration : AreaRegistration
     {
-        public override string AreaName 
+        public override string AreaName
         {
-            get 
+            get
             {
                 return "Warehouse";
             }
         }
 
-        public override void RegisterArea(AreaRegistrationContext context) 
+        public override void RegisterArea(AreaRegistrationContext context)
         {
             context.MapRoute(
                 "Warehouse_default",

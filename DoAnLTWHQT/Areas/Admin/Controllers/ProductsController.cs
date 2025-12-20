@@ -1,9 +1,9 @@
+using Ltwhqt.ViewModels.Admin;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
-using Ltwhqt.ViewModels.Admin;
 
 namespace DoAnLTWHQT.Areas.Admin.Controllers
 {
@@ -224,7 +224,7 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
 
                 // Soft delete product and its variants
                 product.deleted_at = DateTime.UtcNow;
-                
+
                 foreach (var variant in product.product_variants.Where(v => v.deleted_at == null))
                 {
                     variant.deleted_at = DateTime.UtcNow;

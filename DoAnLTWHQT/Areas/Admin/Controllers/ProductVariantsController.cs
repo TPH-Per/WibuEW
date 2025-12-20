@@ -1,11 +1,10 @@
+using Ltwhqt.ViewModels.Admin;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using Ltwhqt.ViewModels.Admin;
 
 namespace DoAnLTWHQT.Areas.Admin.Controllers
 {
@@ -248,17 +247,17 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
             // Create base SKU from product ID and variant name
             var baseSlug = GenerateSlug(variantName);
             var baseSku = $"P{productId:D4}-{baseSlug}";
-            
+
             // Check if SKU exists, if yes, add counter
             var sku = baseSku;
             var counter = 1;
-            
+
             while (_db.product_variants.Any(v => v.sku == sku && v.deleted_at == null))
             {
                 sku = $"{baseSku}-{counter:D2}";
                 counter++;
             }
-            
+
             return sku.ToUpperInvariant();
         }
 
