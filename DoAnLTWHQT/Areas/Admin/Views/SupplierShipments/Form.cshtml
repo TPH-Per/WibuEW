@@ -1,0 +1,50 @@
+@using Ltwhqt.ViewModels.Shared
+@model Ltwhqt.ViewModels.Admin.SupplierShipmentViewModel
+@{
+    ViewBag.Title = ViewBag.Title ?? "Tạo phiếu nhập kho";
+    var supplierOptions = ViewBag.SupplierOptions as IEnumerable<SelectOptionViewModel> ?? Enumerable.Empty<SelectOptionViewModel>();
+    var variantOptions = ViewBag.VariantOptions as IEnumerable<SelectOptionViewModel> ?? Enumerable.Empty<SelectOptionViewModel>();
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">@ViewBag.Title</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Nhà cung cấp</label>
+                <select class="form-select">
+                    @foreach (var option in supplierOptions)
+                    {
+                        <option value="@option.Value">@option.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Variant</label>
+                <select class="form-select">
+                    @foreach (var option in variantOptions)
+                    {
+                        <option value="@option.Value">@option.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Số lượng</label>
+                <input class="form-control" type="number" value="@Model.Quantity" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Kho</label>
+                <input class="form-control" value="@Model.Warehouse" placeholder="Kho trung tâm" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Ngày nhận</label>
+                <input class="form-control" type="datetime-local" value="@Model.ReceivedAt.ToString("yyyy-MM-ddTHH:mm")" />
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+            <button class="btn btn-primary" type="button">Lưu phiếu nhập</button>
+        </div>
+    </div>
+</div>

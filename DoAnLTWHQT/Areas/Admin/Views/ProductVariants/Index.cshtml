@@ -1,0 +1,110 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.ProductVariantManagementViewModel>
+@{
+    var productName = ViewBag.ProductName as string ?? "Sản phẩm";
+    ViewBag.Title = $"Biến thể - {productName}";
+    var productId = (long)(ViewBag.ProductId ?? 0L);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Biến thể cho: @productName</h2>
+        <p class="text-secondary mb-0">Mỗi biến thể có SKU riêng, giá riêng và có thể có ảnh riêng.</p>
+    </div>
+    <div>
+        <a class="btn btn-light me-2" href="@Url.Action("Index", "Products")">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại sản phẩm
+        </a>
+        <a class="btn btn-primary" href="@Url.Action("Create", new { productId })">
+            <i class="bi bi-plus-lg me-2"></i>Thêm biến thể
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Tên biến thể</th>
+                    <th>Giá bán</th>
+                    <th>Giá gốc</th>
+                    <th>Tồn kho</th>
+                    <th>Ảnh</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var variant in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold"><code>@variant.Sku</code></td>
+                            <td>@variant.Name</td>
+                            <td class="text-success fw-semibold">@variant.Price.ToString("N0") đ</td>
+                            <td>
+                                @if (variant.OriginalPrice.HasValue)
+                                {
+                                    <span class="text-muted text-decoration-line-through">@variant.OriginalPrice.Value.ToString("N0") đ</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @(variant.QuantityOnHand > 0 ? "bg-success" : "bg-secondary")">
+                                    @variant.QuantityOnHand
+                                </span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(variant.ImageUrl))
+                                {
+                                    <img src="@variant.ImageUrl" class="rounded border" style="height:40px; width:40px; object-fit: cover;" alt="variant" onerror="this.src='/images/no-image.png'" />
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">Chưa có</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-light" href="@Url.Action("Edit", new { id = variant.Id })">Sửa</a>
+                                @using (Html.BeginForm("Delete", "ProductVariants", new { id = variant.Id }, FormMethod.Post, new { style = "display:inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa biến thể này?')">Xóa</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Chưa có biến thể nào. <a href="@Url.Action("Create", new { productId })">Thêm biến thể đầu tiên</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

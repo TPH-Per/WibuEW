@@ -1,0 +1,391 @@
+@model DoAnLTWHQT.warehouse_transfers
+
+@{
+    ViewBag.Title = "Chi Tiết Phiếu Chuyển Kho #" + Model.id;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fa fa-file-text"></i> Phiếu Chuyển Kho #@Model.id</h4>
+                    <span class="badge badge-light">@Model.status</span>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["Success"]</div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Thông Tin Chung</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Kho Nguồn:</th>
+                                    <td>@Model.warehouse.name</td>
+                                </tr>
+                                <tr>
+                                    <th>Chi Nhánh Đích:</th>
+                                    <td>@Model.branch.name</td>
+                                </tr>
+                                <tr>
+                                    <th>Trạng Thái:</th>
+                                    <td>
+                                        @switch (Model.status)
+                                        {
+                                            case "Requested":
+                                                <span class="badge badge-info">Yêu Cầu Nhập</span>
+                                                break;
+                                            case "Approved":
+                                                <span class="badge badge-primary">Đã Duyệt</span>
+                                                break;
+                                            case "pending":
+                                                <span class="badge badge-warning">Chờ Xuất</span>
+                                                break;
+                                            case "Shipping":
+                                            case "shipping":
+                                                <span class="badge badge-primary"><i class="fa fa-truck"></i> Đang Vận Chuyển</span>
+                                                break;
+                                            case "Delivered":
+                                            case "delivered":
+                                                <span class="badge badge-success"><i class="fa fa-check"></i> Đã Giao Hàng</span>
+                                                break;
+                                            case "Cancelled":
+                                            case "cancelled":
+                                                <span class="badge badge-secondary"><i class="fa fa-ban"></i> Đã Hủy</span>
+                                                break;
+                                            default:
+                                                <span class="badge badge-secondary">@Model.status</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Thời Gian</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Ngày Tạo:</th>
+                                    <td>@(Model.created_at.HasValue ? Model.created_at.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                </tr>
+                                <tr>
+                                    <th>Ngày Chuyển:</th>
+                                    <td>@(Model.transfer_date.HasValue ? Model.transfer_date.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                </tr>
+                                <tr>
+                                    <th>Cập Nhật:</th>
+                                    <td>@(Model.updated_at.HasValue ? Model.updated_at.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.notes))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted">Ghi Chú</h6>
+                                <p class="border p-2 bg-light">@Model.notes</p>
+                            </div>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <h5 class="mb-3">Chi Tiết Sản Phẩm</h5>
+                    
+                    @{
+                        // Kiểm tra có sản phẩm đã xóa không
+                        bool hasDeletedProducts = Model.warehouse_transfer_details != null && 
+                            Model.warehouse_transfer_details.Any(d => d.product_variants.deleted_at != null);
+                        bool canProcess = !hasDeletedProducts;
+                    }
+                    
+                    @if (hasDeletedProducts)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <strong>Cảnh báo:</strong> Phiếu có sản phẩm đã bị xóa. 
+                            Vui lòng xóa các sản phẩm này khỏi phiếu trước khi duyệt/hoàn thành.
+                        </div>
+                    }
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Sản Phẩm</th>
+                                    <th>SKU</th>
+                                    <th class="text-right">Số Lượng</th>
+                                    <th>Ghi Chú</th>
+                                    <th>Trạng thái</th>
+                                    @if (Model.status == "Requested" || Model.status == "Pending")
+                                    {
+                                        <th style="width: 80px;">Thao tác</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int index = 1;
+                                    int totalQty = 0;
+                                }
+                                @if (Model.warehouse_transfer_details != null && Model.warehouse_transfer_details.Any())
+                                {
+                                    foreach (var detail in Model.warehouse_transfer_details)
+                                    {
+                                        totalQty += detail.quantity;
+                                        bool isDeleted = detail.product_variants.deleted_at != null;
+                                        <tr class="@(isDeleted ? "table-danger" : "")">
+                                            <td>@index</td>
+                                            <td>
+                                                @if (isDeleted)
+                                                {
+                                                    <del>@detail.product_variants.name</del>
+                                                }
+                                                else
+                                                {
+                                                    @detail.product_variants.name
+                                                }
+                                            </td>
+                                            <td><code>@detail.product_variants.sku</code></td>
+                                            <td class="text-right"><strong>@detail.quantity</strong></td>
+                                            <td>@detail.notes</td>
+                                            <td>
+                                                @if (isDeleted)
+                                                {
+                                                    <span class="badge badge-danger">Đã xóa</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-success">Hoạt động</span>
+                                                }
+                                            </td>
+                                            @if (Model.status == "Requested" || Model.status == "Pending")
+                                            {
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                            onclick="removeDetail(@detail.id)" title="Xóa khỏi phiếu">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            }
+                                        </tr>
+                                        index++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            <i class="fa fa-inbox fa-2x mb-2"></i>
+                                            <p>Chưa có sản phẩm nào trong phiếu chuyển</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-right">Tổng Số Lượng:</th>
+                                    <th class="text-right">@totalQty</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="fa fa-arrow-left"></i> Quay Lại
+                        </a>
+                        
+                        <div>
+                            @* Nếu Requested - Warehouse có thể Duyệt hoặc Hủy *@
+                            @if (Model.status == "Requested")
+                            {
+                                <button type="button" class="btn btn-danger" onclick="cancelRequest()">
+                                    <i class="fa fa-times"></i> Hủy Phiếu
+                                </button>
+                                if (canProcess)
+                                {
+                                    <button type="button" class="btn btn-success" onclick="approveToShipping()">
+                                        <i class="fa fa-check"></i> Duyệt & Xuất Kho
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-success" disabled title="Vui lòng xóa sản phẩm đã bị xóa trước">
+                                        <i class="fa fa-check"></i> Duyệt & Xuất Kho
+                                    </button>
+                                }
+                            }
+                            @* Nếu Shipping - chỉ xem, chờ Branch xác nhận *@
+                            else if (Model.status == "Shipping" || Model.status == "shipping")
+                            {
+                                <div class="alert alert-info mb-0">
+                                    <i class="fa fa-info-circle"></i> Đang chờ chi nhánh xác nhận nhận hàng...
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hủy phiếu -->
+<div class="modal fade" id="cancelModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Hủy phiếu yêu cầu</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Lý do hủy <span class="text-danger">*</span></label>
+                    <textarea id="cancelReason" class="form-control" rows="3" placeholder="Nhập lý do hủy..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="submitCancel()">Xác nhận hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function updateStatus(newStatus) {
+        var statusNames = {
+            'shipping': 'Xuất kho và chuyển hàng',
+            'completed': 'Xác nhận đã nhận hàng',
+            'returned': 'Hoàn trả về kho',
+            'cancelled': 'Hủy phiếu chuyển'
+        };
+
+        if (!confirm('Bạn có chắc muốn ' + statusNames[newStatus] + '?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("UpdateStatus")',
+            type: 'POST',
+            data: {
+                id: @Model.id,
+                newStatus: newStatus
+            },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+
+    // Duyệt yêu cầu từ Branch: Requested → Shipping
+    function approveToShipping() {
+        if (!confirm('Bạn có chắc muốn DUYỆT yêu cầu này? Phiếu sẽ chuyển sang trạng thái Shipping.')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("ApproveToShipping")',
+            type: 'POST',
+            data: { id: @Model.id },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+
+    // Mở modal hủy
+    function cancelRequest() {
+        $('#cancelModal').modal('show');
+    }
+
+    // Submit hủy
+    function submitCancel() {
+        var reason = $('#cancelReason').val().trim();
+        if (!reason) {
+            alert('Vui lòng nhập lý do hủy!');
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("CancelRequest")',
+            type: 'POST',
+            data: {
+                id: @Model.id,
+                reason: reason
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#cancelModal').modal('hide');
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+
+    // Xóa sản phẩm khỏi phiếu
+    function removeDetail(detailId) {
+        if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi phiếu?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("RemoveDetail")',
+            type: 'POST',
+            data: {
+                detailId: detailId
+            },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi kết nối server!');
+            }
+        });
+    }
+</script>
+}

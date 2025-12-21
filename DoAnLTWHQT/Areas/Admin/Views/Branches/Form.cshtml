@@ -1,0 +1,83 @@
+@using Ltwhqt.ViewModels.Shared
+@model Ltwhqt.ViewModels.Admin.BranchFormViewModel
+@{
+    // Xác định tiêu đề dựa trên việc có ID hay không (Sửa hay Tạo mới)
+    bool isEdit = Model.Id.HasValue;
+    ViewBag.Title = isEdit ? "Cập nhật chi nhánh" : "Tạo chi nhánh mới";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Xử lý null để tránh lỗi runtime
+    var managerOptions = Model.ManagerOptions ?? new List<SelectOptionViewModel>();
+    var warehouseOptions = Model.WarehouseOptions ?? new List<SelectOptionViewModel>();
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4 border-bottom pb-2">@ViewBag.Title</h2>
+
+        @* --- Form tự động xác định Action là Create hay Edit --- *@
+        @using (Html.BeginForm(isEdit ? "Edit" : "Create", "Branches", new { area = "Admin", id = Model.Id }, FormMethod.Post, new { @class = "needs-validation" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id) @* Giữ ID cho trường hợp Edit *@
+
+            @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Tên chi nhánh <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "VD: Chi nhánh Quận 1", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Số điện thoại</label>
+                    @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "VD: 028.1234.5678" })
+                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-bold">Địa chỉ</label>
+                    @Html.TextBoxFor(m => m.Location, new { @class = "form-control", placeholder = "Nhập địa chỉ cụ thể..." })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Người quản lý</label>
+                    @Html.DropDownListFor(m => m.ManagerUserId,
+                        new SelectList(managerOptions, "Value", "Label"),
+                        "--- Chọn quản lý ---",
+                        new { @class = "form-select" })
+                    @Html.ValidationMessageFor(m => m.ManagerUserId, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Kho nguồn cung cấp</label>
+                    @Html.DropDownListFor(m => m.WarehouseId,
+                        new SelectList(warehouseOptions, "Value", "Label"),
+                        "--- Chọn kho ---",
+                        new { @class = "form-select" })
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check mt-3">
+                        @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                        <label class="form-check-label user-select-none" for="IsActive">
+                            Đang hoạt động (Kích hoạt chi nhánh này ngay)
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ bỏ</a>
+
+                <button class="btn btn-primary px-4" type="submit">
+                    <i class="bi bi-save me-2"></i>
+                    @(isEdit ? "Cập nhật" : "Thêm mới")
+                </button>
+            </div>
+        }
+    </div>
+</div>

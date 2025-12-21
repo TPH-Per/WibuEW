@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test POS Search API</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test-box { border: 1px solid #ddd; padding: 15px; margin: 10px 0; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test POS Search API</h1>
+
+    <div class="test-box">
+        <h3>Test 1: Search với "sousou"</h3>
+        <button onclick="testSearch('sousou')">Run Test</button>
+        <div id="result1"></div>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 2: Search với "test"</h3>
+        <button onclick="testSearch('test')">Run Test</button>
+        <div id="result2"></div>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 3: Search với SKU "P0006"</h3>
+        <button onclick="testSearch('P0006')">Run Test</button>
+        <div id="result3"></div>
+    </div>
+
+    <script>
+        let testIndex = 0;
+
+        function testSearch(query) {
+            testIndex++;
+            const resultDiv = event.target.nextElementSibling;
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            $.ajax({
+                url: '/Branch/POS/SearchProducts',
+                type: 'GET',
+                data: { query: query },
+                success: function(data) {
+                    let html = '<p class="success">✅ Success! Found ' + data.length + ' products</p>';
+                    
+                    if (data.length > 0) {
+                        html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                        
+                        html += '<table border="1" cellpadding="5"><tr><th>ID</th><th>Name</th><th>SKU</th><th>Price</th><th>Stock</th></tr>';
+                        data.forEach(function(p) {
+                            html += '<tr>';
+                            html += '<td>' + p.id + '</td>';
+                            html += '<td>' + p.name + '</td>';
+                            html += '<td>' + p.sku + '</td>';
+                            html += '<td>' + p.price.toLocaleString() + '₫</td>';
+                            html += '<td>' + p.stock + '</td>';
+                            html += '</tr>';
+                        });
+                        html += '</table>';
+                    } else {
+                        html += '<p class="error">No products found</p>';
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                },
+                error: function(xhr, status, error) {
+                    resultDiv.innerHTML = '<p class="error">❌ Error: ' + error + '</p>' +
+                                         '<pre>' + xhr.responseText + '</pre>';
+                }
+            });
+        }
+
+        // Auto test on load
+        $(document).ready(function() {
+            console.log('Test page ready');
+            console.log('Base URL:', window.location.origin);
+            console.log('Test endpoint: /Branch/POS/SearchProducts');
+        });
+    </script>
+
+    <hr>
+    <div class="test-box">
+        <h3>📝 Debug Info</h3>
+        <p><strong>Current URL:</strong> <span id="currentUrl"></span></p>
+        <p><strong>API Endpoint:</strong> /Branch/POS/SearchProducts</p>
+        <p><strong>Method:</strong> GET</p>
+        <p><strong>Expected Response:</strong> JSON array of products</p>
+    </div>
+
+    <script>
+        document.getElementById('currentUrl').textContent = window.location.href;
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+@model Ltwhqt.ViewModels.Admin.DiscountFormViewModel
+@{
+    ViewBag.Title = Model.Id.HasValue ? "Cập nhật mã giảm giá" : "Tạo mã giảm giá mới";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card border-0 shadow-sm" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-body p-4">
+        <h2 class="h5 mb-4 border-bottom pb-2">@ViewBag.Title</h2>
+
+        @* --- Bắt đầu Form --- *@
+        @using (Html.BeginForm("Save", "Discounts", new { area = "Admin" }, FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+
+            @* Hiển thị lỗi chung nếu có *@
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+            <div class="row g-3">
+                @* 1. MÃ CODE *@
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Mã Voucher <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Code, new { @class = "form-control text-uppercase fw-bold", placeholder = "VD: TET2025", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Code, "", new { @class = "text-danger small" })
+                </div>
+
+                @* 2. GIÁ TRỊ GIẢM (Chỉ nhập tiền) *@
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Số tiền giảm (VNĐ) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        @Html.TextBoxFor(m => m.Value, new { @class = "form-control fw-bold text-success", type = "number", min = "0", step = "1000", required = "required", placeholder = "VD: 50000" })
+                        <span class="input-group-text">₫</span>
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Value, "", new { @class = "text-danger small" })
+                    <div class="form-text">Nhập số tiền khách hàng được giảm trực tiếp.</div>
+                </div>
+
+                @* 3. GIỚI HẠN LƯỢT DÙNG *@
+                <div class="col-md-12">
+                    <label class="form-label">Tổng số lượt cho phép sử dụng</label>
+                    @Html.TextBoxFor(m => m.MaxUses, new { @class = "form-control", type = "number", min = "1", placeholder = "Để trống nếu không giới hạn" })
+                    <div class="form-text">Ví dụ: Nhập 100 thì chỉ 100 người đầu tiên dùng được mã này.</div>
+                </div>
+
+                @* 4. THỜI GIAN HIỆU LỰC *@
+                <div class="col-md-6">
+                    <label class="form-label">Ngày bắt đầu</label>
+                    @Html.TextBoxFor(m => m.StartAt, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Ngày kết thúc</label>
+                    @Html.TextBoxFor(m => m.EndAt, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                </div>
+
+                @* 5. TRẠNG THÁI *@
+                <div class="col-12 mt-3">
+                    <div class="form-check form-switch p-3 bg-light rounded border">
+                        @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input ms-0 me-2", role = "switch", style = "margin-left: -2em;" })
+                        <label class="form-check-label fw-bold" for="IsActive" style="margin-left: 0.5em;">Kích hoạt sử dụng ngay</label>
+                    </div>
+                </div>
+            </div>
+
+            @* Nút lưu *@
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ bỏ</a>
+                <button class="btn btn-primary px-4 shadow-sm" type="submit">
+                    <i class="bi bi-save me-2"></i>Lưu mã giảm giá
+                </button>
+            </div>
+        }
+    </div>
+</div>

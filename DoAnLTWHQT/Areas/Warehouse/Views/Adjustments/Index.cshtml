@@ -1,0 +1,44 @@
+@model IEnumerable<Ltwhqt.ViewModels.Warehouse.WarehouseAdjustmentViewModel>
+@{
+    ViewBag.Title = "Điều chỉnh tồn kho";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Adjustment log</h2>
+        <p class="text-secondary mb-0">Kiểm kê, hư hỏng, mất mát.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="bi bi-plus-lg me-2"></i>Tạo phiếu điều chỉnh
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Variant</th>
+                    <th>SL hiện tại</th>
+                    <th>Điều chỉnh</th>
+                    <th>Lý do</th>
+                    <th>Người tạo</th>
+                    <th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var adjustment in Model)
+                {
+                    <tr>
+                        <td>@adjustment.Variant</td>
+                        <td>@adjustment.CurrentQuantity</td>
+                        <td>@adjustment.Adjustment</td>
+                        <td>@adjustment.Reason</td>
+                        <td>@adjustment.CreatedBy</td>
+                        <td>@adjustment.CreatedAt:dd/MM HH:mm</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

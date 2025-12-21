@@ -1,0 +1,2335 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="perwModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="addresses">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="user_id" Type="bigint" Nullable="false" />
+          <Property Name="recipient_name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="recipient_phone" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="street_address" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="ward" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="district" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="city" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="is_default" Type="bit" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="branch_inventories">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="branch_id" Type="bigint" Nullable="false" />
+          <Property Name="product_variant_id" Type="bigint" Nullable="false" />
+          <Property Name="quantity_on_hand" Type="int" Nullable="false" />
+          <Property Name="quantity_reserved" Type="int" Nullable="false" />
+          <Property Name="reorder_level" Type="int" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="branches">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="warehouse_id" Type="bigint" />
+          <Property Name="location" Type="nvarchar" MaxLength="255" />
+          <Property Name="manager_user_id" Type="bigint" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="carts">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="user_id" Type="bigint" Nullable="false" />
+          <Property Name="product_variant_id" Type="bigint" Nullable="false" />
+          <Property Name="quantity" Type="int" Nullable="false" />
+          <Property Name="price" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="categories">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="slug" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="discounts">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="code" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="value" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="max_uses" Type="int" />
+          <Property Name="used_count" Type="int" Nullable="false" />
+          <Property Name="start_at" Type="datetime2" Precision="7" />
+          <Property Name="end_at" Type="datetime2" Precision="7" />
+          <Property Name="is_active" Type="bit" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="inbound_receipt_details">
+          <Key>
+            <PropertyRef Name="receipt_id" />
+            <PropertyRef Name="product_variant_id" />
+          </Key>
+          <Property Name="receipt_id" Type="bigint" Nullable="false" />
+          <Property Name="product_variant_id" Type="bigint" Nullable="false" />
+          <Property Name="quantity" Type="int" Nullable="false" />
+          <Property Name="input_price" Type="decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="inbound_receipts">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="code" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="supplier_id" Type="bigint" Nullable="false" />
+          <Property Name="warehouse_id" Type="bigint" Nullable="false" />
+          <Property Name="received_at" Type="datetime2" Precision="7" Nullable="false" />
+          <Property Name="status" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="notes" Type="nvarchar(max)" />
+          <Property Name="created_by" Type="bigint" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+          <Property Name="total_amount" Type="decimal" Precision="18" Scale="2" />
+        </EntityType>
+        <EntityType Name="inventories">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="product_variant_id" Type="bigint" Nullable="false" />
+          <Property Name="warehouse_id" Type="bigint" Nullable="false" />
+          <Property Name="quantity_on_hand" Type="int" Nullable="false" />
+          <Property Name="quantity_reserved" Type="int" Nullable="false" />
+          <Property Name="reorder_level" Type="int" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="inventory_transactions">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="product_variant_id" Type="bigint" Nullable="false" />
+          <Property Name="warehouse_id" Type="bigint" Nullable="false" />
+          <Property Name="order_id" Type="bigint" />
+          <Property Name="quantity" Type="int" Nullable="false" />
+          <Property Name="type" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="notes" Type="nvarchar(max)" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="payment_methods">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="code" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="is_active" Type="bit" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="payments">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="order_id" Type="bigint" Nullable="false" />
+          <Property Name="payment_method_id" Type="bigint" Nullable="false" />
+          <Property Name="amount" Type="decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="status" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="transaction_code" Type="nvarchar" MaxLength="100" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'perw.dbo.product_reviews' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="product_reviews">
+          <Key>
+            <PropertyRef Name="user_id" />
+            <PropertyRef Name="product_id" />
+            <PropertyRef Name="rating" />
+            <PropertyRef Name="is_approved" />
+            <PropertyRef Name="status" />
+          </Key>
+          <Property Name="user_id" Type="bigint" Nullable="false" />
+          <Property Name="product_id" Type="bigint" Nullable="false" />
+          <Property Name="rating" Type="tinyint" Nullable="false" />
+          <Property Name="comment" Type="nvarchar(max)" />
+          <Property Name="is_approved" Type="bit" Nullable="false" />
+          <Property Name="status" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="product_variants">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="product_id" Type="bigint" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="sku" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="price" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="original_price" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="image_url" Type="nvarchar" MaxLength="500" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="products">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="category_id" Type="bigint" Nullable="false" />
+          <Property Name="supplier_id" Type="bigint" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="description" Type="nvarchar(max)" />
+          <Property Name="slug" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="status" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="purchase_order_details">
+          <Key>
+            <PropertyRef Name="order_id" />
+            <PropertyRef Name="product_variant_id" />
+          </Key>
+          <Property Name="order_id" Type="bigint" Nullable="false" />
+          <Property Name="product_variant_id" Type="bigint" Nullable="false" />
+          <Property Name="quantity" Type="int" Nullable="false" />
+          <Property Name="price_at_purchase" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="subtotal" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="purchase_orders">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="user_id" Type="bigint" />
+          <Property Name="order_code" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="status" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="shipping_recipient_name" Type="nvarchar" MaxLength="100" />
+          <Property Name="shipping_recipient_phone" Type="nvarchar" MaxLength="20" />
+          <Property Name="shipping_address" Type="nvarchar(max)" />
+          <Property Name="sub_total" Type="decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="shipping_fee" Type="decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="discount_amount" Type="decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="total_amount" Type="decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="discount_id" Type="bigint" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+          <Property Name="branch_id" Type="bigint" />
+        </EntityType>
+        <EntityType Name="roles">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="description" Type="nvarchar(max)" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="suppliers">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="contact_info" Type="nvarchar(max)" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="principal_id" Type="int" Nullable="false" />
+          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="version" Type="int" />
+          <Property Name="definition" Type="varbinary(max)" />
+        </EntityType>
+        <EntityType Name="users">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="full_name" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="email" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="email_verified_at" Type="datetime2" Precision="7" />
+          <Property Name="password" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="remember_token" Type="nvarchar" MaxLength="100" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="role_id" Type="bigint" Nullable="false" />
+          <Property Name="phone_number" Type="nvarchar" MaxLength="255" />
+          <Property Name="status" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="warehouse_transfer_details">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="transfer_id" Type="bigint" Nullable="false" />
+          <Property Name="product_variant_id" Type="bigint" Nullable="false" />
+          <Property Name="quantity" Type="int" Nullable="false" />
+          <Property Name="price" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="notes" Type="nvarchar(max)" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="warehouse_transfers">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="from_warehouse_id" Type="bigint" Nullable="false" />
+          <Property Name="to_branch_id" Type="bigint" Nullable="false" />
+          <Property Name="transfer_date" Type="datetime2" Precision="7" />
+          <Property Name="status" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="notes" Type="nvarchar(max)" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <EntityType Name="warehouses">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="location" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="created_at" Type="datetime2" Precision="7" />
+          <Property Name="updated_at" Type="datetime2" Precision="7" />
+          <Property Name="deleted_at" Type="datetime2" Precision="7" />
+        </EntityType>
+        <Association Name="FK_addresses_users">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="addresses" Type="Self.addresses" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="addresses">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_branch_inventories_branches">
+          <End Role="branches" Type="Self.branches" Multiplicity="1" />
+          <End Role="branch_inventories" Type="Self.branch_inventories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="branches">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="branch_inventories">
+              <PropertyRef Name="branch_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_branch_inventories_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="branch_inventories" Type="Self.branch_inventories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="branch_inventories">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_branches_users_manager">
+          <End Role="users" Type="Self.users" Multiplicity="0..1" />
+          <End Role="branches" Type="Self.branches" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="branches">
+              <PropertyRef Name="manager_user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_branches_warehouses">
+          <End Role="warehouses" Type="Self.warehouses" Multiplicity="0..1" />
+          <End Role="branches" Type="Self.branches" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="branches">
+              <PropertyRef Name="warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_carts_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="carts" Type="Self.carts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="carts">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_carts_users">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="carts" Type="Self.carts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="carts">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipt_details_receipts">
+          <End Role="inbound_receipts" Type="Self.inbound_receipts" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inbound_receipt_details" Type="Self.inbound_receipt_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="inbound_receipts">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipt_details">
+              <PropertyRef Name="receipt_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipt_details_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="inbound_receipt_details" Type="Self.inbound_receipt_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipt_details">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipts_suppliers">
+          <End Role="suppliers" Type="Self.suppliers" Multiplicity="1" />
+          <End Role="inbound_receipts" Type="Self.inbound_receipts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="suppliers">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipts">
+              <PropertyRef Name="supplier_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipts_users">
+          <End Role="users" Type="Self.users" Multiplicity="0..1" />
+          <End Role="inbound_receipts" Type="Self.inbound_receipts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipts">
+              <PropertyRef Name="created_by" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipts_warehouses">
+          <End Role="warehouses" Type="Self.warehouses" Multiplicity="1" />
+          <End Role="inbound_receipts" Type="Self.inbound_receipts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipts">
+              <PropertyRef Name="warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventories_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inventories" Type="Self.inventories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventories">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventories_warehouses">
+          <End Role="warehouses" Type="Self.warehouses" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inventories" Type="Self.inventories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventories">
+              <PropertyRef Name="warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventory_transactions_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="inventory_transactions" Type="Self.inventory_transactions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_transactions">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventory_transactions_purchase_orders">
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="0..1" />
+          <End Role="inventory_transactions" Type="Self.inventory_transactions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="purchase_orders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_transactions">
+              <PropertyRef Name="order_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventory_transactions_warehouses">
+          <End Role="warehouses" Type="Self.warehouses" Multiplicity="1" />
+          <End Role="inventory_transactions" Type="Self.inventory_transactions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_transactions">
+              <PropertyRef Name="warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_payments_payment_methods">
+          <End Role="payment_methods" Type="Self.payment_methods" Multiplicity="1" />
+          <End Role="payments" Type="Self.payments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="payment_methods">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="payments">
+              <PropertyRef Name="payment_method_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_payments_purchase_orders">
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="payments" Type="Self.payments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="purchase_orders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="payments">
+              <PropertyRef Name="order_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_product_reviews_products">
+          <End Role="products" Type="Self.products" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="product_reviews" Type="Self.product_reviews" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="products">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="product_reviews">
+              <PropertyRef Name="product_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_product_reviews_users">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="product_reviews" Type="Self.product_reviews" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="product_reviews">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_product_variants_products">
+          <End Role="products" Type="Self.products" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="products">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="product_variants">
+              <PropertyRef Name="product_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_products_categories">
+          <End Role="categories" Type="Self.categories" Multiplicity="1" />
+          <End Role="products" Type="Self.products" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="categories">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="products">
+              <PropertyRef Name="category_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_products_suppliers">
+          <End Role="suppliers" Type="Self.suppliers" Multiplicity="1" />
+          <End Role="products" Type="Self.products" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="suppliers">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="products">
+              <PropertyRef Name="supplier_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_order_details_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="purchase_order_details" Type="Self.purchase_order_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_order_details">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_order_details_purchase_orders">
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="purchase_order_details" Type="Self.purchase_order_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="purchase_orders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_order_details">
+              <PropertyRef Name="order_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_orders_branches">
+          <End Role="branches" Type="Self.branches" Multiplicity="0..1" />
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="branches">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_orders">
+              <PropertyRef Name="branch_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_orders_discounts">
+          <End Role="discounts" Type="Self.discounts" Multiplicity="0..1" />
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="discounts">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_orders">
+              <PropertyRef Name="discount_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_orders_users">
+          <End Role="users" Type="Self.users" Multiplicity="0..1" />
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_orders">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_users_roles">
+          <End Role="roles" Type="Self.roles" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="users" Type="Self.users" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="roles">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="users">
+              <PropertyRef Name="role_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_warehouse_transfers_from_warehouses">
+          <End Role="warehouses" Type="Self.warehouses" Multiplicity="1" />
+          <End Role="warehouse_transfers" Type="Self.warehouse_transfers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="warehouse_transfers">
+              <PropertyRef Name="from_warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_warehouse_transfers_to_branches">
+          <End Role="branches" Type="Self.branches" Multiplicity="1" />
+          <End Role="warehouse_transfers" Type="Self.warehouse_transfers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="branches">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="warehouse_transfers">
+              <PropertyRef Name="to_branch_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_wtd_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="warehouse_transfer_details" Type="Self.warehouse_transfer_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="warehouse_transfer_details">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_wtd_transfers">
+          <End Role="warehouse_transfers" Type="Self.warehouse_transfers" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="warehouse_transfer_details" Type="Self.warehouse_transfer_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouse_transfers">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="warehouse_transfer_details">
+              <PropertyRef Name="transfer_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="perwModelStoreContainer">
+          <EntitySet Name="addresses" EntityType="Self.addresses" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="branch_inventories" EntityType="Self.branch_inventories" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="branches" EntityType="Self.branches" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="carts" EntityType="Self.carts" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="categories" EntityType="Self.categories" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="discounts" EntityType="Self.discounts" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="inbound_receipt_details" EntityType="Self.inbound_receipt_details" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="inbound_receipts" EntityType="Self.inbound_receipts" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="inventories" EntityType="Self.inventories" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="inventory_transactions" EntityType="Self.inventory_transactions" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="payment_methods" EntityType="Self.payment_methods" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="payments" EntityType="Self.payments" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="product_variants" EntityType="Self.product_variants" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="products" EntityType="Self.products" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="purchase_order_details" EntityType="Self.purchase_order_details" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="purchase_orders" EntityType="Self.purchase_orders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="roles" EntityType="Self.roles" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="suppliers" EntityType="Self.suppliers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="users" EntityType="Self.users" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="warehouse_transfer_details" EntityType="Self.warehouse_transfer_details" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="warehouse_transfers" EntityType="Self.warehouse_transfers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="warehouses" EntityType="Self.warehouses" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="product_reviews" EntityType="Self.product_reviews" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [product_reviews].[user_id] AS [user_id], 
+    [product_reviews].[product_id] AS [product_id], 
+    [product_reviews].[rating] AS [rating], 
+    [product_reviews].[comment] AS [comment], 
+    [product_reviews].[is_approved] AS [is_approved], 
+    [product_reviews].[status] AS [status], 
+    [product_reviews].[created_at] AS [created_at], 
+    [product_reviews].[updated_at] AS [updated_at], 
+    [product_reviews].[deleted_at] AS [deleted_at]
+    FROM [dbo].[product_reviews] AS [product_reviews]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_addresses_users" Association="Self.FK_addresses_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="addresses" EntitySet="addresses" />
+          </AssociationSet>
+          <AssociationSet Name="FK_branch_inventories_branches" Association="Self.FK_branch_inventories_branches">
+            <End Role="branches" EntitySet="branches" />
+            <End Role="branch_inventories" EntitySet="branch_inventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_branch_inventories_product_variants" Association="Self.FK_branch_inventories_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="branch_inventories" EntitySet="branch_inventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_branches_users_manager" Association="Self.FK_branches_users_manager">
+            <End Role="users" EntitySet="users" />
+            <End Role="branches" EntitySet="branches" />
+          </AssociationSet>
+          <AssociationSet Name="FK_branches_warehouses" Association="Self.FK_branches_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="branches" EntitySet="branches" />
+          </AssociationSet>
+          <AssociationSet Name="FK_carts_product_variants" Association="Self.FK_carts_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="carts" EntitySet="carts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_carts_users" Association="Self.FK_carts_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="carts" EntitySet="carts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipt_details_receipts" Association="Self.FK_inbound_receipt_details_receipts">
+            <End Role="inbound_receipts" EntitySet="inbound_receipts" />
+            <End Role="inbound_receipt_details" EntitySet="inbound_receipt_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipt_details_variants" Association="Self.FK_inbound_receipt_details_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="inbound_receipt_details" EntitySet="inbound_receipt_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipts_suppliers" Association="Self.FK_inbound_receipts_suppliers">
+            <End Role="suppliers" EntitySet="suppliers" />
+            <End Role="inbound_receipts" EntitySet="inbound_receipts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipts_users" Association="Self.FK_inbound_receipts_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="inbound_receipts" EntitySet="inbound_receipts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipts_warehouses" Association="Self.FK_inbound_receipts_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="inbound_receipts" EntitySet="inbound_receipts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventories_product_variants" Association="Self.FK_inventories_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="inventories" EntitySet="inventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventories_warehouses" Association="Self.FK_inventories_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="inventories" EntitySet="inventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventory_transactions_product_variants" Association="Self.FK_inventory_transactions_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="inventory_transactions" EntitySet="inventory_transactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventory_transactions_purchase_orders" Association="Self.FK_inventory_transactions_purchase_orders">
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+            <End Role="inventory_transactions" EntitySet="inventory_transactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventory_transactions_warehouses" Association="Self.FK_inventory_transactions_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="inventory_transactions" EntitySet="inventory_transactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_payments_payment_methods" Association="Self.FK_payments_payment_methods">
+            <End Role="payment_methods" EntitySet="payment_methods" />
+            <End Role="payments" EntitySet="payments" />
+          </AssociationSet>
+          <AssociationSet Name="FK_payments_purchase_orders" Association="Self.FK_payments_purchase_orders">
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+            <End Role="payments" EntitySet="payments" />
+          </AssociationSet>
+          <AssociationSet Name="FK_product_reviews_products" Association="Self.FK_product_reviews_products">
+            <End Role="products" EntitySet="products" />
+            <End Role="product_reviews" EntitySet="product_reviews" />
+          </AssociationSet>
+          <AssociationSet Name="FK_product_reviews_users" Association="Self.FK_product_reviews_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="product_reviews" EntitySet="product_reviews" />
+          </AssociationSet>
+          <AssociationSet Name="FK_product_variants_products" Association="Self.FK_product_variants_products">
+            <End Role="products" EntitySet="products" />
+            <End Role="product_variants" EntitySet="product_variants" />
+          </AssociationSet>
+          <AssociationSet Name="FK_products_categories" Association="Self.FK_products_categories">
+            <End Role="categories" EntitySet="categories" />
+            <End Role="products" EntitySet="products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_products_suppliers" Association="Self.FK_products_suppliers">
+            <End Role="suppliers" EntitySet="suppliers" />
+            <End Role="products" EntitySet="products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_order_details_product_variants" Association="Self.FK_purchase_order_details_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="purchase_order_details" EntitySet="purchase_order_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_order_details_purchase_orders" Association="Self.FK_purchase_order_details_purchase_orders">
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+            <End Role="purchase_order_details" EntitySet="purchase_order_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_orders_branches" Association="Self.FK_purchase_orders_branches">
+            <End Role="branches" EntitySet="branches" />
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_orders_discounts" Association="Self.FK_purchase_orders_discounts">
+            <End Role="discounts" EntitySet="discounts" />
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_orders_users" Association="Self.FK_purchase_orders_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_users_roles" Association="Self.FK_users_roles">
+            <End Role="roles" EntitySet="roles" />
+            <End Role="users" EntitySet="users" />
+          </AssociationSet>
+          <AssociationSet Name="FK_warehouse_transfers_from_warehouses" Association="Self.FK_warehouse_transfers_from_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="warehouse_transfers" EntitySet="warehouse_transfers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_warehouse_transfers_to_branches" Association="Self.FK_warehouse_transfers_to_branches">
+            <End Role="branches" EntitySet="branches" />
+            <End Role="warehouse_transfers" EntitySet="warehouse_transfers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_wtd_product_variants" Association="Self.FK_wtd_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="warehouse_transfer_details" EntitySet="warehouse_transfer_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_wtd_transfers" Association="Self.FK_wtd_transfers">
+            <End Role="warehouse_transfers" EntitySet="warehouse_transfers" />
+            <End Role="warehouse_transfer_details" EntitySet="warehouse_transfer_details" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="perwModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="address">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="user_id" Type="Int64" Nullable="false" />
+          <Property Name="recipient_name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="recipient_phone" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="street_address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="ward" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="district" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="city" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="is_default" Type="Boolean" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="user" Relationship="Self.FK_addresses_users" FromRole="addresses" ToRole="users" />
+        </EntityType>
+        <EntityType Name="branch_inventories">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="branch_id" Type="Int64" Nullable="false" />
+          <Property Name="product_variant_id" Type="Int64" Nullable="false" />
+          <Property Name="quantity_on_hand" Type="Int32" Nullable="false" />
+          <Property Name="quantity_reserved" Type="Int32" Nullable="false" />
+          <Property Name="reorder_level" Type="Int32" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="branch" Relationship="Self.FK_branch_inventories_branches" FromRole="branch_inventories" ToRole="branches" />
+          <NavigationProperty Name="product_variants" Relationship="Self.FK_branch_inventories_product_variants" FromRole="branch_inventories" ToRole="product_variants" />
+        </EntityType>
+        <EntityType Name="branch">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="warehouse_id" Type="Int64" />
+          <Property Name="location" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="manager_user_id" Type="Int64" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="branch_inventories" Relationship="Self.FK_branch_inventories_branches" FromRole="branches" ToRole="branch_inventories" />
+          <NavigationProperty Name="user" Relationship="Self.FK_branches_users_manager" FromRole="branches" ToRole="users" />
+          <NavigationProperty Name="warehouse" Relationship="Self.FK_branches_warehouses" FromRole="branches" ToRole="warehouses" />
+          <NavigationProperty Name="purchase_orders" Relationship="Self.FK_purchase_orders_branches" FromRole="branches" ToRole="purchase_orders" />
+          <NavigationProperty Name="warehouse_transfers" Relationship="Self.FK_warehouse_transfers_to_branches" FromRole="branches" ToRole="warehouse_transfers" />
+        </EntityType>
+        <EntityType Name="cart">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="user_id" Type="Int64" Nullable="false" />
+          <Property Name="product_variant_id" Type="Int64" Nullable="false" />
+          <Property Name="quantity" Type="Int32" Nullable="false" />
+          <Property Name="price" Type="Decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="product_variants" Relationship="Self.FK_carts_product_variants" FromRole="carts" ToRole="product_variants" />
+          <NavigationProperty Name="user" Relationship="Self.FK_carts_users" FromRole="carts" ToRole="users" />
+        </EntityType>
+        <EntityType Name="category">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="slug" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="products" Relationship="Self.FK_products_categories" FromRole="categories" ToRole="products" />
+        </EntityType>
+        <EntityType Name="inbound_receipt_details">
+          <Key>
+            <PropertyRef Name="receipt_id" />
+            <PropertyRef Name="product_variant_id" />
+          </Key>
+          <Property Name="receipt_id" Type="Int64" Nullable="false" />
+          <Property Name="product_variant_id" Type="Int64" Nullable="false" />
+          <Property Name="quantity" Type="Int32" Nullable="false" />
+          <Property Name="input_price" Type="Decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="inbound_receipts" Relationship="Self.FK_inbound_receipt_details_receipts" FromRole="inbound_receipt_details" ToRole="inbound_receipts" />
+          <NavigationProperty Name="product_variants" Relationship="Self.FK_inbound_receipt_details_variants" FromRole="inbound_receipt_details" ToRole="product_variants" />
+        </EntityType>
+        <EntityType Name="inbound_receipts">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="code" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="supplier_id" Type="Int64" Nullable="false" />
+          <Property Name="warehouse_id" Type="Int64" Nullable="false" />
+          <Property Name="received_at" Type="DateTime" Nullable="false" Precision="7" />
+          <Property Name="status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="notes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="created_by" Type="Int64" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <Property Name="total_amount" Type="Decimal" Precision="18" Scale="2" />
+          <NavigationProperty Name="inbound_receipt_details" Relationship="Self.FK_inbound_receipt_details_receipts" FromRole="inbound_receipts" ToRole="inbound_receipt_details" />
+          <NavigationProperty Name="supplier" Relationship="Self.FK_inbound_receipts_suppliers" FromRole="inbound_receipts" ToRole="suppliers" />
+          <NavigationProperty Name="user" Relationship="Self.FK_inbound_receipts_users" FromRole="inbound_receipts" ToRole="users" />
+          <NavigationProperty Name="warehouse" Relationship="Self.FK_inbound_receipts_warehouses" FromRole="inbound_receipts" ToRole="warehouses" />
+        </EntityType>
+        <EntityType Name="inventory">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="product_variant_id" Type="Int64" Nullable="false" />
+          <Property Name="warehouse_id" Type="Int64" Nullable="false" />
+          <Property Name="quantity_on_hand" Type="Int32" Nullable="false" />
+          <Property Name="quantity_reserved" Type="Int32" Nullable="false" />
+          <Property Name="reorder_level" Type="Int32" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="product_variants" Relationship="Self.FK_inventories_product_variants" FromRole="inventories" ToRole="product_variants" />
+          <NavigationProperty Name="warehouse" Relationship="Self.FK_inventories_warehouses" FromRole="inventories" ToRole="warehouses" />
+        </EntityType>
+        <EntityType Name="inventory_transactions">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="product_variant_id" Type="Int64" Nullable="false" />
+          <Property Name="warehouse_id" Type="Int64" Nullable="false" />
+          <Property Name="order_id" Type="Int64" />
+          <Property Name="quantity" Type="Int32" Nullable="false" />
+          <Property Name="type" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="notes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="product_variants" Relationship="Self.FK_inventory_transactions_product_variants" FromRole="inventory_transactions" ToRole="product_variants" />
+          <NavigationProperty Name="purchase_orders" Relationship="Self.FK_inventory_transactions_purchase_orders" FromRole="inventory_transactions" ToRole="purchase_orders" />
+          <NavigationProperty Name="warehouse" Relationship="Self.FK_inventory_transactions_warehouses" FromRole="inventory_transactions" ToRole="warehouses" />
+        </EntityType>
+        <EntityType Name="payment_methods">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="code" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="is_active" Type="Boolean" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="payments" Relationship="Self.FK_payments_payment_methods" FromRole="payment_methods" ToRole="payments" />
+        </EntityType>
+        <EntityType Name="payment">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="order_id" Type="Int64" Nullable="false" />
+          <Property Name="payment_method_id" Type="Int64" Nullable="false" />
+          <Property Name="amount" Type="Decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="status" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="transaction_code" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="payment_methods" Relationship="Self.FK_payments_payment_methods" FromRole="payments" ToRole="payment_methods" />
+          <NavigationProperty Name="purchase_orders" Relationship="Self.FK_payments_purchase_orders" FromRole="payments" ToRole="purchase_orders" />
+        </EntityType>
+        <EntityType Name="product_variants">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="product_id" Type="Int64" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="sku" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="price" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="original_price" Type="Decimal" Precision="10" Scale="2" />
+          <Property Name="image_url" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="branch_inventories" Relationship="Self.FK_branch_inventories_product_variants" FromRole="product_variants" ToRole="branch_inventories" />
+          <NavigationProperty Name="carts" Relationship="Self.FK_carts_product_variants" FromRole="product_variants" ToRole="carts" />
+          <NavigationProperty Name="inbound_receipt_details" Relationship="Self.FK_inbound_receipt_details_variants" FromRole="product_variants" ToRole="inbound_receipt_details" />
+          <NavigationProperty Name="inventories" Relationship="Self.FK_inventories_product_variants" FromRole="product_variants" ToRole="inventories" />
+          <NavigationProperty Name="inventory_transactions" Relationship="Self.FK_inventory_transactions_product_variants" FromRole="product_variants" ToRole="inventory_transactions" />
+          <NavigationProperty Name="product" Relationship="Self.FK_product_variants_products" FromRole="product_variants" ToRole="products" />
+          <NavigationProperty Name="purchase_order_details" Relationship="Self.FK_purchase_order_details_product_variants" FromRole="product_variants" ToRole="purchase_order_details" />
+          <NavigationProperty Name="warehouse_transfer_details" Relationship="Self.FK_wtd_product_variants" FromRole="product_variants" ToRole="warehouse_transfer_details" />
+        </EntityType>
+        <EntityType Name="product">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="category_id" Type="Int64" Nullable="false" />
+          <Property Name="supplier_id" Type="Int64" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="slug" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="status" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="category" Relationship="Self.FK_products_categories" FromRole="products" ToRole="categories" />
+          <NavigationProperty Name="product_variants" Relationship="Self.FK_product_variants_products" FromRole="products" ToRole="product_variants" />
+          <NavigationProperty Name="product_reviews" Relationship="Self.FK_product_reviews_products" FromRole="products" ToRole="product_reviews" />
+          <NavigationProperty Name="supplier" Relationship="Self.FK_products_suppliers" FromRole="products" ToRole="suppliers" />
+        </EntityType>
+        <EntityType Name="purchase_order_details">
+          <Key>
+            <PropertyRef Name="order_id" />
+            <PropertyRef Name="product_variant_id" />
+          </Key>
+          <Property Name="order_id" Type="Int64" Nullable="false" />
+          <Property Name="product_variant_id" Type="Int64" Nullable="false" />
+          <Property Name="quantity" Type="Int32" Nullable="false" />
+          <Property Name="price_at_purchase" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="subtotal" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="product_variants" Relationship="Self.FK_purchase_order_details_product_variants" FromRole="purchase_order_details" ToRole="product_variants" />
+          <NavigationProperty Name="purchase_orders" Relationship="Self.FK_purchase_order_details_purchase_orders" FromRole="purchase_order_details" ToRole="purchase_orders" />
+        </EntityType>
+        <EntityType Name="purchase_orders">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="user_id" Type="Int64" />
+          <Property Name="order_code" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="status" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="shipping_recipient_name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="shipping_recipient_phone" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="shipping_address" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="sub_total" Type="Decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="shipping_fee" Type="Decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="discount_amount" Type="Decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="total_amount" Type="Decimal" Precision="12" Scale="2" Nullable="false" />
+          <Property Name="discount_id" Type="Int64" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <Property Name="branch_id" Type="Int64" />
+          <NavigationProperty Name="branch" Relationship="Self.FK_purchase_orders_branches" FromRole="purchase_orders" ToRole="branches" />
+          <NavigationProperty Name="inventory_transactions" Relationship="Self.FK_inventory_transactions_purchase_orders" FromRole="purchase_orders" ToRole="inventory_transactions" />
+          <NavigationProperty Name="payments" Relationship="Self.FK_payments_purchase_orders" FromRole="purchase_orders" ToRole="payments" />
+          <NavigationProperty Name="purchase_order_details" Relationship="Self.FK_purchase_order_details_purchase_orders" FromRole="purchase_orders" ToRole="purchase_order_details" />
+          <NavigationProperty Name="user" Relationship="Self.FK_purchase_orders_users" FromRole="purchase_orders" ToRole="users" />
+          <NavigationProperty Name="discount" Relationship="perwModel.FK_purchase_orders_discounts" FromRole="purchase_orders" ToRole="discount" />
+        </EntityType>
+        <EntityType Name="role">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="users" Relationship="Self.FK_users_roles" FromRole="roles" ToRole="users" />
+        </EntityType>
+        <EntityType Name="supplier">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="contact_info" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="inbound_receipts" Relationship="Self.FK_inbound_receipts_suppliers" FromRole="suppliers" ToRole="inbound_receipts" />
+          <NavigationProperty Name="products" Relationship="Self.FK_products_suppliers" FromRole="suppliers" ToRole="products" />
+        </EntityType>
+        <EntityType Name="sysdiagram">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="principal_id" Type="Int32" Nullable="false" />
+          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="version" Type="Int32" />
+          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="user">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="full_name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="email" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="email_verified_at" Type="DateTime" Precision="7" />
+          <Property Name="password" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="remember_token" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="role_id" Type="Int64" Nullable="false" />
+          <Property Name="phone_number" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="status" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="addresses" Relationship="Self.FK_addresses_users" FromRole="users" ToRole="addresses" />
+          <NavigationProperty Name="branches" Relationship="Self.FK_branches_users_manager" FromRole="users" ToRole="branches" />
+          <NavigationProperty Name="carts" Relationship="Self.FK_carts_users" FromRole="users" ToRole="carts" />
+          <NavigationProperty Name="inbound_receipts" Relationship="Self.FK_inbound_receipts_users" FromRole="users" ToRole="inbound_receipts" />
+          <NavigationProperty Name="purchase_orders" Relationship="Self.FK_purchase_orders_users" FromRole="users" ToRole="purchase_orders" />
+          <NavigationProperty Name="role" Relationship="Self.FK_users_roles" FromRole="users" ToRole="roles" />
+          <NavigationProperty Name="product_reviews" Relationship="Self.FK_product_reviews_users" FromRole="users" ToRole="product_reviews" />
+        </EntityType>
+        <EntityType Name="warehouse_transfer_details">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="transfer_id" Type="Int64" Nullable="false" />
+          <Property Name="product_variant_id" Type="Int64" Nullable="false" />
+          <Property Name="quantity" Type="Int32" Nullable="false" />
+          <Property Name="price" Type="Decimal" Precision="10" Scale="2" />
+          <Property Name="notes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="product_variants" Relationship="Self.FK_wtd_product_variants" FromRole="warehouse_transfer_details" ToRole="product_variants" />
+          <NavigationProperty Name="warehouse_transfers" Relationship="Self.FK_wtd_transfers" FromRole="warehouse_transfer_details" ToRole="warehouse_transfers" />
+        </EntityType>
+        <EntityType Name="warehouse_transfers">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="from_warehouse_id" Type="Int64" Nullable="false" />
+          <Property Name="to_branch_id" Type="Int64" Nullable="false" />
+          <Property Name="transfer_date" Type="DateTime" Precision="7" />
+          <Property Name="status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="notes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="branch" Relationship="Self.FK_warehouse_transfers_to_branches" FromRole="warehouse_transfers" ToRole="branches" />
+          <NavigationProperty Name="warehouse_transfer_details" Relationship="Self.FK_wtd_transfers" FromRole="warehouse_transfers" ToRole="warehouse_transfer_details" />
+          <NavigationProperty Name="warehouse" Relationship="Self.FK_warehouse_transfers_from_warehouses" FromRole="warehouse_transfers" ToRole="warehouses" />
+        </EntityType>
+        <EntityType Name="warehouse">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="location" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="branches" Relationship="Self.FK_branches_warehouses" FromRole="warehouses" ToRole="branches" />
+          <NavigationProperty Name="inbound_receipts" Relationship="Self.FK_inbound_receipts_warehouses" FromRole="warehouses" ToRole="inbound_receipts" />
+          <NavigationProperty Name="inventories" Relationship="Self.FK_inventories_warehouses" FromRole="warehouses" ToRole="inventories" />
+          <NavigationProperty Name="inventory_transactions" Relationship="Self.FK_inventory_transactions_warehouses" FromRole="warehouses" ToRole="inventory_transactions" />
+          <NavigationProperty Name="warehouse_transfers" Relationship="Self.FK_warehouse_transfers_from_warehouses" FromRole="warehouses" ToRole="warehouse_transfers" />
+        </EntityType>
+        <EntityType Name="product_reviews">
+          <Key>
+            <PropertyRef Name="user_id" />
+            <PropertyRef Name="product_id" />
+            <PropertyRef Name="rating" />
+            <PropertyRef Name="is_approved" />
+            <PropertyRef Name="status" />
+          </Key>
+          <Property Name="user_id" Type="Int64" Nullable="false" />
+          <Property Name="product_id" Type="Int64" Nullable="false" />
+          <Property Name="rating" Type="Byte" Nullable="false" />
+          <Property Name="comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="is_approved" Type="Boolean" Nullable="false" />
+          <Property Name="status" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <Property Name="deleted_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="product" Relationship="Self.FK_product_reviews_products" FromRole="product_reviews" ToRole="products" />
+          <NavigationProperty Name="user" Relationship="Self.FK_product_reviews_users" FromRole="product_reviews" ToRole="users" />
+        </EntityType>
+        <Association Name="FK_addresses_users">
+          <End Role="users" Type="Self.user" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="addresses" Type="Self.address" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="addresses">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_branch_inventories_branches">
+          <End Role="branches" Type="Self.branch" Multiplicity="1" />
+          <End Role="branch_inventories" Type="Self.branch_inventories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="branches">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="branch_inventories">
+              <PropertyRef Name="branch_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_branch_inventories_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="branch_inventories" Type="Self.branch_inventories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="branch_inventories">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_branches_users_manager">
+          <End Role="users" Type="Self.user" Multiplicity="0..1" />
+          <End Role="branches" Type="Self.branch" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="branches">
+              <PropertyRef Name="manager_user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_branches_warehouses">
+          <End Role="warehouses" Type="Self.warehouse" Multiplicity="0..1" />
+          <End Role="branches" Type="Self.branch" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="branches">
+              <PropertyRef Name="warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_orders_branches">
+          <End Role="branches" Type="Self.branch" Multiplicity="0..1" />
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="branches">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_orders">
+              <PropertyRef Name="branch_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_warehouse_transfers_to_branches">
+          <End Role="branches" Type="Self.branch" Multiplicity="1" />
+          <End Role="warehouse_transfers" Type="Self.warehouse_transfers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="branches">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="warehouse_transfers">
+              <PropertyRef Name="to_branch_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_carts_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="carts" Type="Self.cart" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="carts">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_carts_users">
+          <End Role="users" Type="Self.user" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="carts" Type="Self.cart" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="carts">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_products_categories">
+          <End Role="categories" Type="Self.category" Multiplicity="1" />
+          <End Role="products" Type="Self.product" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="categories">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="products">
+              <PropertyRef Name="category_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipt_details_receipts">
+          <End Role="inbound_receipts" Type="Self.inbound_receipts" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inbound_receipt_details" Type="Self.inbound_receipt_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="inbound_receipts">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipt_details">
+              <PropertyRef Name="receipt_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipt_details_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="inbound_receipt_details" Type="Self.inbound_receipt_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipt_details">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipts_suppliers">
+          <End Role="suppliers" Type="Self.supplier" Multiplicity="1" />
+          <End Role="inbound_receipts" Type="Self.inbound_receipts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="suppliers">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipts">
+              <PropertyRef Name="supplier_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipts_users">
+          <End Role="users" Type="Self.user" Multiplicity="0..1" />
+          <End Role="inbound_receipts" Type="Self.inbound_receipts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipts">
+              <PropertyRef Name="created_by" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inbound_receipts_warehouses">
+          <End Role="warehouses" Type="Self.warehouse" Multiplicity="1" />
+          <End Role="inbound_receipts" Type="Self.inbound_receipts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inbound_receipts">
+              <PropertyRef Name="warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventories_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inventories" Type="Self.inventory" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventories">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventories_warehouses">
+          <End Role="warehouses" Type="Self.warehouse" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inventories" Type="Self.inventory" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventories">
+              <PropertyRef Name="warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventory_transactions_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="inventory_transactions" Type="Self.inventory_transactions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_transactions">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventory_transactions_purchase_orders">
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="0..1" />
+          <End Role="inventory_transactions" Type="Self.inventory_transactions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="purchase_orders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_transactions">
+              <PropertyRef Name="order_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_inventory_transactions_warehouses">
+          <End Role="warehouses" Type="Self.warehouse" Multiplicity="1" />
+          <End Role="inventory_transactions" Type="Self.inventory_transactions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_transactions">
+              <PropertyRef Name="warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_payments_payment_methods">
+          <End Role="payment_methods" Type="Self.payment_methods" Multiplicity="1" />
+          <End Role="payments" Type="Self.payment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="payment_methods">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="payments">
+              <PropertyRef Name="payment_method_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_payments_purchase_orders">
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="payments" Type="Self.payment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="purchase_orders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="payments">
+              <PropertyRef Name="order_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_product_variants_products">
+          <End Role="products" Type="Self.product" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="products">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="product_variants">
+              <PropertyRef Name="product_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_order_details_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="purchase_order_details" Type="Self.purchase_order_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_order_details">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_wtd_product_variants">
+          <End Role="product_variants" Type="Self.product_variants" Multiplicity="1" />
+          <End Role="warehouse_transfer_details" Type="Self.warehouse_transfer_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="product_variants">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="warehouse_transfer_details">
+              <PropertyRef Name="product_variant_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_product_reviews_products">
+          <End Role="products" Type="Self.product" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="product_reviews" Type="Self.product_reviews" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="products">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="product_reviews">
+              <PropertyRef Name="product_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_products_suppliers">
+          <End Role="suppliers" Type="Self.supplier" Multiplicity="1" />
+          <End Role="products" Type="Self.product" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="suppliers">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="products">
+              <PropertyRef Name="supplier_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_order_details_purchase_orders">
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="purchase_order_details" Type="Self.purchase_order_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="purchase_orders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_order_details">
+              <PropertyRef Name="order_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_purchase_orders_users">
+          <End Role="users" Type="Self.user" Multiplicity="0..1" />
+          <End Role="purchase_orders" Type="Self.purchase_orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_orders">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_users_roles">
+          <End Role="roles" Type="Self.role" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="users" Type="Self.user" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="roles">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="users">
+              <PropertyRef Name="role_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_product_reviews_users">
+          <End Role="users" Type="Self.user" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="product_reviews" Type="Self.product_reviews" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="product_reviews">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_wtd_transfers">
+          <End Role="warehouse_transfers" Type="Self.warehouse_transfers" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="warehouse_transfer_details" Type="Self.warehouse_transfer_details" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouse_transfers">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="warehouse_transfer_details">
+              <PropertyRef Name="transfer_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_warehouse_transfers_from_warehouses">
+          <End Role="warehouses" Type="Self.warehouse" Multiplicity="1" />
+          <End Role="warehouse_transfers" Type="Self.warehouse_transfers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="warehouses">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="warehouse_transfers">
+              <PropertyRef Name="from_warehouse_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="perwEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="addresses" EntityType="Self.address" />
+          <EntitySet Name="branch_inventories" EntityType="Self.branch_inventories" />
+          <EntitySet Name="branches" EntityType="Self.branch" />
+          <EntitySet Name="carts" EntityType="Self.cart" />
+          <EntitySet Name="categories" EntityType="Self.category" />
+          <EntitySet Name="inbound_receipt_details" EntityType="Self.inbound_receipt_details" />
+          <EntitySet Name="inbound_receipts" EntityType="Self.inbound_receipts" />
+          <EntitySet Name="inventories" EntityType="Self.inventory" />
+          <EntitySet Name="inventory_transactions" EntityType="Self.inventory_transactions" />
+          <EntitySet Name="payment_methods" EntityType="Self.payment_methods" />
+          <EntitySet Name="payments" EntityType="Self.payment" />
+          <EntitySet Name="product_variants" EntityType="Self.product_variants" />
+          <EntitySet Name="products" EntityType="Self.product" />
+          <EntitySet Name="purchase_order_details" EntityType="Self.purchase_order_details" />
+          <EntitySet Name="purchase_orders" EntityType="Self.purchase_orders" />
+          <EntitySet Name="roles" EntityType="Self.role" />
+          <EntitySet Name="suppliers" EntityType="Self.supplier" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagram" />
+          <EntitySet Name="users" EntityType="Self.user" />
+          <EntitySet Name="warehouse_transfer_details" EntityType="Self.warehouse_transfer_details" />
+          <EntitySet Name="warehouse_transfers" EntityType="Self.warehouse_transfers" />
+          <EntitySet Name="warehouses" EntityType="Self.warehouse" />
+          <EntitySet Name="product_reviews" EntityType="Self.product_reviews" />
+          <AssociationSet Name="FK_addresses_users" Association="Self.FK_addresses_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="addresses" EntitySet="addresses" />
+          </AssociationSet>
+          <AssociationSet Name="FK_branch_inventories_branches" Association="Self.FK_branch_inventories_branches">
+            <End Role="branches" EntitySet="branches" />
+            <End Role="branch_inventories" EntitySet="branch_inventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_branch_inventories_product_variants" Association="Self.FK_branch_inventories_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="branch_inventories" EntitySet="branch_inventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_branches_users_manager" Association="Self.FK_branches_users_manager">
+            <End Role="users" EntitySet="users" />
+            <End Role="branches" EntitySet="branches" />
+          </AssociationSet>
+          <AssociationSet Name="FK_branches_warehouses" Association="Self.FK_branches_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="branches" EntitySet="branches" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_orders_branches" Association="Self.FK_purchase_orders_branches">
+            <End Role="branches" EntitySet="branches" />
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_warehouse_transfers_to_branches" Association="Self.FK_warehouse_transfers_to_branches">
+            <End Role="branches" EntitySet="branches" />
+            <End Role="warehouse_transfers" EntitySet="warehouse_transfers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_carts_product_variants" Association="Self.FK_carts_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="carts" EntitySet="carts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_carts_users" Association="Self.FK_carts_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="carts" EntitySet="carts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_products_categories" Association="Self.FK_products_categories">
+            <End Role="categories" EntitySet="categories" />
+            <End Role="products" EntitySet="products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipt_details_receipts" Association="Self.FK_inbound_receipt_details_receipts">
+            <End Role="inbound_receipts" EntitySet="inbound_receipts" />
+            <End Role="inbound_receipt_details" EntitySet="inbound_receipt_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipt_details_variants" Association="Self.FK_inbound_receipt_details_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="inbound_receipt_details" EntitySet="inbound_receipt_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipts_suppliers" Association="Self.FK_inbound_receipts_suppliers">
+            <End Role="suppliers" EntitySet="suppliers" />
+            <End Role="inbound_receipts" EntitySet="inbound_receipts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipts_users" Association="Self.FK_inbound_receipts_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="inbound_receipts" EntitySet="inbound_receipts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inbound_receipts_warehouses" Association="Self.FK_inbound_receipts_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="inbound_receipts" EntitySet="inbound_receipts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventories_product_variants" Association="Self.FK_inventories_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="inventories" EntitySet="inventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventories_warehouses" Association="Self.FK_inventories_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="inventories" EntitySet="inventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventory_transactions_product_variants" Association="Self.FK_inventory_transactions_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="inventory_transactions" EntitySet="inventory_transactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventory_transactions_purchase_orders" Association="Self.FK_inventory_transactions_purchase_orders">
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+            <End Role="inventory_transactions" EntitySet="inventory_transactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_inventory_transactions_warehouses" Association="Self.FK_inventory_transactions_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="inventory_transactions" EntitySet="inventory_transactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_payments_payment_methods" Association="Self.FK_payments_payment_methods">
+            <End Role="payment_methods" EntitySet="payment_methods" />
+            <End Role="payments" EntitySet="payments" />
+          </AssociationSet>
+          <AssociationSet Name="FK_payments_purchase_orders" Association="Self.FK_payments_purchase_orders">
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+            <End Role="payments" EntitySet="payments" />
+          </AssociationSet>
+          <AssociationSet Name="FK_product_variants_products" Association="Self.FK_product_variants_products">
+            <End Role="products" EntitySet="products" />
+            <End Role="product_variants" EntitySet="product_variants" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_order_details_product_variants" Association="Self.FK_purchase_order_details_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="purchase_order_details" EntitySet="purchase_order_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_wtd_product_variants" Association="Self.FK_wtd_product_variants">
+            <End Role="product_variants" EntitySet="product_variants" />
+            <End Role="warehouse_transfer_details" EntitySet="warehouse_transfer_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_product_reviews_products" Association="Self.FK_product_reviews_products">
+            <End Role="products" EntitySet="products" />
+            <End Role="product_reviews" EntitySet="product_reviews" />
+          </AssociationSet>
+          <AssociationSet Name="FK_products_suppliers" Association="Self.FK_products_suppliers">
+            <End Role="suppliers" EntitySet="suppliers" />
+            <End Role="products" EntitySet="products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_order_details_purchase_orders" Association="Self.FK_purchase_order_details_purchase_orders">
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+            <End Role="purchase_order_details" EntitySet="purchase_order_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_purchase_orders_users" Association="Self.FK_purchase_orders_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_users_roles" Association="Self.FK_users_roles">
+            <End Role="roles" EntitySet="roles" />
+            <End Role="users" EntitySet="users" />
+          </AssociationSet>
+          <AssociationSet Name="FK_product_reviews_users" Association="Self.FK_product_reviews_users">
+            <End Role="users" EntitySet="users" />
+            <End Role="product_reviews" EntitySet="product_reviews" />
+          </AssociationSet>
+          <AssociationSet Name="FK_wtd_transfers" Association="Self.FK_wtd_transfers">
+            <End Role="warehouse_transfers" EntitySet="warehouse_transfers" />
+            <End Role="warehouse_transfer_details" EntitySet="warehouse_transfer_details" />
+          </AssociationSet>
+          <AssociationSet Name="FK_warehouse_transfers_from_warehouses" Association="Self.FK_warehouse_transfers_from_warehouses">
+            <End Role="warehouses" EntitySet="warehouses" />
+            <End Role="warehouse_transfers" EntitySet="warehouse_transfers" />
+          </AssociationSet>
+          <EntitySet Name="discounts" EntityType="perwModel.discount" />
+          <AssociationSet Name="FK_purchase_orders_discounts" Association="perwModel.FK_purchase_orders_discounts">
+            <End Role="discount" EntitySet="discounts" />
+            <End Role="purchase_orders" EntitySet="purchase_orders" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="discount">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="code" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="value" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
+          <Property Name="max_uses" Type="Int32" />
+          <Property Name="used_count" Type="Int32" Nullable="false" />
+          <Property Name="start_at" Type="DateTime" Precision="7" />
+          <Property Name="end_at" Type="DateTime" Precision="7" />
+          <Property Name="is_active" Type="Boolean" Nullable="false" />
+          <Property Name="created_at" Type="DateTime" Precision="7" />
+          <Property Name="updated_at" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="purchase_orders" Relationship="perwModel.FK_purchase_orders_discounts" FromRole="discount" ToRole="purchase_orders" />
+        </EntityType>
+        <Association Name="FK_purchase_orders_discounts">
+          <End Type="perwModel.discount" Role="discount" Multiplicity="0..1" />
+          <End Type="perwModel.purchase_orders" Role="purchase_orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="discount">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="purchase_orders">
+              <PropertyRef Name="discount_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="perwModelStoreContainer" CdmEntityContainer="perwEntities">
+          <EntitySetMapping Name="addresses">
+            <EntityTypeMapping TypeName="perwModel.address">
+              <MappingFragment StoreEntitySet="addresses">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="user_id" ColumnName="user_id" />
+                <ScalarProperty Name="recipient_name" ColumnName="recipient_name" />
+                <ScalarProperty Name="recipient_phone" ColumnName="recipient_phone" />
+                <ScalarProperty Name="street_address" ColumnName="street_address" />
+                <ScalarProperty Name="ward" ColumnName="ward" />
+                <ScalarProperty Name="district" ColumnName="district" />
+                <ScalarProperty Name="city" ColumnName="city" />
+                <ScalarProperty Name="is_default" ColumnName="is_default" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="branch_inventories">
+            <EntityTypeMapping TypeName="perwModel.branch_inventories">
+              <MappingFragment StoreEntitySet="branch_inventories">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="branch_id" ColumnName="branch_id" />
+                <ScalarProperty Name="product_variant_id" ColumnName="product_variant_id" />
+                <ScalarProperty Name="quantity_on_hand" ColumnName="quantity_on_hand" />
+                <ScalarProperty Name="quantity_reserved" ColumnName="quantity_reserved" />
+                <ScalarProperty Name="reorder_level" ColumnName="reorder_level" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="branches">
+            <EntityTypeMapping TypeName="perwModel.branch">
+              <MappingFragment StoreEntitySet="branches">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="warehouse_id" ColumnName="warehouse_id" />
+                <ScalarProperty Name="location" ColumnName="location" />
+                <ScalarProperty Name="manager_user_id" ColumnName="manager_user_id" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="carts">
+            <EntityTypeMapping TypeName="perwModel.cart">
+              <MappingFragment StoreEntitySet="carts">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="user_id" ColumnName="user_id" />
+                <ScalarProperty Name="product_variant_id" ColumnName="product_variant_id" />
+                <ScalarProperty Name="quantity" ColumnName="quantity" />
+                <ScalarProperty Name="price" ColumnName="price" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="categories">
+            <EntityTypeMapping TypeName="perwModel.category">
+              <MappingFragment StoreEntitySet="categories">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="slug" ColumnName="slug" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="inbound_receipt_details">
+            <EntityTypeMapping TypeName="perwModel.inbound_receipt_details">
+              <MappingFragment StoreEntitySet="inbound_receipt_details">
+                <ScalarProperty Name="receipt_id" ColumnName="receipt_id" />
+                <ScalarProperty Name="product_variant_id" ColumnName="product_variant_id" />
+                <ScalarProperty Name="quantity" ColumnName="quantity" />
+                <ScalarProperty Name="input_price" ColumnName="input_price" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="inbound_receipts">
+            <EntityTypeMapping TypeName="perwModel.inbound_receipts">
+              <MappingFragment StoreEntitySet="inbound_receipts">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="code" ColumnName="code" />
+                <ScalarProperty Name="supplier_id" ColumnName="supplier_id" />
+                <ScalarProperty Name="warehouse_id" ColumnName="warehouse_id" />
+                <ScalarProperty Name="received_at" ColumnName="received_at" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="notes" ColumnName="notes" />
+                <ScalarProperty Name="created_by" ColumnName="created_by" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+                <ScalarProperty Name="total_amount" ColumnName="total_amount" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="inventories">
+            <EntityTypeMapping TypeName="perwModel.inventory">
+              <MappingFragment StoreEntitySet="inventories">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="product_variant_id" ColumnName="product_variant_id" />
+                <ScalarProperty Name="warehouse_id" ColumnName="warehouse_id" />
+                <ScalarProperty Name="quantity_on_hand" ColumnName="quantity_on_hand" />
+                <ScalarProperty Name="quantity_reserved" ColumnName="quantity_reserved" />
+                <ScalarProperty Name="reorder_level" ColumnName="reorder_level" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="inventory_transactions">
+            <EntityTypeMapping TypeName="perwModel.inventory_transactions">
+              <MappingFragment StoreEntitySet="inventory_transactions">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="product_variant_id" ColumnName="product_variant_id" />
+                <ScalarProperty Name="warehouse_id" ColumnName="warehouse_id" />
+                <ScalarProperty Name="order_id" ColumnName="order_id" />
+                <ScalarProperty Name="quantity" ColumnName="quantity" />
+                <ScalarProperty Name="type" ColumnName="type" />
+                <ScalarProperty Name="notes" ColumnName="notes" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="payment_methods">
+            <EntityTypeMapping TypeName="perwModel.payment_methods">
+              <MappingFragment StoreEntitySet="payment_methods">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="code" ColumnName="code" />
+                <ScalarProperty Name="is_active" ColumnName="is_active" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="payments">
+            <EntityTypeMapping TypeName="perwModel.payment">
+              <MappingFragment StoreEntitySet="payments">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="order_id" ColumnName="order_id" />
+                <ScalarProperty Name="payment_method_id" ColumnName="payment_method_id" />
+                <ScalarProperty Name="amount" ColumnName="amount" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="transaction_code" ColumnName="transaction_code" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="product_variants">
+            <EntityTypeMapping TypeName="perwModel.product_variants">
+              <MappingFragment StoreEntitySet="product_variants">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="product_id" ColumnName="product_id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="sku" ColumnName="sku" />
+                <ScalarProperty Name="price" ColumnName="price" />
+                <ScalarProperty Name="original_price" ColumnName="original_price" />
+                <ScalarProperty Name="image_url" ColumnName="image_url" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="products">
+            <EntityTypeMapping TypeName="perwModel.product">
+              <MappingFragment StoreEntitySet="products">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="category_id" ColumnName="category_id" />
+                <ScalarProperty Name="supplier_id" ColumnName="supplier_id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="slug" ColumnName="slug" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="purchase_order_details">
+            <EntityTypeMapping TypeName="perwModel.purchase_order_details">
+              <MappingFragment StoreEntitySet="purchase_order_details">
+                <ScalarProperty Name="order_id" ColumnName="order_id" />
+                <ScalarProperty Name="product_variant_id" ColumnName="product_variant_id" />
+                <ScalarProperty Name="quantity" ColumnName="quantity" />
+                <ScalarProperty Name="price_at_purchase" ColumnName="price_at_purchase" />
+                <ScalarProperty Name="subtotal" ColumnName="subtotal" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="purchase_orders">
+            <EntityTypeMapping TypeName="perwModel.purchase_orders">
+              <MappingFragment StoreEntitySet="purchase_orders">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="user_id" ColumnName="user_id" />
+                <ScalarProperty Name="order_code" ColumnName="order_code" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="shipping_recipient_name" ColumnName="shipping_recipient_name" />
+                <ScalarProperty Name="shipping_recipient_phone" ColumnName="shipping_recipient_phone" />
+                <ScalarProperty Name="shipping_address" ColumnName="shipping_address" />
+                <ScalarProperty Name="sub_total" ColumnName="sub_total" />
+                <ScalarProperty Name="shipping_fee" ColumnName="shipping_fee" />
+                <ScalarProperty Name="discount_amount" ColumnName="discount_amount" />
+                <ScalarProperty Name="total_amount" ColumnName="total_amount" />
+                <ScalarProperty Name="discount_id" ColumnName="discount_id" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+                <ScalarProperty Name="branch_id" ColumnName="branch_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="roles">
+            <EntityTypeMapping TypeName="perwModel.role">
+              <MappingFragment StoreEntitySet="roles">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="suppliers">
+            <EntityTypeMapping TypeName="perwModel.supplier">
+              <MappingFragment StoreEntitySet="suppliers">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="contact_info" ColumnName="contact_info" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="sysdiagrams">
+            <EntityTypeMapping TypeName="perwModel.sysdiagram">
+              <MappingFragment StoreEntitySet="sysdiagrams">
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="definition" ColumnName="definition" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="users">
+            <EntityTypeMapping TypeName="perwModel.user">
+              <MappingFragment StoreEntitySet="users">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="full_name" ColumnName="full_name" />
+                <ScalarProperty Name="email" ColumnName="email" />
+                <ScalarProperty Name="email_verified_at" ColumnName="email_verified_at" />
+                <ScalarProperty Name="password" ColumnName="password" />
+                <ScalarProperty Name="remember_token" ColumnName="remember_token" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="role_id" ColumnName="role_id" />
+                <ScalarProperty Name="phone_number" ColumnName="phone_number" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="warehouse_transfer_details">
+            <EntityTypeMapping TypeName="perwModel.warehouse_transfer_details">
+              <MappingFragment StoreEntitySet="warehouse_transfer_details">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="transfer_id" ColumnName="transfer_id" />
+                <ScalarProperty Name="product_variant_id" ColumnName="product_variant_id" />
+                <ScalarProperty Name="quantity" ColumnName="quantity" />
+                <ScalarProperty Name="price" ColumnName="price" />
+                <ScalarProperty Name="notes" ColumnName="notes" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="warehouse_transfers">
+            <EntityTypeMapping TypeName="perwModel.warehouse_transfers">
+              <MappingFragment StoreEntitySet="warehouse_transfers">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="from_warehouse_id" ColumnName="from_warehouse_id" />
+                <ScalarProperty Name="to_branch_id" ColumnName="to_branch_id" />
+                <ScalarProperty Name="transfer_date" ColumnName="transfer_date" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="notes" ColumnName="notes" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="warehouses">
+            <EntityTypeMapping TypeName="perwModel.warehouse">
+              <MappingFragment StoreEntitySet="warehouses">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="location" ColumnName="location" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="product_reviews">
+            <EntityTypeMapping TypeName="perwModel.product_reviews">
+              <MappingFragment StoreEntitySet="product_reviews">
+                <ScalarProperty Name="user_id" ColumnName="user_id" />
+                <ScalarProperty Name="product_id" ColumnName="product_id" />
+                <ScalarProperty Name="rating" ColumnName="rating" />
+                <ScalarProperty Name="comment" ColumnName="comment" />
+                <ScalarProperty Name="is_approved" ColumnName="is_approved" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="deleted_at" ColumnName="deleted_at" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="discounts">
+            <EntityTypeMapping TypeName="perwModel.discount">
+              <MappingFragment StoreEntitySet="discounts">
+                <ScalarProperty Name="updated_at" ColumnName="updated_at" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="is_active" ColumnName="is_active" />
+                <ScalarProperty Name="end_at" ColumnName="end_at" />
+                <ScalarProperty Name="start_at" ColumnName="start_at" />
+                <ScalarProperty Name="used_count" ColumnName="used_count" />
+                <ScalarProperty Name="max_uses" ColumnName="max_uses" />
+                <ScalarProperty Name="value" ColumnName="value" />
+                <ScalarProperty Name="code" ColumnName="code" />
+                <ScalarProperty Name="id" ColumnName="id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

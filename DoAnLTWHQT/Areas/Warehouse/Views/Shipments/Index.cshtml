@@ -1,0 +1,110 @@
+@model IEnumerable<Ltwhqt.ViewModels.Warehouse.InboundReceiptViewModel>
+@{
+    ViewBag.Title = "Phiếu nhập kho";
+    var statusFilter = ViewBag.StatusFilter as string ?? "all";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Phiếu nhập kho</h2>
+        <p class="text-secondary mb-0">Quản lý phiếu nhập hàng từ nhà cung cấp vào kho.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="bi bi-plus-lg me-2"></i>Tạo phiếu nhập
+    </a>
+</div>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-select" name="status" onchange="this.form.submit()">
+            <option value="all" @(statusFilter == "all" ? "selected" : null)>Tất cả</option>
+            <option value="pending" @(statusFilter == "pending" ? "selected" : null)>Chờ xử lý</option>
+            <option value="completed" @(statusFilter == "completed" ? "selected" : null)>Đã hoàn thành</option>
+            <option value="cancelled" @(statusFilter == "cancelled" ? "selected" : null)>Đã hủy</option>
+        </select>
+    </div>
+</form>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Kho</th>
+                    <th>Số lượng SP</th>
+                    <th class="text-end">Tổng tiền</th>
+                    <th>Ngày nhận</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var receipt in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@receipt.Code</td>
+                            <td>@receipt.SupplierName</td>
+                            <td>@receipt.WarehouseName</td>
+                            <td>@receipt.ItemCount</td>
+                            <td class="text-end">@receipt.TotalAmount.ToString("N0") đ</td>
+                            <td>@receipt.ReceivedAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (receipt.Status == "pending")
+                                {
+                                    <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                }
+                                else if (receipt.Status == "completed")
+                                {
+                                    <span class="badge bg-success">Hoàn thành</span>
+                                }
+                                else if (receipt.Status == "cancelled")
+                                {
+                                    <span class="badge bg-danger">Đã hủy</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@receipt.Status</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = receipt.Id })">
+                                    <i class="bi bi-eye me-1"></i>Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                            Chưa có phiếu nhập kho nào
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
