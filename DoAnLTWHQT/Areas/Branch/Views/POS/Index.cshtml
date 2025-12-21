@@ -490,6 +490,46 @@
 
                 <div class="cart-footer">
                     <div class="total-section">
+                        <!-- Voucher Input -->
+                        <div class="voucher-section mb-3">
+                            <label class="form-label text-muted small mb-1">Mã giảm giá (Voucher)</label>
+                            <div class="input-group">
+                                <input type="text" id="voucherCode" class="form-control" placeholder="Nhập mã voucher..." style="border-radius: 10px 0 0 10px;">
+                                <button class="btn btn-outline-primary" type="button" id="btnApplyVoucher" style="border-radius: 0 10px 10px 0;">
+                                    <i class="bi bi-ticket-perforated me-1"></i> Áp dụng
+                                </button>
+                            </div>
+                            <div id="voucherInfo" class="mt-2" style="display: none;">
+                                <div class="alert alert-success py-2 mb-0" style="border-radius: 10px;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            <span id="voucherName">Mã ABC</span>: Giảm <strong id="voucherValue">0₫</strong>
+                                        </span>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveVoucher">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="voucherError" class="text-danger small mt-1" style="display: none;"></div>
+                        </div>
+
+                        <!-- Subtotal -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tạm tính:</span>
+                            <span id="subTotalAmount">0₫</span>
+                        </div>
+                        
+                        <!-- Discount -->
+                        <div class="d-flex justify-content-between mb-2" id="discountRow" style="display: none !important;">
+                            <span class="text-success">Giảm giá:</span>
+                            <span class="text-success" id="discountAmount">-0₫</span>
+                        </div>
+
+                        <hr class="my-2">
+                        
+                        <!-- Total -->
                         <div class="total-label">Tổng Tiền:</div>
                         <div class="total-amount" id="totalAmount">0₫</div>
                     </div>
@@ -746,9 +786,71 @@
             }
 
             $('#cartTableBody').html(html);
-            $('#totalAmount').text(formatVND(total));
+            $('#subTotalAmount').text(formatVND(total));
+            
+            // Apply voucher discount
+            var finalTotal = total;
+            if (appliedVoucher) {
+                var discountAmt = appliedVoucher.value;
+                if (discountAmt > total) discountAmt = total; // Can't discount more than total
+                finalTotal = total - discountAmt;
+                $('#discountRow').show().css('display', 'flex');
+                $('#discountAmount').text('-' + formatVND(discountAmt));
+            } else {
+                $('#discountRow').hide();
+            }
+            
+            $('#totalAmount').text(formatVND(finalTotal));
             $('#cartCount').text(count + ' SP');
         }
+
+        // Voucher handling
+        var appliedVoucher = null;
+
+        $('#btnApplyVoucher').click(function() {
+            var code = $('#voucherCode').val().trim().toUpperCase();
+            if (!code) {
+                $('#voucherError').text('Vui lòng nhập mã voucher').show();
+                return;
+            }
+            
+            // Call API to validate voucher
+            $.get('/Branch/POS/ValidateVoucher', { code: code }, function(res) {
+                if (res.success) {
+                    appliedVoucher = res.voucher;
+                    $('#voucherName').text(res.voucher.code);
+                    $('#voucherValue').text(formatVND(res.voucher.value));
+                    $('#voucherInfo').show();
+                    $('#voucherError').hide();
+                    $('#voucherCode').prop('disabled', true);
+                    $('#btnApplyVoucher').prop('disabled', true);
+                    renderCart(); // Re-calculate totals
+                    
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Áp dụng voucher thành công!',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                } else {
+                    $('#voucherError').text(res.message).show();
+                    $('#voucherInfo').hide();
+                }
+            }).fail(function() {
+                $('#voucherError').text('Lỗi kết nối server').show();
+            });
+        });
+
+        $('#btnRemoveVoucher').click(function() {
+            appliedVoucher = null;
+            $('#voucherCode').val('').prop('disabled', false);
+            $('#btnApplyVoucher').prop('disabled', false);
+            $('#voucherInfo').hide();
+            $('#voucherError').hide();
+            renderCart();
+        });
 
         // Checkout
         $('#btnCheckout').click(function () {
@@ -817,6 +919,8 @@
                 userId: $('#currentUserId').val(),
                 paymentMethodId: $('#paymentMethod').val(),
                 paymentType: paymentType, // 'qr_atBranch' or 'cash_atBranch'
+                discountId: appliedVoucher ? appliedVoucher.id : null, // Voucher ID
+                discountAmount: appliedVoucher ? appliedVoucher.value : 0, // Discount amount
                 cartItems: cart.map(function(i) { 
                     return { VariantID: i.VariantID, Qty: i.Qty }; 
                 })
@@ -836,6 +940,10 @@
                             confirmButtonColor: '#11998e'
                         });
                         cart = [];
+                        appliedVoucher = null; // Reset voucher
+                        $('#voucherCode').val('').prop('disabled', false);
+                        $('#btnApplyVoucher').prop('disabled', false);
+                        $('#voucherInfo').hide();
                         renderCart();
                         $('#productSearch').val('').focus();
                         $('#paymentMethod').val('');

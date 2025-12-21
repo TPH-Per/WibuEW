@@ -101,7 +101,7 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
         }
 
         [HttpPost]
-        public ActionResult Checkout(long branchId, long userId, long paymentMethodId, string paymentType, List<CartItemViewModel> cartItems)
+        public ActionResult Checkout(long branchId, long userId, long paymentMethodId, string paymentType, long? discountId, decimal discountAmount, List<CartItemViewModel> cartItems)
         {
             if (cartItems == null || !cartItems.Any())
             {
@@ -133,12 +133,26 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                     Value = table
                 };
                 var pPaymentType = new SqlParameter("@PaymentType", orderStatus);
+                var pDiscountId = new SqlParameter("@DiscountID", (object)discountId ?? DBNull.Value);
+                var pDiscountAmount = new SqlParameter("@DiscountAmount", discountAmount);
 
-                // Execute Stored Procedure with PaymentType
+                // Execute Stored Procedure with PaymentType and Discount
                 var result = db.Database.ExecuteSqlCommand(
-                    "EXEC sp_POS_Checkout_Classic @BranchID, @UserID, @PaymentMethodID, @CartItems, @PaymentType",
-                    pBranch, pUser, pPayment, pCart, pPaymentType
+                    "EXEC sp_POS_Checkout_Classic @BranchID, @UserID, @PaymentMethodID, @CartItems, @PaymentType, @DiscountID, @DiscountAmount",
+                    pBranch, pUser, pPayment, pCart, pPaymentType, pDiscountId, pDiscountAmount
                 );
+
+                // Update discount used_count if voucher was applied
+                if (discountId.HasValue)
+                {
+                    var discount = db.discounts.Find(discountId.Value);
+                    if (discount != null)
+                    {
+                        discount.used_count++;
+                        discount.updated_at = DateTime.Now;
+                        db.SaveChanges();
+                    }
+                }
 
                 return Json(new { success = true, message = "Thanh toán thành công!" });
             }
@@ -150,6 +164,54 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                 
                 return Json(new { success = false, message = "Lỗi: " + msg });
             }
+        }
+
+        [HttpGet]
+        public ActionResult ValidateVoucher(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                return Json(new { success = false, message = "Vui lòng nhập mã voucher" }, JsonRequestBehavior.AllowGet);
+            }
+
+            var voucher = db.discounts
+                .FirstOrDefault(d => d.code.ToUpper() == code.ToUpper() 
+                                    && d.is_active);
+
+            if (voucher == null)
+            {
+                return Json(new { success = false, message = "Mã voucher không tồn tại hoặc đã hết hiệu lực" }, JsonRequestBehavior.AllowGet);
+            }
+
+            // Check if voucher is expired
+            if (voucher.end_at.HasValue && voucher.end_at.Value < DateTime.Now)
+            {
+                return Json(new { success = false, message = "Mã voucher đã hết hạn" }, JsonRequestBehavior.AllowGet);
+            }
+
+            // Check if voucher hasn't started yet
+            if (voucher.start_at.HasValue && voucher.start_at.Value > DateTime.Now)
+            {
+                return Json(new { success = false, message = "Mã voucher chưa đến thời gian sử dụng" }, JsonRequestBehavior.AllowGet);
+            }
+
+            // Check usage limit
+            if (voucher.max_uses.HasValue && voucher.used_count >= voucher.max_uses.Value)
+            {
+                return Json(new { success = false, message = "Mã voucher đã hết lượt sử dụng" }, JsonRequestBehavior.AllowGet);
+            }
+
+            return Json(new
+            {
+                success = true,
+                voucher = new
+                {
+                    id = voucher.id,
+                    code = voucher.code,
+                    value = voucher.value,
+                    type = voucher.type
+                }
+            }, JsonRequestBehavior.AllowGet);
         }
 
         private string GetBranchName(long branchId)

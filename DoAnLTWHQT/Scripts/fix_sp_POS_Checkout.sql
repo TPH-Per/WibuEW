@@ -1,8 +1,7 @@
 -- =============================================
 -- COMPLETE FIX for sp_POS_Checkout_Classic
--- Fixed: order_code required, all columns included
+-- WITH VOUCHER/DISCOUNT SUPPORT
 -- Status: qr_atBranch or cash_atBranch
--- Using existing payment codes: COD (tiền mặt), PREPAID (QR/chuyển khoản)
 -- =============================================
 
 -- First, check if the stored procedure exists and drop it
@@ -21,18 +20,21 @@ BEGIN
 END
 GO
 
--- Create the stored procedure with ALL required columns
+-- Create the stored procedure with DISCOUNT SUPPORT
 CREATE PROCEDURE [dbo].[sp_POS_Checkout_Classic]
     @BranchID BIGINT,
     @UserID BIGINT,
     @PaymentMethodID BIGINT,
     @CartItems dbo.CartItemTableType READONLY,
-    @PaymentType NVARCHAR(50) = 'cash_atBranch' -- 'qr_atBranch' or 'cash_atBranch'
+    @PaymentType NVARCHAR(50) = 'cash_atBranch',
+    @DiscountID BIGINT = NULL,
+    @DiscountAmount DECIMAL(18, 2) = 0
 AS
 BEGIN
     SET NOCOUNT ON;
     
     DECLARE @OrderID BIGINT;
+    DECLARE @SubTotal DECIMAL(18, 2) = 0;
     DECLARE @TotalAmount DECIMAL(18, 2) = 0;
     DECLARE @OrderCode NVARCHAR(50);
     DECLARE @ErrorMessage NVARCHAR(500);
@@ -47,16 +49,20 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
         
-        -- Calculate total amount from cart items
-        SELECT @TotalAmount = SUM(c.Qty * pv.price)
+        -- Calculate subtotal from cart items
+        SELECT @SubTotal = SUM(c.Qty * pv.price)
         FROM @CartItems c
         INNER JOIN product_variants pv ON pv.id = c.VariantID;
         
-        IF @TotalAmount IS NULL OR @TotalAmount <= 0
+        IF @SubTotal IS NULL OR @SubTotal <= 0
         BEGIN
             RAISERROR(N'Giỏ hàng không hợp lệ hoặc không có sản phẩm.', 16, 1);
             RETURN;
         END
+        
+        -- Calculate total with discount
+        SET @TotalAmount = @SubTotal - ISNULL(@DiscountAmount, 0);
+        IF @TotalAmount < 0 SET @TotalAmount = 0;
         
         -- Check stock availability for all items
         IF EXISTS (
@@ -70,7 +76,7 @@ BEGIN
             RETURN;
         END
         
-        -- Create the purchase order with ALL required columns
+        -- Create the purchase order with DISCOUNT
         INSERT INTO purchase_orders (
             user_id,
             branch_id,
@@ -90,16 +96,16 @@ BEGIN
         VALUES (
             @UserID,
             @BranchID,
-            @OrderCode,              -- Required: order_code
-            @OrderStatus,            -- 'qr_atBranch' or 'cash_atBranch'
-            N'Khách lẻ tại quầy',    -- shipping_recipient_name
-            N'',                     -- shipping_recipient_phone
-            N'Mua tại quầy',         -- shipping_address
-            @TotalAmount,            -- sub_total
-            0,                       -- shipping_fee (no shipping for POS)
-            0,                       -- discount_amount (no discount for now)
-            @TotalAmount,            -- total_amount
-            NULL,                    -- discount_id
+            @OrderCode,
+            @OrderStatus,
+            N'Khách lẻ tại quầy',
+            N'',
+            N'Mua tại quầy',
+            @SubTotal,
+            0,
+            ISNULL(@DiscountAmount, 0),
+            @TotalAmount,
+            @DiscountID,
             GETDATE(),
             GETDATE()
         );
@@ -156,7 +162,7 @@ BEGIN
         COMMIT TRANSACTION;
         
         -- Return success with order info
-        SELECT @OrderID AS OrderID, @OrderCode AS OrderCode, @TotalAmount AS TotalAmount, N'Thanh toán thành công!' AS Message;
+        SELECT @OrderID AS OrderID, @OrderCode AS OrderCode, @SubTotal AS SubTotal, @DiscountAmount AS DiscountAmount, @TotalAmount AS TotalAmount, N'Thanh toán thành công!' AS Message;
         
     END TRY
     BEGIN CATCH
@@ -169,12 +175,11 @@ BEGIN
 END
 GO
 
-PRINT N'✓ Stored procedure sp_POS_Checkout_Classic created successfully!';
+PRINT N'✓ Stored procedure sp_POS_Checkout_Classic created with VOUCHER support!';
 GO
 
 -- =============================================
 -- UPDATE EXISTING PAYMENT METHODS (COD and PREPAID)
--- Trigger only allows these 2 codes, so we use them!
 -- =============================================
 
 -- Update COD to "Tiền mặt tại quầy"
@@ -222,8 +227,5 @@ ORDER BY id;
 
 PRINT N'';
 PRINT N'✓ ALL DONE! Restart IIS Express and test /Branch/POS';
-PRINT N'';
-PRINT N'Payment method mapping:';
-PRINT N'  - COD = Tiền mặt tại quầy -> status: cash_atBranch';
-PRINT N'  - PREPAID = Thanh toán QR / Chuyển khoản -> status: qr_atBranch';
+PRINT N'✓ Now supports: Voucher/Discount codes!';
 GO
