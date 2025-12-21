@@ -101,7 +101,7 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
         }
 
         [HttpPost]
-        public ActionResult Checkout(long branchId, long userId, long paymentMethodId, List<CartItemViewModel> cartItems)
+        public ActionResult Checkout(long branchId, long userId, long paymentMethodId, string paymentType, List<CartItemViewModel> cartItems)
         {
             if (cartItems == null || !cartItems.Any())
             {
@@ -120,6 +120,9 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                     table.Rows.Add(item.VariantID, item.Qty);
                 }
 
+                // Determine payment type (qr_atBranch or cash_atBranch)
+                var orderStatus = string.IsNullOrEmpty(paymentType) ? "cash_atBranch" : paymentType;
+
                 // Setup parameters
                 var pBranch = new SqlParameter("@BranchID", branchId);
                 var pUser = new SqlParameter("@UserID", userId);
@@ -129,11 +132,12 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                     TypeName = "dbo.CartItemTableType",
                     Value = table
                 };
+                var pPaymentType = new SqlParameter("@PaymentType", orderStatus);
 
-                // Execute Stored Procedure
+                // Execute Stored Procedure with PaymentType
                 var result = db.Database.ExecuteSqlCommand(
-                    "EXEC sp_POS_Checkout_Classic @BranchID, @UserID, @PaymentMethodID, @CartItems",
-                    pBranch, pUser, pPayment, pCart
+                    "EXEC sp_POS_Checkout_Classic @BranchID, @UserID, @PaymentMethodID, @CartItems, @PaymentType",
+                    pBranch, pUser, pPayment, pCart, pPaymentType
                 );
 
                 return Json(new { success = true, message = "Thanh toán thành công!" });
