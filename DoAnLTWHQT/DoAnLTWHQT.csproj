@@ -355,6 +355,12 @@
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="wwwroot\uploads\products\0c862f58-60b3-430a-a227-3d156adc10a6.jpg" />
+    <Content Include="wwwroot\uploads\products\63c0193a-818e-4664-b7df-2b06637973ec.png" />
+    <Content Include="wwwroot\uploads\products\86a6624d-b6d7-4589-a388-6dcec68bef8b.jpg" />
+    <Content Include="wwwroot\uploads\products\892c4b5a-b5d9-4b1f-b059-8499819727be.jpg" />
+    <Content Include="wwwroot\uploads\products\b124712c-ed9a-49eb-be0f-0b4f90673a2a.png" />
+    <Content Include="wwwroot\uploads\products\b84d2a42-952c-497a-9cbd-c50f698f37d8.png" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />

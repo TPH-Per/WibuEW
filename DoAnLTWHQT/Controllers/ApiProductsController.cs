@@ -13,21 +13,45 @@ namespace DoAnLTWHQT.Controllers
         private readonly Entities _db = new Entities();
 
         // ========================================
-        // GET /api/products
-        // Lấy danh sách 20 sản phẩm mới nhất
+        // GET /api/products/in-stock
+        // Lấy sản phẩm có trong kho (tùy chọn lọc theo chi nhánh)
         // ========================================
         [HttpGet]
-        [Route("")]
-        public IHttpActionResult GetAll()
+        [Route("in-stock")]
+        public IHttpActionResult GetProductsInStock(
+            [FromUri] long? branchId = null,
+            [FromUri] long? categoryId = null,
+            [FromUri] long? supplierId = null,
+            [FromUri] int page = 1,
+            [FromUri] int pageSize = 20)
         {
             try
             {
-                var products = _db.products
+                var query = _db.products
                     .Include(p => p.category)
+                    .Include(p => p.supplier)
                     .Include(p => p.product_variants)
-                    .Where(p => p.deleted_at == null && p.status == "active")
+                    .Where(p => p.deleted_at == null && p.status == "active");
+
+                // Filter: Chỉ lấy sản phẩm có tồn kho > 0
+                query = query.Where(p => p.product_variants.Any(v =>
+                    _db.branch_inventories.Any(bi =>
+                        bi.product_variant_id == v.id &&
+                        (!branchId.HasValue || bi.branch_id == branchId.Value) &&
+                        bi.quantity_on_hand > 0)));
+
+                if (categoryId.HasValue)
+                    query = query.Where(p => p.category_id == categoryId.Value);
+
+                if (supplierId.HasValue)
+                    query = query.Where(p => p.supplier_id == supplierId.Value);
+
+                var totalCount = query.Count();
+
+                var products = query
                     .OrderByDescending(p => p.created_at)
-                    .Take(20)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .Select(p => new
                     {
                         Id = p.id,
@@ -36,38 +60,38 @@ namespace DoAnLTWHQT.Controllers
                         Description = p.description,
                         CategoryId = p.category_id,
                         CategoryName = p.category.name,
-                        // Lấy thông tin từ variant đầu tiên làm mặc định
-                        Price = p.product_variants.FirstOrDefault() != null
-                                ? p.product_variants.FirstOrDefault().price
-                                : 0,
-                        OriginalPrice = p.product_variants.FirstOrDefault() != null
-                                ? p.product_variants.FirstOrDefault().original_price
-                                : 0,
-                        ImageUrl = p.product_variants.FirstOrDefault() != null
-                                ? p.product_variants.FirstOrDefault().image_url
-                                : null,
-                        CreatedAt = p.created_at
+                        SupplierId = p.supplier_id,
+                        SupplierName = p.supplier.name,
+                        // Lấy giá thấp nhất trong các variant còn hoạt động
+                        Price = p.product_variants.Where(v => v.deleted_at == null).Min(v => (decimal?)v.price) ?? 0,
+                        OriginalPrice = p.product_variants.Where(v => v.deleted_at == null).Min(v => v.original_price),
+                        ImageUrl = p.product_variants.Where(v => v.deleted_at == null).Select(v => v.image_url).FirstOrDefault(),
+                        // Tính tổng tồn kho
+                        TotalStock = _db.branch_inventories
+                            .Where(bi => p.product_variants.Select(v => v.id).Contains(bi.product_variant_id)
+                                         && (!branchId.HasValue || bi.branch_id == branchId.Value))
+                            .Sum(bi => (int?)bi.quantity_on_hand) ?? 0
                     })
                     .ToList();
 
                 return Ok(new
                 {
                     Success = true,
-                    Message = "Lấy danh sách sản phẩm thành công",
                     Data = products,
-                    Total = products.Count
+                    Total = totalCount,
+                    Page = page,
+                    TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+                    Message = "Lấy danh sách sản phẩm tồn kho thành công"
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GetAll Error: {ex.Message}");
                 return InternalServerError(ex);
             }
         }
 
         // ========================================
         // GET /api/products/{id}
-        // Lấy chi tiết 1 sản phẩm kèm các variants
         // ========================================
         [HttpGet]
         [Route("{id:long}")]
@@ -77,45 +101,79 @@ namespace DoAnLTWHQT.Controllers
             {
                 var product = _db.products
                     .Include(p => p.category)
+                    .Include(p => p.supplier)
                     .Include(p => p.product_variants)
                     .FirstOrDefault(p => p.id == id && p.deleted_at == null);
 
                 if (product == null)
-                {
-                    return Content(HttpStatusCode.NotFound, new
-                    {
-                        Success = false,
-                        Message = "Không tìm thấy sản phẩm"
-                    });
-                }
-
-                var result = new
-                {
-                    Id = product.id,
-                    Name = product.name,
-                    Slug = product.slug,
-                    Description = product.description,
-                    Category = new
-                    {
-                        Id = product.category.id,
-                        Name = product.category.name
-                    },
-                    Variants = product.product_variants.Select(v => new
-                    {
-                        Id = v.id,
-                        Name = v.name,
-                        Sku = v.sku,
-                        Price = v.price,
-                        OriginalPrice = v.original_price,
-                        ImageUrl = v.image_url
-                    }).ToList()
-                };
+                    return Content(HttpStatusCode.NotFound, new { Success = false, Message = "Không tìm thấy sản phẩm" });
 
                 return Ok(new
                 {
                     Success = true,
-                    Data = result
+                    Data = new
+                    {
+                        Id = product.id,
+                        Name = product.name,
+                        Slug = product.slug,
+                        Description = product.description,
+                        Status = product.status,
+                        Category = new { Id = product.category.id, Name = product.category.name },
+                        Supplier = new { Id = product.supplier.id, Name = product.supplier.name },
+                        Variants = product.product_variants.Where(v => v.deleted_at == null).Select(v => new
+                        {
+                            Id = v.id,
+                            Name = v.name,
+                            Sku = v.sku,
+                            Price = v.price,
+                            OriginalPrice = v.original_price,
+                            ImageUrl = v.image_url
+                        }).ToList()
+                    }
                 });
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
+        // ========================================
+        // GET /api/products
+        // ========================================
+        [HttpGet]
+        [Route("")]
+        public IHttpActionResult GetAll([FromUri] bool inStock = false, [FromUri] long? branchId = null)
+        {
+            try
+            {
+                var query = _db.products
+                    .Include(p => p.product_variants)
+                    .Where(p => p.deleted_at == null && p.status == "active");
+
+                if (inStock)
+                {
+                    query = query.Where(p => p.product_variants.Any(v =>
+                        _db.branch_inventories.Any(bi =>
+                            bi.product_variant_id == v.id &&
+                            (!branchId.HasValue || bi.branch_id == branchId.Value) &&
+                            bi.quantity_on_hand > 0)));
+                }
+
+                var products = query
+                    .OrderByDescending(p => p.created_at)
+                    .Take(50)
+                    .Select(p => new
+                    {
+                        Id = p.id,
+                        Name = p.name,
+                        Slug = p.slug,
+                        Price = p.product_variants.Where(v => v.deleted_at == null).Min(v => (decimal?)v.price) ?? 0,
+                        ImageUrl = p.product_variants.Where(v => v.deleted_at == null).Select(v => v.image_url).FirstOrDefault()
+                    })
+                    .ToList();
+
+                return Ok(new { Success = true, Data = products, Total = products.Count });
             }
             catch (Exception ex)
             {
@@ -125,35 +183,35 @@ namespace DoAnLTWHQT.Controllers
 
         // ========================================
         // GET /api/products/category/{categoryId}
-        // Lấy sản phẩm theo danh mục
         // ========================================
         [HttpGet]
         [Route("category/{categoryId:long}")]
-        public IHttpActionResult GetByCategory(long categoryId)
+        public IHttpActionResult GetByCategory(long categoryId, [FromUri] long? branchId = null)
         {
             try
             {
-                var products = _db.products
-                    .Include(p => p.product_variants)
-                    .Where(p => p.category_id == categoryId
-                             && p.deleted_at == null
-                             && p.status == "active")
-                    .Select(p => new
-                    {
-                        Id = p.id,
-                        Name = p.name,
-                        Slug = p.slug,
-                        Price = p.product_variants.FirstOrDefault() != null ? p.product_variants.FirstOrDefault().price : 0,
-                        ImageUrl = p.product_variants.FirstOrDefault() != null ? p.product_variants.FirstOrDefault().image_url : null
-                    })
-                    .ToList();
+                var query = _db.products
+                    .Where(p => p.category_id == categoryId && p.deleted_at == null && p.status == "active");
 
-                return Ok(new
+                if (branchId.HasValue)
                 {
-                    Success = true,
-                    Data = products,
-                    Total = products.Count
-                });
+                    query = query.Where(p => p.product_variants.Any(v =>
+                        _db.branch_inventories.Any(bi =>
+                            bi.product_variant_id == v.id &&
+                            bi.branch_id == branchId.Value &&
+                            bi.quantity_on_hand > 0)));
+                }
+
+                var products = query.Select(p => new
+                {
+                    Id = p.id,
+                    Name = p.name,
+                    Slug = p.slug,
+                    Price = p.product_variants.FirstOrDefault() != null ? p.product_variants.FirstOrDefault().price : 0,
+                    ImageUrl = p.product_variants.FirstOrDefault() != null ? p.product_variants.FirstOrDefault().image_url : null
+                }).ToList();
+
+                return Ok(new { Success = true, Data = products, Total = products.Count });
             }
             catch (Exception ex)
             {
@@ -162,45 +220,41 @@ namespace DoAnLTWHQT.Controllers
         }
 
         // ========================================
-        // GET /api/products/search?q=keyword
-        // Tìm kiếm sản phẩm theo tên hoặc mô tả
+        // GET /api/products/search
         // ========================================
         [HttpGet]
         [Route("search")]
-        public IHttpActionResult Search([FromUri] string q)
+        public IHttpActionResult Search([FromUri] string q, [FromUri] long? branchId = null)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(q))
-                {
                     return Ok(new { Success = true, Data = new object[] { }, Total = 0 });
-                }
 
                 var keyword = q.ToLower().Trim();
+                var query = _db.products
+                    .Where(p => p.deleted_at == null && p.status == "active" &&
+                               (p.name.ToLower().Contains(keyword) || p.description.ToLower().Contains(keyword)));
 
-                var products = _db.products
-                    .Include(p => p.product_variants)
-                    .Where(p => p.deleted_at == null
-                             && p.status == "active"
-                             && (p.name.ToLower().Contains(keyword) || p.description.ToLower().Contains(keyword)))
-                    .Take(20)
-                    .Select(p => new
-                    {
-                        Id = p.id,
-                        Name = p.name,
-                        Slug = p.slug,
-                        Price = p.product_variants.FirstOrDefault() != null ? p.product_variants.FirstOrDefault().price : 0,
-                        ImageUrl = p.product_variants.FirstOrDefault() != null ? p.product_variants.FirstOrDefault().image_url : null
-                    })
-                    .ToList();
-
-                return Ok(new
+                if (branchId.HasValue)
                 {
-                    Success = true,
-                    Keyword = q,
-                    Data = products,
-                    Total = products.Count
-                });
+                    query = query.Where(p => p.product_variants.Any(v =>
+                        _db.branch_inventories.Any(bi =>
+                            bi.product_variant_id == v.id &&
+                            bi.branch_id == branchId.Value &&
+                            bi.quantity_on_hand > 0)));
+                }
+
+                var products = query.Take(20).Select(p => new
+                {
+                    Id = p.id,
+                    Name = p.name,
+                    Slug = p.slug,
+                    Price = p.product_variants.FirstOrDefault() != null ? p.product_variants.FirstOrDefault().price : 0,
+                    ImageUrl = p.product_variants.FirstOrDefault() != null ? p.product_variants.FirstOrDefault().image_url : null
+                }).ToList();
+
+                return Ok(new { Success = true, Keyword = q, Data = products, Total = products.Count });
             }
             catch (Exception ex)
             {
@@ -210,10 +264,7 @@ namespace DoAnLTWHQT.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _db.Dispose();
-            }
+            if (disposing) _db.Dispose();
             base.Dispose(disposing);
         }
     }

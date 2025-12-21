@@ -38,7 +38,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 PhoneNumber = u.phone_number ?? "",
                 Role = u.role?.name ?? "client",
                 Status = u.status ?? "active",
-                WarehouseName = u.warehouse?.name ?? "",
                 CreatedAt = u.created_at.HasValue ? new DateTimeOffset(u.created_at.Value) : DateTimeOffset.MinValue
             }).ToList();
 
@@ -84,7 +83,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 if (!ModelState.IsValid)
                 {
                     model.RoleOptions = BuildRoleOptions();
-                    model.WarehouseOptions = BuildWarehouseOptions();
                     model.BranchOptions = BuildBranchOptions();
                     return View("Form", model);
                 }
@@ -98,7 +96,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 {
                     ModelState.AddModelError("Email", "Email này đã được sử dụng.");
                     model.RoleOptions = BuildRoleOptions();
-                    model.WarehouseOptions = BuildWarehouseOptions();
                     model.BranchOptions = BuildBranchOptions();
                     return View("Form", model);
                 }
@@ -108,7 +105,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 {
                     ModelState.AddModelError("Name", "Tên đăng nhập này đã được sử dụng.");
                     model.RoleOptions = BuildRoleOptions();
-                    model.WarehouseOptions = BuildWarehouseOptions();
                     model.BranchOptions = BuildBranchOptions();
                     return View("Form", model);
                 }
@@ -160,7 +156,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                     phone_number = !string.IsNullOrWhiteSpace(model.PhoneNumber) ? model.PhoneNumber.Trim() : null,
                     password = hashedPassword,
                     role_id = roleId,
-                    warehouse_id = model.WarehouseId,
                     status = model.Status ?? "active",
                     created_at = DateTime.Now,
                     updated_at = DateTime.Now
@@ -177,7 +172,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 System.Diagnostics.Debug.WriteLine($"Error creating user: {ex.Message}");
                 ModelState.AddModelError("", $"Đã xảy ra lỗi: {ex.Message}");
                 model.RoleOptions = BuildRoleOptions();
-                model.WarehouseOptions = BuildWarehouseOptions();
                 model.BranchOptions = BuildBranchOptions();
                 return View("Form", model);
             }
@@ -200,10 +194,8 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 Email = user.email,
                 PhoneNumber = user.phone_number,
                 Role = user.role?.name ?? "client",
-                WarehouseId = user.warehouse_id,
                 Status = user.status,
                 RoleOptions = BuildRoleOptions(),
-                WarehouseOptions = BuildWarehouseOptions(),
                 BranchOptions = BuildBranchOptions()
             };
 
@@ -214,7 +206,7 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
         // GET: Admin/Users/Details/{id}
         public ActionResult Details(long id)
         {
-            var user = _db.users.Include("role").Include("warehouse").FirstOrDefault(u => u.id == id && u.deleted_at == null);
+            var user = _db.users.Include("role").FirstOrDefault(u => u.id == id && u.deleted_at == null);
             if (user == null)
             {
                 return HttpNotFound();
@@ -229,7 +221,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 PhoneNumber = user.phone_number ?? "",
                 Role = user.role?.name ?? "client",
                 Status = user.status ?? "active",
-                WarehouseName = user.warehouse?.name ?? "",
                 CreatedAt = user.created_at.HasValue ? new DateTimeOffset(user.created_at.Value) : DateTimeOffset.MinValue
             };
 
@@ -258,7 +249,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
             {
                 Id = id,
                 RoleOptions = BuildRoleOptions(),
-                WarehouseOptions = BuildWarehouseOptions(),
                 BranchOptions = BuildBranchOptions()
             };
         }
@@ -283,15 +273,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 case "client": return "Khách hàng";
                 default: return roleName;
             }
-        }
-
-        private IEnumerable<SelectOptionViewModel> BuildWarehouseOptions()
-        {
-            return _db.warehouses.Where(w => w.deleted_at == null).ToList().Select(w => new SelectOptionViewModel
-            {
-                Value = w.id.ToString(),
-                Label = w.name
-            }).ToList();
         }
 
         private IEnumerable<SelectOptionViewModel> BuildBranchOptions()

@@ -20,8 +20,6 @@ namespace Ltwhqt.ViewModels.Admin
 
         public string Status { get; set; } = "active";
 
-        public string WarehouseName { get; set; } = string.Empty;
-
         public string BranchName { get; set; } = string.Empty;
 
         public DateTimeOffset CreatedAt { get; set; }
@@ -45,15 +43,11 @@ namespace Ltwhqt.ViewModels.Admin
 
         public string Role { get; set; } = "client";
 
-        public long? WarehouseId { get; set; }
-
         public long? BranchId { get; set; }
 
         public string Status { get; set; } = "active";
 
         public IEnumerable<SelectOptionViewModel> RoleOptions { get; set; } = new List<SelectOptionViewModel>();
-
-        public IEnumerable<SelectOptionViewModel> WarehouseOptions { get; set; } = new List<SelectOptionViewModel>();
 
         public IEnumerable<SelectOptionViewModel> BranchOptions { get; set; } = new List<SelectOptionViewModel>();
     }
