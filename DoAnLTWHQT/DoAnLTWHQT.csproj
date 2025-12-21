@@ -250,6 +250,7 @@
     </Compile>
     <Compile Include="ViewModels\Admin\AdminManagementViewModels.cs" />
     <Compile Include="ViewModels\Admin\AdminReportViewModel.cs" />
+    <Compile Include="ViewModels\Admin\InventoryDetailsViewModel.cs" />
     <Compile Include="ViewModels\Admin\LoginViewModel.cs" />
     <Compile Include="ViewModels\Admin\RegisterViewModel.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -326,6 +327,7 @@
     <Content Include="perw.edmx.diagram">
       <DependentUpon>perw.edmx</DependentUpon>
     </Content>
+    <Content Include="Areas\Admin\Views\Inventories\Details.cshtml" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />

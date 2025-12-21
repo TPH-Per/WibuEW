@@ -140,3 +140,70 @@ BEGIN
     PRINT N'⚠️ Dữ liệu mẫu đã tồn tại trong bảng discounts.';
 END
 GO
+
+select * from discounts
+
+USE [perw];
+GO
+
+-- =============================================
+-- 1. GỠ BỎ RÀNG BUỘC KHÓA NGOẠI (Để xóa được bảng cũ)
+-- =============================================
+IF EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_purchase_orders_discounts]'))
+BEGIN
+    ALTER TABLE [dbo].[purchase_orders] DROP CONSTRAINT [FK_purchase_orders_discounts];
+END
+GO
+
+-- =============================================
+-- 2. XÓA BẢNG CŨ & TẠO BẢNG MỚI
+-- =============================================
+IF OBJECT_ID('dbo.discounts', 'U') IS NOT NULL DROP TABLE dbo.discounts;
+GO
+
+CREATE TABLE [dbo].[discounts] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [code] VARCHAR(50) NOT NULL UNIQUE,     -- Mã Voucher
+    [value] DECIMAL(18, 2) NOT NULL,        -- Giá trị giảm (VND)
+    -- ĐÃ BỎ CỘT [type] và [min_order_amount]
+    
+    [max_uses] INT NULL,                    -- Số lượt dùng tối đa
+    [used_count] INT NOT NULL DEFAULT 0,    -- Số lượt đã dùng
+    
+    [start_at] DATETIME2 NULL,              -- Ngày bắt đầu
+    [end_at] DATETIME2 NULL,                -- Ngày kết thúc
+    [is_active] BIT NOT NULL DEFAULT 1,     -- Kích hoạt
+    
+    [created_at] DATETIME2 NULL DEFAULT SYSDATETIME(),
+    [updated_at] DATETIME2 NULL DEFAULT SYSDATETIME()
+);
+GO
+
+-- =============================================
+-- 3. TẠO LẠI KHÓA NGOẠI VỚI BẢNG ĐƠN HÀNG
+-- =============================================
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('dbo.purchase_orders') AND name = 'discount_id')
+BEGIN
+    ALTER TABLE [dbo].[purchase_orders] WITH CHECK ADD CONSTRAINT [FK_purchase_orders_discounts] 
+    FOREIGN KEY([discount_id]) REFERENCES [dbo].[discounts] ([id]);
+END
+GO
+
+-- =============================================
+-- 4. THÊM DỮ LIỆU MẪU (Chỉ giảm tiền mặt)
+-- =============================================
+INSERT INTO [dbo].[discounts] ([code], [value], [max_uses], [used_count], [start_at], [end_at], [is_active])
+VALUES 
+-- Mã 1: Giảm 20k
+('GIAM20K', 20000, 100, 5, GETDATE(), DATEADD(day, 30, GETDATE()), 1),
+
+-- Mã 2: Giảm 50k
+('GIAM50K', 50000, 50, 2, GETDATE(), DATEADD(day, 15, GETDATE()), 1),
+
+-- Mã 3: Giảm 100k (Voucher khủng)
+('TET2025', 100000, 10, 0, GETDATE(), DATEADD(day, 60, GETDATE()), 1);
+
+PRINT N'✅ Đã cập nhật bảng Discounts (Bỏ type và min_order).';
+SELECT * FROM discounts;
+
+select * from purchase_orders

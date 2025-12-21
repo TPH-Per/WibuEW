@@ -1,0 +1,181 @@
+﻿@model DoAnLTWHQT.ViewModels.Admin.InventoryDetailsViewModel
+
+@{
+    ViewBag.Title = "Chi tiết tồn kho";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            @* SỬA: Thêm .Inventory vào trước các thuộc tính *@
+            <h2 class="h4 mb-1 fw-bold">Chi tiết tồn kho #@Model.Inventory.id</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index")">Quản lý kho</a></li>
+                    <li class="breadcrumb-item active">@Model.Inventory.product_variants.product.name</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="@Url.Action("Index")" class="btn btn-light border shadow-sm">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title fw-bold mb-0 text-primary">Thông tin chung</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-light rounded border d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            @if (!string.IsNullOrEmpty(Model.Inventory.product_variants.image_url))
+                            {
+                                <img src="@Model.Inventory.product_variants.image_url" alt="" class="img-fluid rounded" style="max-height: 50px;">
+                            }
+                            else
+                            {
+                                <i class="bi bi-box-seam text-secondary fs-4"></i>
+                            }
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">@Model.Inventory.product_variants.product.name</div>
+                            <div class="small text-muted">Phân loại: @Model.Inventory.product_variants.name</div>
+                            <div class="small text-muted">SKU: @Model.Inventory.product_variants.sku</div>
+                        </div>
+                    </div>
+
+                    <hr class="text-muted opacity-25">
+
+                    <div class="row g-3 text-center mb-4">
+                        <div class="col-6">
+                            <div class="p-3 bg-success bg-opacity-10 rounded border border-success border-opacity-25">
+                                <div class="display-6 fw-bold text-success">@Model.Inventory.quantity_on_hand</div>
+                                <div class="small text-success fw-bold text-uppercase">Thực tế</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-warning bg-opacity-10 rounded border border-warning border-opacity-25">
+                                <div class="display-6 fw-bold text-warning">@Model.Inventory.quantity_reserved</div>
+                                <div class="small text-warning fw-bold text-uppercase">Đang giữ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small fw-bold text-secondary">KHO LƯU TRỮ</label>
+                        <div class="d-flex align-items-center mt-1">
+                            <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                            <span class="fw-medium">@Model.Inventory.warehouse.name</span>
+                        </div>
+                        <div class="small text-muted ms-4">@Model.Inventory.warehouse.location</div>
+                    </div>
+
+                    <div>
+                        <label class="small fw-bold text-secondary">CẤU HÌNH</label>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span>Mức tồn tối thiểu (Reorder Level):</span>
+                            <span class="fw-bold">@Model.Inventory.reorder_level</span>
+                        </div>
+                        @if (Model.Inventory.quantity_on_hand <= Model.Inventory.reorder_level)
+                        {
+                            <div class="alert alert-danger mt-3 d-flex align-items-center" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <div>Cần nhập thêm hàng!</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 pb-3">
+                    <a href="@Url.Action("Adjust", new { id = Model.Inventory.id })" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-pencil-square me-2"></i>Điều chỉnh kho
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0">Lịch sử nhập/xuất</h5>
+                    @* SỬA: Dùng Model.Transactions thay vì Model.inventory_transactions *@
+                    <span class="badge bg-light text-dark border">@Model.Transactions.Count giao dịch</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Ngày giờ</th>
+                                <th>Loại GD</th>
+                                <th class="text-center">Số lượng</th>
+                                <th>Ghi chú / Mã đơn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Transactions != null && Model.Transactions.Any())
+                            {
+                                foreach (var trans in Model.Transactions)
+                                {
+                                    <tr>
+                                        <td class="ps-4 text-secondary">
+                                            @if (trans.created_at.HasValue)
+                                            {
+                                                <div>@trans.created_at.Value.ToString("dd/MM/yyyy")</div>
+                                                <div class="small">@trans.created_at.Value.ToString("HH:mm")</div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (trans.type == "INBOUND")
+                                            {
+                                                <span class="badge bg-success">Nhập kho</span>
+                                            }
+                                            else if (trans.type == "OUTBOUND")
+                                            {
+                                                <span class="badge bg-danger">Xuất kho</span>
+                                            }
+                                            else if (trans.type == "ADJUSTMENT")
+                                            {
+                                                <span class="badge bg-warning text-dark">Kiểm kê</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@trans.type</span>
+                                            }
+                                        </td>
+                                        <td class="text-center fw-bold @(trans.quantity > 0 ? "text-success" : "text-danger")">
+                                            @if (trans.quantity > 0)
+                                            {<span>+</span>} @trans.quantity
+                                        </td>
+                                        <td>
+                                            @if (trans.order_id != null)
+                                            {
+                                                <a href="@Url.Action("Details", "Orders", new { id = trans.order_id })" class="text-decoration-none">
+                                                    <i class="bi bi-receipt me-1"></i>Đơn #@trans.order_id
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted fst-italic">@trans.notes</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <i class="bi bi-clock-history display-6 d-block mb-3 opacity-50"></i>
+                                        Chưa có giao dịch nào được ghi nhận.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

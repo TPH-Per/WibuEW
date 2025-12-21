@@ -127,18 +127,19 @@
         <table class="table inventory-table align-middle mb-0">
             <thead>
                 <tr>
-                    <th style="width: 40%;">Tên Kho / Chi nhánh</th>
+                    <th style="width: 35%;">Tên Kho / Chi nhánh</th>
                     <th style="width: 15%;">Loại</th>
                     <th style="width: 15%;" class="text-end">Tổng tồn</th>
                     <th style="width: 15%;" class="text-end">Đang giữ</th>
-                    <th style="width: 15%;" class="text-end">Khả dụng</th>
+                    <th style="width: 10%;" class="text-end">Khả dụng</th>
+                    <th style="width: 10%;" class="text-center">Hành động</th>
                 </tr>
             </thead>
             <tbody>
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-5">
+                        <td colspan="6" class="text-center text-muted py-5">
                             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                             Chưa có dữ liệu tồn kho
                         </td>
@@ -150,7 +151,7 @@
                     {
                         var typeClass = item.IsWarehouse ? "warehouse" : "branch";
                         var rowClass = item.TongSoLuongTon == 0 ? "table-light text-muted" : "";
-                        
+
                         <tr class="@rowClass">
                             <td>
                                 <strong>@item.TenKho</strong>
@@ -176,22 +177,32 @@
                                     @item.SoLuongKhaDung.ToString("N0")
                                 </span>
                             </td>
+
+                            <td class="text-center">
+                                @* Lưu ý: Bạn cần truyền định danh (ID hoặc Tên) để Controller biết cần xem kho nào.
+                                Ở đây mình ví dụ truyền TenKho và LoaiKho.
+                                *@
+                                <a href="@Url.Action("LocationDetails", new { name = item.TenKho, type = item.LoaiKho })"
+                                   class="btn btn-sm btn-outline-primary shadow-sm"
+                                   title="Xem danh sách hàng trong kho này">
+                                    <i class="bi bi-eye me-1"></i> Xem
+                                </a>
+                            </td>
                         </tr>
                     }
-                    
-                    <!-- Tổng cộng -->
+
                     <tr class="table-dark">
                         <td><strong>TỔNG CỘNG</strong></td>
                         <td></td>
                         <td class="text-end"><strong>@((totalWarehouse + totalBranch).ToString("N0"))</strong></td>
                         <td class="text-end"><strong>@totalReserved.ToString("N0")</strong></td>
                         <td class="text-end"><strong>@((totalWarehouse + totalBranch - totalReserved).ToString("N0"))</strong></td>
+                        <td></td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-</div>
 
 <!-- Ghi chú -->
 <div class="mt-4 p-3 bg-light rounded">
