@@ -378,7 +378,7 @@ namespace Ltwhqt.ViewModels.Admin
 
         public string Type { get; set; } = "percent";
 
-        public decimal Value { get; set; }
+        public decimal? Value { get; set; }
 
         public decimal? MinOrderAmount { get; set; }
 
@@ -386,12 +386,13 @@ namespace Ltwhqt.ViewModels.Admin
 
         public bool IsActive { get; set; } = true;
 
-        public DateTimeOffset? StartAt { get; set; }
+        public DateTime? StartAt { get; set; }
 
-        public DateTimeOffset? EndAt { get; set; }
+        public DateTime? EndAt { get; set; }
 
         public IEnumerable<SelectOptionViewModel> TypeOptions { get; set; } = new List<SelectOptionViewModel>();
     }
+
 
     public class ReportIndicatorViewModel
     {

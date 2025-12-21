@@ -1,56 +1,93 @@
-@using Ltwhqt.ViewModels.Shared
 @model Ltwhqt.ViewModels.Admin.DiscountFormViewModel
 @{
     ViewBag.Title = ViewBag.Title ?? "Thông tin mã giảm giá";
-    var typeOptions = Model.TypeOptions ?? Enumerable.Empty<SelectOptionViewModel>();
+    var isEdit = Model.Id.HasValue && Model.Id > 0;
 }
 
 <div class="card border-0 shadow-sm">
     <div class="card-body">
         <h2 class="h5 mb-4">@ViewBag.Title</h2>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label">Code</label>
-                <input class="form-control" value="@Model.Code" placeholder="NEW50" />
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Loại</label>
-                <select class="form-select">
-                    @foreach (var option in typeOptions)
+
+        @using (Html.BeginForm("Save", "Discounts", FormMethod.Post, new { @class = "needs-validation" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+
+            if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    @Html.ValidationSummary(false)
+                </div>
+            }
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Mã Code <span class="text-danger">*</span></label>
+                    @if (isEdit)
                     {
-                        <option value="@option.Value" selected="@(option.Value == Model.Type ? "selected" : null)">@option.Label</option>
+                        <input class="form-control" value="@Model.Code" readonly disabled />
+                        @Html.HiddenFor(m => m.Code)
+                        <small class="text-muted">Không thể sửa mã code sau khi tạo.</small>
                     }
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Giá trị</label>
-                <input class="form-control" type="number" value="@Model.Value" />
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Min order amount</label>
-                <input class="form-control" type="number" value="@Model.MinOrderAmount" />
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Max uses</label>
-                <input class="form-control" type="number" value="@Model.MaxUses" />
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Hiệu lực</label>
-                <div class="d-flex gap-2">
-                    <input class="form-control" type="date" value="@Model.StartAt?.ToString("yyyy-MM-dd")" />
-                    <input class="form-control" type="date" value="@Model.EndAt?.ToString("yyyy-MM-dd")" />
+                    else
+                    {
+                        @Html.TextBoxFor(m => m.Code, new { @class = "form-control", placeholder = "VD: SALE50", required = "required" })
+                    }
+                    @Html.ValidationMessageFor(m => m.Code, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Giá trị giảm (VNĐ) <span class="text-danger">*</span></label>
+                    @if (isEdit)
+                    {
+                        <input class="form-control" value="@(Model.Value.HasValue ? Model.Value.Value.ToString("N0") : "0")" readonly disabled />
+                        @Html.HiddenFor(m => m.Value)
+                        <small class="text-muted">Không thể sửa giá trị sau khi tạo.</small>
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(m => m.Value, new { @class = "form-control", type = "number", placeholder = "50000", required = "required", min = "0" })
+                    }
+                    @Html.ValidationMessageFor(m => m.Value, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Số lượt dùng tối đa</label>
+                    @Html.TextBoxFor(m => m.MaxUses, new { @class = "form-control", type = "number", placeholder = "100", min = "0" })
+                    @Html.ValidationMessageFor(m => m.MaxUses, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Trạng thái</label>
+                    <div class="form-check form-switch mt-2">
+                        @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                        <label class="form-check-label">Kích hoạt mã giảm giá</label>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Ngày bắt đầu</label>
+                    <input type="datetime-local" class="form-control" name="StartAt" 
+                           value="@(Model.StartAt.HasValue ? Model.StartAt.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Ngày kết thúc</label>
+                    <input type="datetime-local" class="form-control" name="EndAt" 
+                           value="@(Model.EndAt.HasValue ? Model.EndAt.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
                 </div>
             </div>
-            <div class="col-12">
-                <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" @(Model.IsActive ? "checked" : null) />
-                    <label class="form-check-label">Kích hoạt mã</label>
-                </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex justify-content-between">
+                <a class="btn btn-light" href="@Url.Action("Index")">
+                    <i class="bi bi-arrow-left me-2"></i>Huỷ bỏ
+                </a>
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check-lg me-2"></i>@(isEdit ? "Cập nhật" : "Tạo mã")
+                </button>
             </div>
-        </div>
-        <div class="d-flex justify-content-end gap-2 mt-4">
-            <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
-            <button class="btn btn-primary" type="button">Lưu mã</button>
-        </div>
+        }
     </div>
 </div>
