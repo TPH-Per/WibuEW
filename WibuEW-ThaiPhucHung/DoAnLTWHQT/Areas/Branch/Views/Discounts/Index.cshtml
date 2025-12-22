@@ -1,0 +1,36 @@
+@model Ltwhqt.ViewModels.Branch.BranchDiscountCheckViewModel
+@{
+    ViewBag.Title = "Kiểm tra mã giảm giá";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">Validate discount code</h2>
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Nhập mã</label>
+                <input class="form-control text-uppercase" name="code" value="@Model.Code" placeholder="Nhập mã..." />
+            </div>
+            <div class="col-md-2 align-self-end">
+                <button class="btn btn-primary w-100" type="submit">Kiểm tra</button>
+            </div>
+        </form>
+        @if (!string.IsNullOrWhiteSpace(Model.Code))
+        {
+            <hr class="my-4" />
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="text-secondary small">Trạng thái</div>
+                    <div class="h5">@Model.Message</div>
+                    <div class="text-secondary small">
+                        Hiệu lực: @Model.StartAt:dd/MM - @Model.EndAt:dd/MM • Min: @Model.MinOrderAmount?.ToString("c0")
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="text-secondary small">Lượt sử dụng</div>
+                    <div class="h5">@Model.UsedCount / @Model.MaxUses</div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

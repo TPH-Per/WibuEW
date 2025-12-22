@@ -1,0 +1,94 @@
+@model IEnumerable<Ltwhqt.ViewModels.Admin.BranchViewModel>
+@{
+    ViewBag.Title = "Chi nhánh";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1">Hệ thống chi nhánh</h2>
+        <p class="text-secondary mb-0">Quản lý thông tin chi nhánh và gán quản lý.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="bi bi-plus-lg me-2"></i>Thêm chi nhánh
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tên</th>
+                    <th>Địa chỉ</th>
+                    <th>Quản lý</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var branch in Model)
+                    {
+                        <tr>
+                            <td>@branch.Id</td>
+                            <td>
+                                <span class="fw-medium">@branch.Name</span>
+                            </td>
+                            <td>@branch.Location</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(branch.Manager) && branch.Manager != "Chưa gán")
+                                {
+                                    <span class="badge bg-info text-dark">@branch.Manager</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa gán</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Edit", new { id = branch.Id })" title="Sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @using (Html.BeginForm("Delete", "Branches", new { id = branch.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc muốn xóa chi nhánh này?');" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                            Chưa có chi nhánh nào. <a href="@Url.Action("Create")">Thêm chi nhánh mới</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

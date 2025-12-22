@@ -1,0 +1,33 @@
+@model IEnumerable<Ltwhqt.ViewModels.Branch.BranchReportCardViewModel>
+@{
+    ViewBag.Title = "Báo cáo chi nhánh";
+}
+
+<div class="row g-4">
+    @foreach (var card in Model)
+    {
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-secondary text-uppercase small mb-1">@card.Title</p>
+                    <h3 class="mb-0">@card.Value</h3>
+                    <div class="mt-2 text-success">@card.Trend</div>
+                    <p class="text-secondary small mb-0">@card.Description</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white border-0">
+        <h3 class="h6 mb-0">Gợi ý hành động</h3>
+    </div>
+    <div class="card-body">
+        <ul class="mb-0">
+            <li>Đẩy mạnh Pre-order cho SKU hot</li>
+            <li>Gửi yêu cầu bổ sung với SKU dưới định mức</li>
+            <li>Đối soát thanh toán cuối ngày</li>
+        </ul>
+    </div>
+</div>

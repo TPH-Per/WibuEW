@@ -1,0 +1,34 @@
+@model Ltwhqt.ViewModels.Admin.UserListItemViewModel
+@{
+    ViewBag.Title = "Chi tiết tài khoản";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">Thông tin người dùng</h2>
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Tên hiển thị</dt>
+            <dd class="col-sm-9">@Model.FullName</dd>
+
+            <dt class="col-sm-3">Username</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@Model.Email</dd>
+
+            <dt class="col-sm-3">Điện thoại</dt>
+            <dd class="col-sm-9">@Model.PhoneNumber</dd>
+
+            <dt class="col-sm-3">Role</dt>
+            <dd class="col-sm-9">@Model.Role</dd>
+
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                <span class="badge @(Model.Status == "active" ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger")">@Model.Status</span>
+            </dd>
+
+            <dt class="col-sm-3">Kho/chi nhánh</dt>
+            <dd class="col-sm-9">@(!string.IsNullOrWhiteSpace(Model.BranchName) ? Model.BranchName : Model.WarehouseName)</dd>
+        </dl>
+    </div>
+</div>

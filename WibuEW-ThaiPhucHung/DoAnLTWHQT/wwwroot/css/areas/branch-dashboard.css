@@ -1,0 +1,45 @@
+/* Branch Dashboard Specific Styles */
+
+.branch-dashboard-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%); /* Green gradient */
+    box-shadow: 0 20px 40px -15px #10b981;
+}
+
+.branch-stat-card {
+    border-left: 4px solid #10b981;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.branch-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px -10px rgba(16, 185, 129, 0.3);
+}
+
+.branch-orders-table .table th {
+    background-color: #ecfdf5; /* Light green */
+    color: #047857; /* Dark green */
+}
+
+.branch-orders-table .status-pill {
+    font-weight: 600;
+}
+
+.branch-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.branch-processing {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.branch-completed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.branch-cancelled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}

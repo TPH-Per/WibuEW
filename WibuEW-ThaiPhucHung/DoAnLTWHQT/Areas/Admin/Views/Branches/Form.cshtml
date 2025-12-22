@@ -1,0 +1,58 @@
+@using Ltwhqt.ViewModels.Shared
+@model Ltwhqt.ViewModels.Admin.BranchFormViewModel
+@{
+    ViewBag.Title = ViewBag.Title ?? "Thông tin chi nhánh";
+    var managerOptions = Model.ManagerOptions ?? Enumerable.Empty<SelectOptionViewModel>();
+    var isEdit = Model.Id.HasValue;
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-4">@ViewBag.Title</h2>
+
+        @using (Html.BeginForm(isEdit ? "Edit" : "Create", "Branches", isEdit ? new { id = Model.Id } : null, FormMethod.Post, new { @class = "needs-validation" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="Name">Tên chi nhánh <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" placeholder="Chi nhánh Quận 1" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="Location">Địa chỉ</label>
+                    <input type="text" class="form-control" id="Location" name="Location" value="@Model.Location" placeholder="45 Nguyễn Huệ..." />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="ManagerUserId">Quản lý <small class="text-muted">(chỉ users có role "branch_manager")</small></label>
+                    <select class="form-select" id="ManagerUserId" name="ManagerUserId">
+                        <option value="">-- Chọn quản lý --</option>
+                        @foreach (var option in managerOptions)
+                        {
+                            <option value="@option.Value" @(option.Value == Model.ManagerUserId?.ToString() ? "selected" : "")>@option.Label</option>
+                        }
+                    </select>
+                    @if (ViewData.ModelState["ManagerUserId"] != null && ViewData.ModelState["ManagerUserId"].Errors.Any())
+                    {
+                        <div class="text-danger small mt-1">@ViewData.ModelState["ManagerUserId"].Errors.First().ErrorMessage</div>
+                    }
+                </div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check-lg me-1"></i>@(isEdit ? "Cập nhật" : "Thêm mới")
+                </button>
+            </div>
+        }
+    </div>
+</div>
