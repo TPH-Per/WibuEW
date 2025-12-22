@@ -26,18 +26,34 @@ namespace DoAnLTWHQT
             EnsureTestBranchManagerAccount();
         }
 
+        protected void Application_PostAuthorizeRequest()
+        {
+            if (HttpContext.Current.Request.Path.ToLower().StartsWith("/api/"))
+            {
+                HttpContext.Current.SetSessionStateBehavior(
+                    System.Web.SessionState.SessionStateBehavior.Required);
+            }
+        }
+
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
             var context = HttpContext.Current;
             var origin = context.Request.Headers["Origin"];
 
-            // Cho phép origin từ Vue dev server
-            if (origin == "http://localhost:3000")
+            // Danh sách các origin được phép
+            var allowedOrigins = new[] { "http://localhost:3000", "http://localhost:5173" };
+
+            // Kiểm tra xem origin có trong danh sách được phép không
+            if (!string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin))
             {
-                context.Response.AddHeader("Access-Control-Allow-Origin", origin);
-                context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
-                context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
-                context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                // Chỉ add header nếu chưa có (tránh duplicate)
+                if (string.IsNullOrEmpty(context.Response.Headers["Access-Control-Allow-Origin"]))
+                {
+                    context.Response.AddHeader("Access-Control-Allow-Origin", origin);
+                    context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
+                    context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, Authorization");
+                    context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                }
             }
 
             // Xử lý preflight request (OPTIONS)

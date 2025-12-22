@@ -214,7 +214,9 @@
     </Compile>
     <Compile Include="Controllers\ApiAuthController.cs" />
     <Compile Include="Controllers\ApiBranchesController.cs" />
+    <Compile Include="Controllers\ApiCartController.cs" />
     <Compile Include="Controllers\ApiCategoriesController.cs" />
+    <Compile Include="Controllers\ApiDiscountsController.cs" />
     <Compile Include="Controllers\ApiProductsController.cs" />
     <Compile Include="Controllers\ApiSuppliersController.cs" />
     <Compile Include="discount.cs">
@@ -232,10 +234,13 @@
     <Compile Include="inventory_transactions.cs">
       <DependentUpon>Perw.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\AddToCartRequest.cs" />
     <Compile Include="Models\ApiLoginRequest.cs" />
     <Compile Include="Models\ApiRegisterRequest.cs" />
     <Compile Include="Models\ApiResponse.cs" />
     <Compile Include="Models\ApiValidationResponse.cs" />
+    <Compile Include="Models\ApplyDiscountRequest.cs" />
+    <Compile Include="Models\UpdateCartRequest.cs" />
     <Compile Include="Models\UserDto.cs" />
     <Compile Include="payment.cs">
       <DependentUpon>Perw.tt</DependentUpon>
@@ -355,12 +360,17 @@
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="wwwroot\uploads\categories\category_1.jpg" />
+    <Content Include="wwwroot\uploads\categories\category_2.jpg" />
+    <Content Include="wwwroot\uploads\categories\category_3.jpg" />
+    <Content Include="wwwroot\uploads\categories\category_4.jpg" />
     <Content Include="wwwroot\uploads\products\0c862f58-60b3-430a-a227-3d156adc10a6.jpg" />
     <Content Include="wwwroot\uploads\products\63c0193a-818e-4664-b7df-2b06637973ec.png" />
     <Content Include="wwwroot\uploads\products\86a6624d-b6d7-4589-a388-6dcec68bef8b.jpg" />
     <Content Include="wwwroot\uploads\products\892c4b5a-b5d9-4b1f-b059-8499819727be.jpg" />
     <Content Include="wwwroot\uploads\products\b124712c-ed9a-49eb-be0f-0b4f90673a2a.png" />
     <Content Include="wwwroot\uploads\products\b84d2a42-952c-497a-9cbd-c50f698f37d8.png" />
+    <Content Include="wwwroot\uploads\video\video_1.mp4" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -473,7 +483,9 @@
     <Folder Include="Areas\Warehouse\Views\Shared\" />
     <Folder Include="Views\ApiAuthController\" />
     <Folder Include="Views\ApiBranches\" />
+    <Folder Include="Views\ApiCart\" />
     <Folder Include="Views\ApiCategories\" />
+    <Folder Include="Views\ApiDiscounts\" />
     <Folder Include="Views\ApiProducts\" />
     <Folder Include="Views\ApiSuppliers\" />
   </ItemGroup>

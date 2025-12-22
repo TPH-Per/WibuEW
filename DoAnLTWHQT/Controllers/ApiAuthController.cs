@@ -4,14 +4,15 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Web;
 using System.Web.Http;
-using System.Web.Http.Cors;
+using System.Web.Security;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace DoAnLTWHQT.Controllers
 {
     [RoutePrefix("api/auth")]
-    [EnableCors(origins: "http://localhost:5173", headers: "*", methods: "*", SupportsCredentials = true)]
+    // CORS được xử lý trong Global.asax.cs để tránh duplicate headers
     public class ApiAuthController : ApiController
     {
         private readonly Entities _db = new Entities();
@@ -79,7 +80,43 @@ namespace DoAnLTWHQT.Controllers
                     });
                 }
 
-                // 6. Thành công
+                // 6. Tạo FormsAuthentication cookie để xác thực cho các API request tiếp theo
+                var userRole = dbUser.role?.name ?? "customer";
+                var rememberMe = request.RememberMe;
+                
+                var ticket = new FormsAuthenticationTicket(
+                    1,                                              // version
+                    dbUser.email,                                   // user name (email)
+                    DateTime.Now,                                   // issue time
+                    DateTime.Now.AddDays(rememberMe ? 7 : 1),       // expiration
+                    rememberMe,                                     // persistent
+                    userRole,                                       // user data (role)
+                    FormsAuthentication.FormsCookiePath             // cookie path
+                );
+
+                // Encrypt the ticket
+                var encryptedTicket = FormsAuthentication.Encrypt(ticket);
+
+                // Create cookie
+                var authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
+                {
+                    HttpOnly = true,
+                    Secure = FormsAuthentication.RequireSSL,
+                    Path = FormsAuthentication.FormsCookiePath,
+                    // Cho phép cross-site cookie (SameSite=None yêu cầu Secure=true)
+                    // Tuy nhiên trong dev localhost, ta có thể dùng SameSite=Lax
+                };
+
+                if (rememberMe)
+                {
+                    authCookie.Expires = ticket.Expiration;
+                }
+
+                // Add cookie to response
+                HttpContext.Current.Response.Cookies.Add(authCookie);
+                System.Diagnostics.Debug.WriteLine($"API Login - Auth cookie created: {FormsAuthentication.FormsCookieName}");
+
+                // 7. Thành công
                 System.Diagnostics.Debug.WriteLine($"API Login - Success: {dbUser.email}");
                 return Ok(new ApiResponse
                 {
@@ -93,7 +130,7 @@ namespace DoAnLTWHQT.Controllers
                         Email = dbUser.email,
                         PhoneNumber = dbUser.phone_number,
                         RoleId = dbUser.role_id,
-                        RoleName = dbUser.role?.name ?? "customer"
+                        RoleName = userRole
                     }
                 });
             }

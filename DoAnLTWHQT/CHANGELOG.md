@@ -1,10 +1,177 @@
 # 📋 CHANGELOG - Tổng Hợp Thay Đổi Từ Khi Pull Project
 
-> **Ngày cập nhật:** 2025-12-20 22:07
+> **Ngày cập nhật:** 2025-12-22 22:10
 > 
-> **Tổng số files thay đổi:** 51 files (Modified) + 7 files (New)
+> **Tổng số files thay đổi:** 51 files (Modified) + 7 files (New) + 5 files (Hôm nay)
 > 
 > **Tổng số dòng thay đổi:** +247 / -188
+
+---
+
+## 🔥 CẬP NHẬT MỚI NHẤT (2025-12-22)
+
+### Vấn đề: Lỗi 401 khi thêm sản phẩm vào giỏ hàng
+
+**Triệu chứng:**
+```
+POST https://localhost:44377/api/cart
+Status: 401 Unauthorized
+Response: { Success: false, Message: "Vui lòng đăng nhập" }
+```
+
+**Nguyên nhân gốc:**
+1. `ApiAuthController.Login()` không tạo cookie `FormsAuthenticationTicket` sau khi login thành công
+2. Các API khác (như `/api/cart`) dựa vào cookie để xác thực user
+3. CORS được cấu hình ở 2 nơi → gây duplicate `Access-Control-Allow-Origin` header
+
+---
+
+### ✅ Đã sửa (5 files)
+
+#### 1. `DoAnLTWHQT/Controllers/ApiAuthController.cs`
+
+| Thay đổi | Chi tiết |
+|----------|----------|
+| ✅ Thêm tạo FormsAuthenticationTicket | Sau khi login thành công, tạo và set cookie `.ASPXAUTH` |
+| ✅ Xóa `[EnableCors]` attribute | CORS giờ được xử lý tập trung trong Global.asax.cs |
+| ✅ Thêm import `System.Web.Security` | Để sử dụng `FormsAuthenticationTicket` |
+
+**Code thêm (sau khi verify password thành công):**
+```csharp
+// Tạo FormsAuthentication cookie
+var userRole = dbUser.role?.name ?? "customer";
+var rememberMe = request.RememberMe;
+
+var ticket = new FormsAuthenticationTicket(
+    1,                                          // version
+    dbUser.email,                               // user name (email)
+    DateTime.Now,                               // issue time
+    DateTime.Now.AddDays(rememberMe ? 7 : 1),   // expiration
+    rememberMe,                                 // persistent
+    userRole,                                   // user data (role)
+    FormsAuthentication.FormsCookiePath         // cookie path
+);
+
+var encryptedTicket = FormsAuthentication.Encrypt(ticket);
+var authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
+{
+    HttpOnly = true,
+    Secure = FormsAuthentication.RequireSSL,
+    Path = FormsAuthentication.FormsCookiePath
+};
+
+if (rememberMe) authCookie.Expires = ticket.Expiration;
+
+HttpContext.Current.Response.Cookies.Add(authCookie);
+```
+
+---
+
+#### 2. `DoAnLTWHQT/Models/ApiLoginRequest.cs`
+
+| Thay đổi | Chi tiết |
+|----------|----------|
+| ✅ Thêm property `RememberMe` | Hỗ trợ "Ghi nhớ đăng nhập" |
+
+**Code mới:**
+```csharp
+public class ApiLoginRequest
+{
+    public string Email { get; set; }
+    public string Password { get; set; }
+    public bool RememberMe { get; set; }  // MỚI
+}
+```
+
+---
+
+#### 3. `DoAnLTWHQT/Global.asax.cs`
+
+| Thay đổi | Chi tiết |
+|----------|----------|
+| ✅ Hỗ trợ nhiều origins | Thêm `localhost:5173` vào danh sách allowed |
+| ✅ Tránh duplicate headers | Check trước khi add header |
+| ✅ Thêm header `Authorization` | Cho phép gửi Authorization header |
+
+**Code mới:**
+```csharp
+protected void Application_BeginRequest(object sender, EventArgs e)
+{
+    var context = HttpContext.Current;
+    var origin = context.Request.Headers["Origin"];
+
+    // Danh sách các origin được phép
+    var allowedOrigins = new[] { "http://localhost:3000", "http://localhost:5173" };
+
+    if (!string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin))
+    {
+        // Chỉ add header nếu chưa có (tránh duplicate)
+        if (string.IsNullOrEmpty(context.Response.Headers["Access-Control-Allow-Origin"]))
+        {
+            context.Response.AddHeader("Access-Control-Allow-Origin", origin);
+            context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
+            context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, Authorization");
+            context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        }
+    }
+
+    if (context.Request.HttpMethod == "OPTIONS")
+    {
+        context.Response.StatusCode = 200;
+        context.Response.End();
+    }
+}
+```
+
+---
+
+#### 4. `DoAnLTWHQT/App_Start/WebApiConfig.cs`
+
+| Thay đổi | Chi tiết |
+|----------|----------|
+| ✅ Xóa CORS configuration | CORS giờ xử lý tập trung trong Global.asax.cs |
+| ✅ Comment out PreflightHandler | Đã xử lý trong Global.asax.cs |
+
+**Lý do:** Tránh duplicate `Access-Control-Allow-Origin` header (gây lỗi CORS)
+
+---
+
+#### 5. `FRONTEND_AUTH_FIX_GUIDE.md` (FILE MỚI)
+
+File hướng dẫn chi tiết cho team Frontend cách sửa để authentication hoạt động:
+
+**Nội dung chính:**
+- Giải thích nguyên nhân lỗi 401
+- Hướng dẫn thêm `withCredentials: true` vào Axios
+- Ví dụ code hoàn chỉnh cho `api/index.ts`, `auth.api.ts`, `cart.api.ts`
+- Cách kiểm tra cookie đã được set
+- Lưu ý về HTTPS và SameSite
+
+---
+
+### 🐛 Bug Fixes Summary
+
+| Bug | Nguyên nhân | Giải pháp |
+|-----|-------------|-----------|
+| 401 khi thêm vào giỏ hàng | API login không tạo auth cookie | Thêm code tạo `FormsAuthenticationTicket` |
+| CORS `does not match 'http://localhost:3000, http://localhost:3000'` | Header duplicate từ 2 nơi | Xóa CORS từ WebApiConfig, chỉ giữ trong Global.asax.cs |
+
+---
+
+### 📋 Checklist Cho Team
+
+**Backend (đã hoàn thành ✅):**
+- [x] ApiAuthController tạo cookie khi login
+- [x] CORS xử lý tập trung trong Global.asax.cs
+- [x] Hỗ trợ cả localhost:3000 và localhost:5173
+- [x] Thêm RememberMe vào ApiLoginRequest
+
+**Frontend (cần làm ⚠️):**
+- [ ] Thêm `withCredentials: true` vào Axios config
+- [ ] Cập nhật login request để gửi `rememberMe`
+- [ ] Build lại và test
+
+---
 
 ---
 
