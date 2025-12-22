@@ -9,49 +9,244 @@
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["ErrorMessage"]
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
 <div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0 py-3">
+        <div class="d-flex align-items-center">
+            <div class="bg-success bg-opacity-10 rounded-3 p-2 me-3">
+                <i class="bi bi-building text-success fs-4"></i>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-bold">@ViewBag.Title</h5>
+                <small class="text-muted">@(isEdit ? "Chỉnh sửa thông tin chi nhánh" : "Thêm chi nhánh mới")</small>
+            </div>
+        </div>
+    </div>
     <div class="card-body">
-        <h2 class="h5 mb-4">@ViewBag.Title</h2>
-
-        @using (Html.BeginForm(isEdit ? "Edit" : "Create", "Branches", isEdit ? new { id = Model.Id } : null, FormMethod.Post, new { @class = "needs-validation" }))
+        @using (Html.BeginForm(isEdit ? "Edit" : "Create", "Branches", isEdit ? new { id = Model.Id } : null, FormMethod.Post, new { @class = "needs-validation", id = "branchForm" }))
         {
             @Html.AntiForgeryToken()
             @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label" for="Name">Tên chi nhánh <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" placeholder="Chi nhánh Quận 1" required />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label" for="Location">Địa chỉ</label>
-                    <input type="text" class="form-control" id="Location" name="Location" value="@Model.Location" placeholder="45 Nguyễn Huệ..." />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label" for="ManagerUserId">Quản lý <small class="text-muted">(chỉ users có role "branch_manager")</small></label>
-                    <select class="form-select" id="ManagerUserId" name="ManagerUserId">
-                        <option value="">-- Chọn quản lý --</option>
-                        @foreach (var option in managerOptions)
-                        {
-                            <option value="@option.Value" @(option.Value == Model.ManagerUserId?.ToString() ? "selected" : "")>@option.Label</option>
-                        }
-                    </select>
-                    @if (ViewData.ModelState["ManagerUserId"] != null && ViewData.ModelState["ManagerUserId"].Errors.Any())
-                    {
-                        <div class="text-danger small mt-1">@ViewData.ModelState["ManagerUserId"].Errors.First().ErrorMessage</div>
-                    }
+            <!-- Section 1: Thông tin cơ bản -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-success mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Thông tin cơ bản
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium" for="Name">Tên chi nhánh <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-shop"></i></span>
+                            <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" placeholder="Chi nhánh Quận 1" required />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium" for="ManagerUserId">Quản lý chi nhánh</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                            <select class="form-select" id="ManagerUserId" name="ManagerUserId">
+                                <option value="">-- Chọn quản lý --</option>
+                                @foreach (var option in managerOptions)
+                                {
+                                    <option value="@option.Value" @(option.Value == Model.ManagerUserId?.ToString() ? "selected" : "")>
+                                        @option.Label
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <small class="text-muted">Chỉ hiển thị users có role "branch_manager"</small>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="Location">Địa chỉ</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text" class="form-control" id="Location" name="Location" value="@Model.Location" placeholder="45 Nguyễn Huệ, Quận 1, TP.HCM" />
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex justify-content-end gap-2 mt-4">
-                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-check-lg me-1"></i>@(isEdit ? "Cập nhật" : "Thêm mới")
-                </button>
+
+            <!-- Section 2: Loại chi nhánh (Radio Buttons) -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-success mb-3">
+                    <i class="bi bi-diagram-3 me-2"></i>Loại chi nhánh
+                </h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="BranchType" id="typeRetail" value="retail" checked>
+                                <label class="form-check-label" for="typeRetail">
+                                    <i class="bi bi-shop text-primary me-1"></i>Bán lẻ
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="BranchType" id="typeWholesale" value="wholesale">
+                                <label class="form-check-label" for="typeWholesale">
+                                    <i class="bi bi-box-seam text-success me-1"></i>Bán sỉ
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="BranchType" id="typeMixed" value="mixed">
+                                <label class="form-check-label" for="typeMixed">
+                                    <i class="bi bi-boxes text-warning me-1"></i>Kết hợp
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="BranchType" id="typeShowroom" value="showroom">
+                                <label class="form-check-label" for="typeShowroom">
+                                    <i class="bi bi-display text-info me-1"></i>Showroom
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Dịch vụ hỗ trợ (Checkboxes) -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-success mb-3">
+                    <i class="bi bi-gear me-2"></i>Dịch vụ hỗ trợ
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0 h-100">
+                            <div class="card-body py-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="servicePOS" name="Services" value="pos" checked>
+                                    <label class="form-check-label fw-medium" for="servicePOS">
+                                        <i class="bi bi-cash-coin text-success me-1"></i>POS (Bán tại quầy)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0 h-100">
+                            <div class="card-body py-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="serviceDelivery" name="Services" value="delivery" checked>
+                                    <label class="form-check-label fw-medium" for="serviceDelivery">
+                                        <i class="bi bi-truck text-primary me-1"></i>Giao hàng
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0 h-100">
+                            <div class="card-body py-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="servicePickup" name="Services" value="pickup">
+                                    <label class="form-check-label fw-medium" for="servicePickup">
+                                        <i class="bi bi-bag-check text-info me-1"></i>Nhận tại cửa hàng
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0 h-100">
+                            <div class="card-body py-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="serviceWarranty" name="Services" value="warranty">
+                                    <label class="form-check-label fw-medium" for="serviceWarranty">
+                                        <i class="bi bi-shield-check text-warning me-1"></i>Bảo hành
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0 h-100">
+                            <div class="card-body py-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="serviceReturn" name="Services" value="return">
+                                    <label class="form-check-label fw-medium" for="serviceReturn">
+                                        <i class="bi bi-arrow-return-left text-danger me-1"></i>Đổi/Trả hàng
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0 h-100">
+                            <div class="card-body py-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="serviceConsult" name="Services" value="consult">
+                                    <label class="form-check-label fw-medium" for="serviceConsult">
+                                        <i class="bi bi-headset text-secondary me-1"></i>Tư vấn
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Trạng thái -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-success mb-3">
+                    <i class="bi bi-toggles me-2"></i>Trạng thái hoạt động
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card border-0" style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+                            <div class="card-body py-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="isActiveSwitch" name="IsActive" role="switch" checked>
+                                    <label class="form-check-label fw-medium" for="isActiveSwitch">
+                                        Chi nhánh đang hoạt động
+                                    </label>
+                                </div>
+                                <small class="text-muted">Tắt nếu chi nhánh tạm ngừng</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+                            <div class="card-body py-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="acceptOnlineSwitch" name="AcceptOnline" role="switch" checked>
+                                    <label class="form-check-label fw-medium" for="acceptOnlineSwitch">
+                                        Nhận đơn Online
+                                    </label>
+                                </div>
+                                <small class="text-muted">Cho phép xử lý đơn từ website</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between align-items-center">
+                <a class="btn btn-light px-4" href="@Url.Action("Index")">
+                    <i class="bi bi-arrow-left me-2"></i>Quay lại
+                </a>
+                <div class="d-flex gap-2">
+                    <button type="reset" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Đặt lại
+                    </button>
+                    <button class="btn btn-success px-4" type="submit">
+                        <i class="bi bi-check-lg me-2"></i>@(isEdit ? "Cập nhật" : "Thêm mới")
+                    </button>
+                </div>
             </div>
         }
     </div>

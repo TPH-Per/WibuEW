@@ -26,23 +26,22 @@
             <div class="card-header bg-white border-0">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title mb-0">Doanh thu theo thời gian</h5>
-                        <small class="text-secondary">Theo filter @(Model.Filters.FromDate?.ToString("dd/MM") ?? "--") - @(Model.Filters.ToDate?.ToString("dd/MM") ?? "--")</small>
-                    </div>
-                    <div>
-                        <select class="form-select form-select-sm">
-                            @foreach (var opt in Model.Filters.BranchOptions)
-                            {
-                                <option value="@opt.Value" selected="@(opt.Selected ? "selected" : null)">@opt.Label</option>
-                            }
-                        </select>
+                        <h5 class="card-title mb-0">Doanh thu theo chi nhanh</h5>
+                        <small class="text-secondary">7 ngay qua</small>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <div class="ratio ratio-21x9 bg-light rounded-4 d-flex align-items-center justify-content-center text-secondary">
-                    <span>Placeholder biểu đồ doanh thu</span>
-                </div>
+                @if (Model.BranchRevenues != null && Model.BranchRevenues.Any())
+                {
+                    <canvas id="branchRevenueChart" height="300"></canvas>
+                }
+                else
+                {
+                    <div class="ratio ratio-21x9 bg-light rounded-4 d-flex align-items-center justify-content-center text-secondary">
+                        <span>Chua co du lieu doanh thu trong 7 ngay qua</span>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -132,3 +131,77 @@
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (Model.BranchRevenues != null && Model.BranchRevenues.Any())
+            {
+                <text>
+                // Data from server
+                var branchNames = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.BranchRevenues.Select(b => b.BranchName).ToList()));
+                var revenues = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.BranchRevenues.Select(b => b.Revenue).ToList()));
+                var orderCounts = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.BranchRevenues.Select(b => b.OrderCount).ToList()));
+
+                // Create chart
+                var ctx = document.getElementById('branchRevenueChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: branchNames,
+                            datasets: [{
+                                label: 'Doanh thu',
+                                data: revenues,
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            var revenue = context.parsed.y;
+                                            var orderCount = orderCounts[context.dataIndex];
+                                            return [
+                                                'Doanh thu: ' + formatCurrency(revenue),
+                                                'So don: ' + orderCount
+                                            ];
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return formatCurrency(value);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Format currency helper
+                function formatCurrency(amount) {
+                    if (amount >= 1000000000) return (amount / 1000000000).toFixed(1) + 'B';
+                    if (amount >= 1000000) return (amount / 1000000).toFixed(1) + 'M';
+                    if (amount >= 1000) return (amount / 1000).toFixed(1) + 'K';
+                    return amount.toFixed(0) + 'd';
+                }
+                </text>
+            }
+        });
+    </script>
+}

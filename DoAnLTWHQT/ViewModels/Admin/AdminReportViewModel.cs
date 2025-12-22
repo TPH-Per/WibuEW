@@ -13,6 +13,9 @@ namespace Ltwhqt.ViewModels.Admin
         public IList<PurchaseOrderListItemViewModel> TopOrders { get; set; } = new List<PurchaseOrderListItemViewModel>();
 
         public IList<ProductListItemViewModel> BestSellers { get; set; } = new List<ProductListItemViewModel>();
+
+        // Dữ liệu cho biểu đồ doanh thu theo chi nhánh
+        public IList<BranchRevenueViewModel> BranchRevenues { get; set; } = new List<BranchRevenueViewModel>();
     }
 
     public class ReportFiltersViewModel
@@ -65,5 +68,13 @@ namespace Ltwhqt.ViewModels.Admin
         public string Supplier { get; set; } = string.Empty;
 
         public string SKUCountLabel { get; set; } = string.Empty;
+    }
+
+    // ViewModel cho doanh thu theo chi nhánh
+    public class BranchRevenueViewModel
+    {
+        public string BranchName { get; set; }
+        public decimal Revenue { get; set; }
+        public int OrderCount { get; set; }
     }
 }

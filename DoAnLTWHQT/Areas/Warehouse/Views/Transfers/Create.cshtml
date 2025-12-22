@@ -125,21 +125,48 @@
 
         // Check inventory when product selected
         $(document).on('change', '.product-select', function () {
-            var variantId = $(this).val();
-            var rowIndex = $(this).data('row-index');
-            // warehouseId lấy từ session/default trong Controller
+            var $this = $(this);
+            var variantId = $this.val();
+            var rowIndex = $this.data('row-index');
+            
+            // Tìm input stock trong cùng row
+            var $row = $this.closest('tr');
+            var $stockInput = $row.find('.stock-display');
+
+            console.log('Selected variant:', variantId, 'Row:', rowIndex);
 
             if (variantId) {
-                $.get('@Url.Action("CheckInventory")', { 
-                    warehouseId: 1, // Mặc định kho tổng, hoặc lấy từ session
-                    variantId: variantId 
-                }, function (data) {
-                    $(`.stock-display[data-row-index="${rowIndex}"]`).val(data.available);
-                    
-                    if (data.available === 0) {
-                        alert('Sản phẩm này không có trong kho!');
+                $stockInput.val('...');
+                
+                $.ajax({
+                    url: '@Url.Action("CheckInventory")',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { 
+                        warehouseId: 1,
+                        variantId: variantId 
+                    },
+                    success: function (data) {
+                        // Parse JSON nếu trả về string
+                        var res = (typeof data === 'string') ? JSON.parse(data) : data;
+                        console.log('Inventory data:', res);
+                        
+                        $stockInput.val(res.available);
+                        
+                        if (res.available === 0 || res.available == 0) {
+                            $stockInput.addClass('bg-warning text-dark').removeClass('bg-success text-white');
+                            Swal.fire({ icon: 'warning', title: 'Hết hàng!', text: 'Sản phẩm này không có trong kho!' });
+                        } else {
+                            $stockInput.removeClass('bg-warning text-dark').addClass('bg-success text-white');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('CheckInventory error:', error);
+                        $stockInput.val('Lỗi');
                     }
                 });
+            } else {
+                $stockInput.val('--').removeClass('bg-warning bg-success text-white text-dark');
             }
         });
 
@@ -165,7 +192,7 @@
             });
 
             if (detailsArray.length === 0) {
-                alert('Vui lòng thêm ít nhất một sản phẩm!');
+                Swal.fire({ icon: 'warning', title: 'Thiếu sản phẩm!', text: 'Vui lòng thêm ít nhất một sản phẩm!' });
                 return false;
             }
 

@@ -127,18 +127,19 @@
         <table class="table inventory-table align-middle mb-0">
             <thead>
                 <tr>
-                    <th style="width: 40%;">Tên Kho / Chi nhánh</th>
-                    <th style="width: 15%;">Loại</th>
-                    <th style="width: 15%;" class="text-end">Tổng tồn</th>
-                    <th style="width: 15%;" class="text-end">Đang giữ</th>
-                    <th style="width: 15%;" class="text-end">Khả dụng</th>
+                    <th style="width: 35%;">Tên Kho / Chi nhánh</th>
+                    <th style="width: 12%;">Loại</th>
+                    <th style="width: 13%;" class="text-end">Tổng tồn</th>
+                    <th style="width: 13%;" class="text-end">Đang giữ</th>
+                    <th style="width: 13%;" class="text-end">Khả dụng</th>
+                    <th style="width: 14%;" class="text-center">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-5">
+                        <td colspan="6" class="text-center text-muted py-5">
                             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                             Chưa có dữ liệu tồn kho
                         </td>
@@ -176,6 +177,15 @@
                                     @item.SoLuongKhaDung.ToString("N0")
                                 </span>
                             </td>
+                            <td class="text-center">
+                                @{
+                                    var detailType = item.IsWarehouse ? "warehouse" : "branch";
+                                }
+                                <a href="@Url.Action("Details", new { type = detailType, name = item.TenKho })" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i>Chi tiết
+                                </a>
+                            </td>
                         </tr>
                     }
                     
@@ -186,6 +196,7 @@
                         <td class="text-end"><strong>@((totalWarehouse + totalBranch).ToString("N0"))</strong></td>
                         <td class="text-end"><strong>@totalReserved.ToString("N0")</strong></td>
                         <td class="text-end"><strong>@((totalWarehouse + totalBranch - totalReserved).ToString("N0"))</strong></td>
+                        <td></td>
                     </tr>
                 }
             </tbody>

@@ -70,23 +70,19 @@
                         <div class="sidebar-subtitle">Tồn kho kho trung tâm</div>
                         <ul class="nav flex-column sidebar-submenu">
                             <li class="nav-item"><a class='@navLinkClass("Warehouse", "Inventory")' href="@Url.Action("Index", "Inventory", new { area = "Warehouse" })"><i class="bi bi-box2-heart me-2"></i>Danh sách tồn kho</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Inventory")' href="@Url.Content("~/Warehouse/Inventory/Detail/{variantId}")"><i class="bi bi-info-circle me-2"></i>Chi tiết tồn từng sản phẩm</a></li>
                         </ul>
                         <div class="sidebar-subtitle">Điều chỉnh tồn</div>
                         <ul class="nav flex-column sidebar-submenu">
                             <li class="nav-item"><a class='@navLinkClass("Warehouse", "Adjustments")' href="@Url.Action("Index", "Adjustments", new { area = "Warehouse" })"><i class="bi bi-shuffle me-2"></i>Danh sách phiếu điều chỉnh</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Inventory")' href="@Url.Content("~/Warehouse/Inventory/Adjust/{variantId}")"><i class="bi bi-tools me-2"></i>Tạo điều chỉnh tồn</a></li>
                         </ul>
                         <div class="sidebar-subtitle">Chuyển hàng sang chi nhánh</div>
                         <ul class="nav flex-column sidebar-submenu">
                             <li class="nav-item"><a class='@navLinkClass("Warehouse", "Transfers")' href="@Url.Action("Index", "Transfers", new { area = "Warehouse" })"><i class="bi bi-arrow-left-right me-2"></i>Danh sách phiếu chuyển</a></li>
                             <li class="nav-item"><a class='@navLinkClass("Warehouse", "Transfers")' href="@Url.Action("Create", "Transfers", new { area = "Warehouse" })"><i class="bi bi-plus-circle me-2"></i>Tạo phiếu chuyển mới</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Transfers")' href="@Url.Content("~/Warehouse/Transfers/Detail/{id}")"><i class="bi bi-journal-text me-2"></i>Chi tiết phiếu chuyển</a></li>
                         </ul>
-                        <div class="sidebar-subtitle">Hàng giữ chỗ & nhật ký</div>
+                        <div class="sidebar-subtitle">Hàng giữ chỗ</div>
                         <ul class="nav flex-column sidebar-submenu">
                             <li class="nav-item"><a class='@navLinkClass("Warehouse", "Reservations")' href="@Url.Action("Index", "Reservations", new { area = "Warehouse" })"><i class="bi bi-bookmark-check me-2"></i>Hàng đang reserve</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Warehouse", "Transactions")' href="@Url.Action("Index", "Transactions", new { area = "Warehouse" })"><i class="bi bi-clock-history me-2"></i>Nhật ký giao dịch kho</a></li>
                         </ul>
                     </div>
                 }
@@ -105,28 +101,13 @@
                         <div class="sidebar-subtitle">Hàng hóa chi nhánh</div>
                         <ul class="nav flex-column sidebar-submenu">
                             <li class="nav-item"><a class='@navLinkClass("Branch", "Inventory")' href="@Url.Action("Index", "Inventory", new { area = "Branch" })"><i class="bi bi-box-seam me-2"></i>Tồn kho chi nhánh</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "Inventory")' href="@Url.Content("~/Branch/Inventory/Details/{variantId}")"><i class="bi bi-info-circle me-2"></i>Chi tiết tồn 1 SKU</a></li>
                         </ul>
                         <div class="sidebar-subtitle">Nhận hàng từ kho trung tâm</div>
                         <ul class="nav flex-column sidebar-submenu">
                             <li class="nav-item"><a class='@navLinkClass("Branch", "Transfers")' href="@Url.Action("Index", "Transfers", new { area = "Branch" })"><i class="bi bi-box-arrow-in-down me-2"></i>Phiếu hàng từ kho trung tâm</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "Transfers")' href="@Url.Content("~/Branch/Transfers/Details/{id}")"><i class="bi bi-journal-text me-2"></i>Chi tiết phiếu chuyển về chi nhánh</a></li>
                         </ul>
-                        <div class="sidebar-subtitle">Đơn hàng</div>
+                        <div class="sidebar-subtitle">Khuyến mãi</div>
                         <ul class="nav flex-column sidebar-submenu">
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "Orders")' href="@Url.Action("Index", "Orders", new { area = "Branch" })"><i class="bi bi-receipt me-2"></i>Danh sách đơn hàng</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "Orders")' href="@Url.Content("~/Branch/Orders/Details/{id}")"><i class="bi bi-card-text me-2"></i>Chi tiết đơn hàng</a></li>
-                        </ul>
-                        <div class="sidebar-subtitle">Pre-order</div>
-                        <ul class="nav flex-column sidebar-submenu">
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "PreOrders")' href="@Url.Action("Index", "PreOrders", new { area = "Branch" })"><i class="bi bi-calendar2-check me-2"></i>Danh sách Pre-order</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "PreOrders")' href="@Url.Action("Create", "PreOrders", new { area = "Branch" })"><i class="bi bi-plus-circle me-2"></i>Tạo pre-order mới</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "PreOrders")' href="@Url.Content("~/Branch/PreOrders/Details/{id}")"><i class="bi bi-journal-text me-2"></i>Chi tiết pre-order</a></li>
-                        </ul>
-                        <div class="sidebar-subtitle">Thanh toán & khuyến mãi</div>
-                        <ul class="nav flex-column sidebar-submenu">
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "Payments")' href="@Url.Action("Index", "Payments", new { area = "Branch" })"><i class="bi bi-credit-card me-2"></i>Thanh toán</a></li>
-                            <li class="nav-item"><a class='@navLinkClass("Branch", "Payments")' href="@Url.Content("~/Branch/Payments/Details/{id}")"><i class="bi bi-wallet2 me-2"></i>Chi tiết payment</a></li>
                             <li class="nav-item"><a class='@navLinkClass("Branch", "Discounts")' href="@Url.Action("Index", "Discounts", new { area = "Branch" })"><i class="bi bi-ticket-perforated me-2"></i>Mã giảm giá áp dụng</a></li>
                         </ul>
                         <div class="sidebar-subtitle">Báo cáo</div>

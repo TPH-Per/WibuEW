@@ -1,82 +1,214 @@
-@model Ltwhqt.ViewModels.Admin.OrderManagementViewModel
+@using DoAnLTWHQT
+@model purchase_orders
+
 @{
-    ViewBag.Title = "Chi tiết đơn hàng";
+    ViewBag.Title = "Chi tiết đơn hàng #" + Model.order_code;
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between">
-            <div>
-                <h2 class="h5 mb-1">Đơn hàng #@Model.OrderCode</h2>
-                <p class="text-secondary mb-0">Khách: @Model.Customer • Chi nhánh: @Model.Branch</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1 fw-bold">
+            Chi tiết đơn hàng <span class="text-primary">#@Model.order_code</span>
+        </h2>
+        <p class="text-secondary mb-0">Xem thông tin chi tiết và danh sách sản phẩm.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Index")" class="btn btn-light border shadow-sm">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-printer me-2"></i>In đơn hàng
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title fw-bold mb-3">Thông tin chung</h5>
+
+                <div class="mb-3">
+                    <label class="small text-secondary fw-bold">TRẠNG THÁI</label>
+                    <div class="mt-1">
+                        @{
+                            string badgeClass = "bg-secondary";
+                            string statusText = Model.status;
+                            switch (Model.status?.ToLower())
+                            {
+                                case "pending": badgeClass = "bg-warning text-dark"; break;
+                                case "processing": badgeClass = "bg-info text-dark"; break;
+                                case "shipping": badgeClass = "bg-primary"; break;
+                                case "completed": badgeClass = "bg-success"; break;
+                                case "cancelled": badgeClass = "bg-danger"; break;
+                            }
+                        }
+                        <span class="badge @badgeClass rounded-pill px-3 py-2 fs-6">@statusText</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small text-secondary fw-bold">NGÀY ĐẶT HÀNG</label>
+                    <p class="fw-medium mb-0">
+                        @(Model.created_at.HasValue ? Model.created_at.Value.ToString("dd/MM/yyyy HH:mm") : "--")
+                    </p>
+                </div>
+
+                <div class="mb-0">
+                    <label class="small text-secondary fw-bold">THANH TOÁN</label>
+                    @if (Model.payments != null && Model.payments.Any())
+                    {
+                        foreach (var pay in Model.payments)
+                        {
+                            <div class="border rounded p-3 mt-2 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    @if (pay.payment_methods != null && pay.payment_methods.code == "COD")
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                            <i class="bi bi-cash-stack me-1"></i> COD
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                            <i class="bi bi-credit-card me-1"></i> PREPAID
+                                        </span>
+                                    }
+
+                                    <small class="text-muted">(@pay.status)</small>
+                                </div>
+
+                                <div class="small mb-1">
+                                    Số tiền: <span class="fw-bold text-dark">@String.Format("{0:N0}", pay.amount) ₫</span>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(pay.transaction_code))
+                                {
+                                    <div class="small text-muted pt-2 border-top mt-2">
+                                        Mã GD: <span class="font-monospace text-dark bg-white px-1 border rounded">@pay.transaction_code</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted fst-italic mt-1">Chưa có thông tin thanh toán</p>
+                    }
+                </div>
             </div>
-            <div class="text-end">
-                <span class="badge bg-light text-dark text-uppercase">@Model.Status</span>
-                <div class="fw-semibold mt-2">@Model.TotalAmount.ToString("c0")</div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title fw-bold mb-3">Người nhận</h5>
+
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="bi bi-person text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">@Model.shipping_recipient_name</div>
+                        <div class="text-muted small">@Model.shipping_recipient_phone</div>
+                    </div>
+                </div>
+
+                <hr class="text-muted opacity-25">
+
+                <div class="d-flex mb-0">
+                    <i class="bi bi-geo-alt text-danger me-3 fs-5"></i>
+                    <div>
+                        <span class="d-block fw-bold text-secondary small mb-1">ĐỊA CHỈ</span>
+                        <span class="text-dark">@Model.shipping_address</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-white border-0">
-        <h3 class="h6 mb-0">Sản phẩm</h3>
-    </div>
-    <div class="table-responsive">
-        <table class="table mb-0">
-            <thead>
-                <tr>
-                    <th>Sản phẩm</th>
-                    <th>Variant</th>
-                    <th>Số lượng</th>
-                    <th>Đơn giá</th>
-                    <th>Thành tiền</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var line in Model.Lines)
-                {
-                    <tr>
-                        <td>@line.ProductName</td>
-                        <td>@line.VariantName</td>
-                        <td>@line.Quantity</td>
-                        <td>@line.UnitPrice.ToString("c0")</td>
-                        <td>@(line.UnitPrice * line.Quantity).ToString("c0")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <h5 class="card-title fw-bold mb-0">Danh sách sản phẩm</h5>
+            </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-        <h3 class="h6 mb-0">Thanh toán</h3>
-        <span>@Model.Payment?.CreatedAt:dd/MM HH:mm</span>
-    </div>
-    <div class="card-body">
-        @if (Model.Payment != null)
-        {
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Mã giao dịch</dt>
-                <dd class="col-sm-9">@Model.Payment.Id</dd>
-                <dt class="col-sm-3">Phương thức</dt>
-                <dd class="col-sm-9">@Model.Payment.Method</dd>
-                <dt class="col-sm-3">Số tiền</dt>
-                <dd class="col-sm-9">@Model.Payment.Amount.ToString("c0")</dd>
-                <dt class="col-sm-3">Trạng thái</dt>
-                <dd class="col-sm-9">
-                    <span class="badge bg-light text-dark text-uppercase">@Model.Payment.Status</span>
-                    @if (Model.Payment.IsDeposit)
-                    {
-                        <span class="badge bg-warning text-dark ms-1">Pre-order 50%</span>
-                    }
-                </dd>
-            </dl>
-        }
-        else
-        {
-            <p class="mb-0 text-secondary">Chưa có thanh toán.</p>
-        }
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">Sản phẩm</th>
+                            <th class="py-3" style="min-width: 120px;">Phân loại</th>
+                            <th class="text-center py-3">Đơn giá</th>
+                            <th class="text-center py-3">SL</th>
+                            <th class="text-end pe-4 py-3">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.purchase_order_details != null && Model.purchase_order_details.Any())
+                        {
+                            foreach (var item in Model.purchase_order_details)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                <i class="bi bi-box-seam text-secondary"></i>
+                                            </div>
+                                            <div class="fw-medium text-dark">
+                                                @(item.product_variants?.product?.name ?? "Sản phẩm ẩn")
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-light text-dark border fw-normal">
+                                            @(item.product_variants?.name ?? "--")
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        @String.Format("{0:N0}", item.price_at_purchase) ₫
+                                    </td>
+                                    <td class="text-center fw-bold">x @item.quantity</td>
+                                    <td class="text-end pe-4 fw-bold">
+                                        @String.Format("{0:N0}", (item.quantity * item.price_at_purchase)) ₫
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Không có sản phẩm nào.</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="border-top">
+                        <tr>
+                            <td colspan="4" class="text-end py-3 text-secondary">Tạm tính:</td>
+                            <td class="text-end pe-4 py-3 fw-medium">@String.Format("{0:N0}", Model.sub_total) ₫</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end py-2 text-secondary">Phí vận chuyển:</td>
+                            <td class="text-end pe-4 py-2 fw-medium">@String.Format("{0:N0}", Model.shipping_fee) ₫</td>
+                        </tr>
+                        @if (Model.discount_amount > 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="text-end py-2 text-success">Giảm giá:</td>
+                                <td class="text-end pe-4 py-2 text-success fw-medium">- @String.Format("{0:N0}", Model.discount_amount) ₫</td>
+                            </tr>
+                        }
+                        <tr class="bg-light">
+                            <td colspan="4" class="text-end py-3 fw-bold fs-5 text-primary">Tổng cộng:</td>
+                            <td class="text-end pe-4 py-3 fw-bold fs-5 text-primary">
+                                @String.Format("{0:N0}", Model.total_amount) ₫
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
     </div>
 </div>

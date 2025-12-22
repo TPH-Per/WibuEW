@@ -1,31 +1,516 @@
-@model IEnumerable<Ltwhqt.ViewModels.Admin.ReportIndicatorViewModel>
 @{
-    ViewBag.Title = "Báo cáo KPI";
+    ViewBag.Title = "Báo cáo & Thống kê";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var currentPeriod = ViewBag.Period ?? "30days";
 }
 
-<div class="row g-4">
-    @foreach (var indicator in Model)
-    {
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <p class="text-secondary text-uppercase small mb-1">@indicator.Label</p>
-                    <h3 class="mb-0">@indicator.Value</h3>
-                    <div class="mt-2 text-success">@indicator.Trend</div>
-                    <p class="text-secondary small mb-0">@indicator.Description</p>
+<!-- Filter Section -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <div class="row align-items-center g-3">
+            <!-- Time Period Filter (Radio) -->
+            <div class="col-lg-6">
+                <label class="form-label fw-medium mb-2">
+                    <i class="bi bi-calendar3 text-primary me-1"></i>Khoảng thời gian
+                    <span class="badge bg-primary ms-2">@ViewBag.PeriodLabel</span>
+                    <small class="text-muted ms-2">(@ViewBag.StartDate - @ViewBag.EndDate)</small>
+                </label>
+                <div class="btn-group w-100" role="group" aria-label="Time period filter">
+                    <input type="radio" class="btn-check" name="timePeriod" id="period7days" value="7days"
+                           @(currentPeriod == "7days" ? "checked" : "") autocomplete="off">
+                    <label class="btn btn-outline-primary" for="period7days">7 ngày</label>
+
+                    <input type="radio" class="btn-check" name="timePeriod" id="period30days" value="30days"
+                           @(currentPeriod == "30days" ? "checked" : "") autocomplete="off">
+                    <label class="btn btn-outline-primary" for="period30days">30 ngày</label>
+
+                    <input type="radio" class="btn-check" name="timePeriod" id="periodMonth" value="month"
+                           @(currentPeriod == "month" ? "checked" : "") autocomplete="off">
+                    <label class="btn btn-outline-primary" for="periodMonth">Tháng này</label>
+
+                    <input type="radio" class="btn-check" name="timePeriod" id="periodQuarter" value="quarter"
+                           @(currentPeriod == "quarter" ? "checked" : "") autocomplete="off">
+                    <label class="btn btn-outline-primary" for="periodQuarter">Quý này</label>
+
+                    <input type="radio" class="btn-check" name="timePeriod" id="periodYear" value="year"
+                           @(currentPeriod == "year" ? "checked" : "") autocomplete="off">
+                    <label class="btn btn-outline-primary" for="periodYear">Năm nay</label>
+                </div>
+            </div>
+
+            <!-- Report Type Filter (Checkboxes) -->
+            <div class="col-lg-4">
+                <label class="form-label fw-medium mb-2">
+                    <i class="bi bi-filter text-success me-1"></i>Hiển thị biểu đồ
+                </label>
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input chart-toggle" type="checkbox" id="filterRevenue" data-chart="revenueCard" checked>
+                        <label class="form-check-label" for="filterRevenue">
+                            <span class="badge bg-primary">Doanh thu</span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input chart-toggle" type="checkbox" id="filterOrders" data-chart="ordersCard" checked>
+                        <label class="form-check-label" for="filterOrders">
+                            <span class="badge bg-success">Đơn hàng</span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input chart-toggle" type="checkbox" id="filterProducts" data-chart="productsCard" checked>
+                        <label class="form-check-label" for="filterProducts">
+                            <span class="badge bg-warning text-dark">Sản phẩm</span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input chart-toggle" type="checkbox" id="filterBranch" data-chart="branchCard" checked>
+                        <label class="form-check-label" for="filterBranch">
+                            <span class="badge bg-info">Chi nhánh</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Button -->
+            <div class="col-lg-2 text-end">
+                <button class="btn btn-outline-secondary" onclick="exportReport()">
+                    <i class="bi bi-download me-1"></i>Xuất báo cáo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-white">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 text-uppercase small mb-1">Doanh thu tháng này</p>
+                        <h3 class="mb-0 fw-bold">@String.Format("{0:N0}₫", ViewBag.RevenueThisMonth)</h3>
+                        <div class="mt-2">
+                            @if ((decimal)ViewBag.RevenueTrend >= 0)
+                            {
+                                <span class="badge bg-success bg-opacity-75"><i class="bi bi-arrow-up"></i> @ViewBag.RevenueTrend%</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger bg-opacity-75"><i class="bi bi-arrow-down"></i> @ViewBag.RevenueTrend%</span>
+                            }
+                            <small class="ms-1">so với tháng trước</small>
+                        </div>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded-3 p-2">
+                        <i class="bi bi-currency-dollar fs-3"></i>
+                    </div>
                 </div>
             </div>
         </div>
-    }
-</div>
+    </div>
 
-<div class="card border-0 shadow-sm mt-4">
-    <div class="card-body">
-        <h3 class="h6 mb-3">Gợi ý tiếp theo</h3>
-        <ul class="mb-0">
-            <li>Xuất báo cáo doanh thu theo chi nhánh</li>
-            <li>Xác định SKU tồn kho chậm luân chuyển</li>
-            <li>Giám sát tỷ lệ hoàn thành đơn hàng / huỷ</li>
-        </ul>
+    <div class="col-lg-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="card-body text-white">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 text-uppercase small mb-1">Tỷ lệ hoàn thành đơn</p>
+                        <h3 class="mb-0 fw-bold">@ViewBag.CompletionRate%</h3>
+                        <div class="mt-2">
+                            <small>@ViewBag.TotalOrders đơn trong tháng</small>
+                        </div>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded-3 p-2">
+                        <i class="bi bi-check-circle fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
+            <div class="card-body text-white">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 text-uppercase small mb-1">SKU dưới định mức</p>
+                        <h3 class="mb-0 fw-bold">@ViewBag.LowStockCount</h3>
+                        <div class="mt-2">
+                            <small>Cần nhập bổ sung</small>
+                        </div>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded-3 p-2">
+                        <i class="bi bi-exclamation-triangle fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="card-body text-white">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 text-uppercase small mb-1">Mã giảm giá đã dùng</p>
+                        <h3 class="mb-0 fw-bold">@ViewBag.DiscountUsedCount lượt</h3>
+                        <div class="mt-2">
+                            <small>Tổng lượt sử dụng</small>
+                        </div>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded-3 p-2">
+                        <i class="bi bi-ticket-perforated fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- Charts Row 1 -->
+<div class="row g-4 mb-4">
+    <!-- Revenue Chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="bi bi-graph-up-arrow text-primary me-2"></i>
+                    Doanh thu 7 ngày gần nhất
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Status Pie -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="bi bi-pie-chart text-success me-2"></i>
+                    Trạng thái đơn hàng
+                </h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="orderStatusChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row g-4 mb-4">
+    <!-- Top Products -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="bi bi-star text-warning me-2"></i>
+                    Top 5 sản phẩm bán chạy
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topProductsChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Branch Revenue -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="bi bi-building text-info me-2"></i>
+                    Doanh thu theo Chi nhánh
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="branchChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0 py-3">
+        <h5 class="card-title mb-0 fw-bold">
+            <i class="bi bi-lightning text-warning me-2"></i>
+            Thao tác nhanh
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <a href="@Url.Action("Index", "Orders", new { area = "Admin" })" class="btn btn-outline-primary w-100 py-3">
+                    <i class="bi bi-receipt me-2"></i>Xem đơn hàng
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="@Url.Action("Index", "Inventories", new { area = "Admin" })" class="btn btn-outline-success w-100 py-3">
+                    <i class="bi bi-box-seam me-2"></i>Kiểm tra tồn kho
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="@Url.Action("Index", "Products", new { area = "Admin" })" class="btn btn-outline-info w-100 py-3">
+                    <i class="bi bi-boxes me-2"></i>Quản lý sản phẩm
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="@Url.Action("Index", "Discounts", new { area = "Admin" })" class="btn btn-outline-danger w-100 py-3">
+                    <i class="bi bi-ticket-perforated me-2"></i>Mã giảm giá
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // Chart.js defaults
+        Chart.defaults.font.family = "'Segoe UI', 'Roboto', sans-serif";
+        Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+        // Revenue Line Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(ViewBag.DailyRevenueLabels),
+                datasets: [{
+                    label: 'Doanh thu (₫)',
+                    data: @Html.Raw(ViewBag.DailyRevenueData),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString('vi-VN') + '₫';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                                return value;
+                            }
+                        },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Order Status Doughnut Chart
+        const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+        new Chart(orderStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(ViewBag.OrderStatusLabels),
+                datasets: [{
+                    data: @Html.Raw(ViewBag.OrderStatusData),
+                    backgroundColor: [
+                        '#667eea', '#11998e', '#eb3349', '#f093fb', '#ffc107', '#6c757d'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 15, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // Top Products Bar Chart
+        const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+        new Chart(topProductsCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(ViewBag.TopProductLabels),
+                datasets: [{
+                    label: 'Số lượng bán',
+                    data: @Html.Raw(ViewBag.TopProductData),
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(17, 153, 142, 0.8)',
+                        'rgba(235, 51, 73, 0.8)',
+                        'rgba(240, 147, 251, 0.8)',
+                        'rgba(255, 193, 7, 0.8)'
+                    ],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // Branch Revenue Bar Chart
+        const branchCtx = document.getElementById('branchChart').getContext('2d');
+        new Chart(branchCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(ViewBag.BranchLabels),
+                datasets: [{
+                    label: 'Doanh thu (₫)',
+                    data: @Html.Raw(ViewBag.BranchData),
+                    backgroundColor: 'rgba(17, 153, 142, 0.8)',
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString('vi-VN') + '₫';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                                return value;
+                            }
+                        },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // === Period Filter Handler ===
+        document.querySelectorAll('input[name="timePeriod"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const period = this.value;
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Đang tải...',
+                    text: 'Đang cập nhật báo cáo',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                // Redirect with period parameter
+                window.location.href = '@Url.Action("Index", "Reports", new { area = "Admin" })?period=' + period;
+            });
+        });
+
+        // === Chart Toggle Handler ===
+        document.querySelectorAll('.chart-toggle').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const chartId = this.dataset.chart;
+                const chartElement = document.getElementById(chartId);
+                if (chartElement) {
+                    chartElement.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        });
+
+        // === Export Report Handler ===
+        function exportReport() {
+            Swal.fire({
+                title: 'Xuất báo cáo',
+                html: `
+                    <div class="text-start">
+                        <label class="form-label fw-medium">Định dạng xuất:</label>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="exportFormat" id="exportPDF" value="pdf" checked>
+                                <label class="form-check-label" for="exportPDF">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i>PDF
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="exportFormat" id="exportExcel" value="excel">
+                                <label class="form-check-label" for="exportExcel">
+                                    <i class="bi bi-file-earmark-excel text-success me-1"></i>Excel
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="exportFormat" id="exportCSV" value="csv">
+                                <label class="form-check-label" for="exportCSV">
+                                    <i class="bi bi-file-earmark-spreadsheet text-primary me-1"></i>CSV
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-download me-1"></i>Xuất',
+                cancelButtonText: 'Hủy',
+                confirmButtonColor: '#667eea'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const format = document.querySelector('input[name="exportFormat"]:checked').value;
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Thông báo',
+                        text: 'Tính năng xuất báo cáo ' + format.toUpperCase() + ' đang được phát triển!',
+                        confirmButtonColor: '#667eea'
+                    });
+                }
+            });
+        }
+    </script>
+}
+

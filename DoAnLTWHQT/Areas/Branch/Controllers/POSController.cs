@@ -100,6 +100,51 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             }
         }
 
+        /// <summary>
+        /// Lấy tất cả sản phẩm đang có tồn kho trong chi nhánh hiện tại
+        /// </summary>
+        [HttpGet]
+        public ActionResult GetBranchInventoryProducts(string query = "")
+        {
+            var branchId = 1; // TODO: Get from session
+
+            try
+            {
+                var inventoryQuery = db.branch_inventories
+                    .Where(bi => bi.branch_id == branchId && bi.quantity_on_hand > 0 && bi.product_variants.deleted_at == null);
+
+                // Apply search filter if provided
+                if (!string.IsNullOrEmpty(query))
+                {
+                    query = query.ToLower();
+                    inventoryQuery = inventoryQuery.Where(bi => 
+                        bi.product_variants.name.ToLower().Contains(query) || 
+                        bi.product_variants.sku.ToLower().Contains(query));
+                }
+
+                var products = inventoryQuery
+                    .OrderByDescending(bi => bi.quantity_on_hand)
+                    .Take(50)
+                    .Select(bi => new
+                    {
+                        id = bi.product_variant_id,
+                        name = bi.product_variants.name,
+                        sku = bi.product_variants.sku,
+                        price = bi.product_variants.price,
+                        image = bi.product_variants.image_url ?? "/Content/images/no-image.png",
+                        stock = bi.quantity_on_hand
+                    })
+                    .ToList();
+
+                return Json(products, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetBranchInventory error: {ex.Message}");
+                return Json(new List<object>(), JsonRequestBehavior.AllowGet);
+            }
+        }
+
         [HttpPost]
         public ActionResult Checkout(long branchId, long userId, long paymentMethodId, string paymentType, long? discountId, decimal discountAmount, List<CartItemViewModel> cartItems)
         {

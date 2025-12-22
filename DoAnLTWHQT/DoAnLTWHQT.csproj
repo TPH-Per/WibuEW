@@ -182,9 +182,6 @@
     <Compile Include="Areas\Branch\Controllers\POSController.cs" />
     <Compile Include="Areas\Branch\Controllers\TransfersController.cs" />
     <Compile Include="Areas\Branch\Controllers\InventoryController.cs" />
-    <Compile Include="Areas\Branch\Controllers\OrdersController.cs" />
-    <Compile Include="Areas\Branch\Controllers\PreOrdersController.cs" />
-    <Compile Include="Areas\Branch\Controllers\PaymentsController.cs" />
     <Compile Include="Areas\Branch\Controllers\DiscountsController.cs" />
     <Compile Include="Areas\Branch\Controllers\ReportsController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\DashboardController.cs" />
@@ -193,7 +190,6 @@
     <Compile Include="Areas\Warehouse\Controllers\InventoryController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\AdjustmentsController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\TransfersController.cs" />
-    <Compile Include="Areas\Warehouse\Controllers\TransactionsController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\ReservationsController.cs" />
     <Compile Include="Areas\Warehouse\WarehouseAreaRegistration.cs" />
     <Compile Include="branch.cs">

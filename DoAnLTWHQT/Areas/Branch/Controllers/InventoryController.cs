@@ -130,30 +130,6 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             return View(vm);
         }
 
-        /// <summary>
-        /// GET: Branch/Inventory/Adjust - Form điều chỉnh tồn kho
-        /// </summary>
-        public ActionResult Adjust(long variantId)
-        {
-            long branchId = GetCurrentBranchId();
-
-            var inventory = _db.branch_inventories
-                .Include(i => i.product_variants)
-                .FirstOrDefault(i => i.product_variant_id == variantId && i.branch_id == branchId);
-
-            if (inventory == null)
-            {
-                TempData["Error"] = "Không tìm thấy thông tin tồn kho.";
-                return RedirectToAction("Index");
-            }
-
-            return View(new BranchAdjustmentViewModel 
-            { 
-                VariantId = variantId, 
-                Variant = inventory.product_variants != null ? inventory.product_variants.name : "N/A"
-            });
-        }
-
         #region Helper Methods
 
         private new long GetCurrentBranchId()

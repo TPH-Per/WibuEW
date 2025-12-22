@@ -208,6 +208,8 @@ namespace Ltwhqt.ViewModels.Admin
         public int ReorderLevel { get; set; }
 
         public bool IsWarning => QuantityOnHand <= ReorderLevel;
+
+        public int Available => QuantityOnHand - QuantityReserved;
     }
 
     public class InventoryAdjustmentViewModel

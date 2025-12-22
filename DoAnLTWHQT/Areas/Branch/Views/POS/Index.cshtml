@@ -623,52 +623,109 @@
             clearTimeout(typingTimer);
             
             if (query.length < 2) {
-                $('#searchResults').html(
-                    '<div class="empty-state">' +
-                    '<i class="bi bi-upc-scan"></i>' +
-                    '<p style="font-size: 1.1rem; margin: 0;">Nhập ít nhất 2 ký tự để tìm kiếm</p>' +
-                    '</div>'
-                );
+                // Show preloaded inventory products if available
+                if (window.inventoryProducts && window.inventoryProducts.length > 0) {
+                    renderProducts(window.inventoryProducts);
+                } else {
+                    $('#searchResults').html(
+                        '<div class="empty-state">' +
+                        '<i class="bi bi-upc-scan"></i>' +
+                        '<p style="font-size: 1.1rem; margin: 0;">Nhập ít nhất 2 ký tự để tìm kiếm</p>' +
+                        '</div>'
+                    );
+                }
                 return;
             }
 
             typingTimer = setTimeout(function () {
                 $.get('/Branch/POS/SearchProducts', { query: query }, function (data) {
-                    var html = '';
-                    if(data.length === 0) {
-                        html = '<div class="empty-state">' +
-                               '<i class="bi bi-emoji-frown"></i>' +
-                               '<p style="font-size: 1.1rem; margin: 0;">Không tìm thấy sản phẩm</p>' +
-                               '</div>';
-                    } else {
-                        data.forEach(function (p) {
-                            var stockBadge = p.stock > 0 
-                                ? '<span class="stock-badge in-stock">Còn: ' + p.stock + '</span>' 
-                                : '<span class="stock-badge out-of-stock">Hết hàng</span>';
-                            
-                            var disabled = p.stock <= 0 ? 'disabled' : '';
-                            
-                            html += '<div class="product-item ' + disabled + '" ' +
-                                    'data-id="' + p.id + '" ' +
-                                    'data-name="' + p.name + '" ' +
-                                    'data-price="' + p.price + '" ' +
-                                    'data-stock="' + p.stock + '">' +
-                                    '<div class="product-icon"><i class="bi bi-box-seam"></i></div>' +
-                                    '<div class="product-info">' +
-                                    '<div class="product-name">' + p.name + '</div>' +
-                                    '<div class="product-sku">SKU: ' + p.sku + '</div>' +
-                                    '</div>' +
-                                    '<div class="product-meta">' +
-                                    '<div class="product-price">' + formatVND(p.price) + '</div>' +
-                                    stockBadge +
-                                    '</div>' +
-                                    '</div>';
-                        });
-                    }
-                    $('#searchResults').html(html);
+                    renderProducts(data);
                 });
             }, 300);
         });
+
+        // Helper function to render products
+        function renderProducts(data) {
+            // Ensure data is an array
+            if (!Array.isArray(data)) {
+                data = [];
+            }
+            
+            var html = '';
+            if(data.length === 0) {
+                html = '<div class="empty-state">' +
+                       '<i class="bi bi-inbox"></i>' +
+                       '<p style="font-size: 1.1rem; margin: 0;">Không có sản phẩm trong kho</p>' +
+                       '</div>';
+            } else {
+                for (var i = 0; i < data.length; i++) {
+                    var p = data[i];
+                    var stockBadge = p.stock > 0 
+                        ? '<span class="stock-badge in-stock">Còn: ' + p.stock + '</span>' 
+                        : '<span class="stock-badge out-of-stock">Hết hàng</span>';
+                    
+                    var disabled = p.stock <= 0 ? 'disabled' : '';
+                    
+                    html += '<div class="product-item ' + disabled + '" ' +
+                            'data-id="' + p.id + '" ' +
+                            'data-name="' + p.name + '" ' +
+                            'data-price="' + p.price + '" ' +
+                            'data-stock="' + p.stock + '">' +
+                            '<div class="product-icon"><i class="bi bi-box-seam"></i></div>' +
+                            '<div class="product-info">' +
+                            '<div class="product-name">' + p.name + '</div>' +
+                            '<div class="product-sku">SKU: ' + p.sku + '</div>' +
+                            '</div>' +
+                            '<div class="product-meta">' +
+                            '<div class="product-price">' + formatVND(p.price) + '</div>' +
+                            stockBadge +
+                            '</div>' +
+                            '</div>';
+                }
+            }
+            $('#searchResults').html(html);
+        }
+
+        // Auto-load products from branch inventory on page load
+        window.inventoryProducts = [];
+        console.log('Starting to load inventory products...');
+        
+        $.ajax({
+            url: '/Branch/POS/GetBranchInventoryProducts',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                console.log('API Response:', response);
+                console.log('Response type:', typeof response);
+                console.log('Is array:', Array.isArray(response));
+                
+                if (Array.isArray(response) && response.length > 0) {
+                    window.inventoryProducts = response;
+                    renderProducts(response);
+                    console.log('SUCCESS: Loaded ' + response.length + ' products');
+                } else {
+                    console.log('No products returned or not an array');
+                    $('#searchResults').html(
+                        '<div class="empty-state">' +
+                        '<i class="bi bi-inbox"></i>' +
+                        '<p style="font-size: 1.1rem; margin: 0;">Không có sản phẩm trong kho</p>' +
+                        '</div>'
+                    );
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                console.error('Response Text:', xhr.responseText);
+                $('#searchResults').html(
+                    '<div class="empty-state">' +
+                    '<i class="bi bi-exclamation-triangle text-danger"></i>' +
+                    '<p style="font-size: 1.1rem; margin: 0;">Lỗi tải sản phẩm</p>' +
+                    '<small class="text-muted">' + error + '</small>' +
+                    '</div>'
+                );
+            }
+        });
+
 
         // Add to Cart
         $(document).on('click', '.product-item:not(.disabled)', function () {
@@ -932,11 +989,12 @@
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 success: function (res) {
-                    if (res.success) {
+                    // Nếu có success=true HOẶC không có message lỗi -> thành công
+                    if ((res && res.success) || !res || !res.message) {
                         Swal.fire({
                             icon: 'success',
                             title: 'Thanh toán thành công!',
-                            text: res.message,
+                            text: res && res.message ? res.message : 'Đơn hàng đã được tạo!',
                             confirmButtonColor: '#11998e'
                         });
                         cart = [];
@@ -947,6 +1005,8 @@
                         renderCart();
                         $('#productSearch').val('').focus();
                         $('#paymentMethod').val('');
+                        // Reload products để cập nhật tồn kho
+                        setTimeout(function() { location.reload(); }, 1500);
                     } else {
                         Swal.fire({
                             icon: 'error',

@@ -25,6 +25,15 @@ namespace DoAnLTWHQT
             EnsureTestBranchManagerAccount();
         }
 
+        protected void Application_PostAuthorizeRequest()
+        {
+            if (HttpContext.Current.Request.Path.ToLower().StartsWith("/api/"))
+            {
+                HttpContext.Current.SetSessionStateBehavior(
+                    System.Web.SessionState.SessionStateBehavior.Required);
+            }
+        }
+
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
             var context = HttpContext.Current;
