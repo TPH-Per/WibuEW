@@ -1,12 +1,8 @@
 # Tài liệu cập nhật - Chức năng theo dõi hóa đơn
 
 **Ngày cập nhật:** 22/12/2025  
-**Người thực hiện:** Antigravity AI Assistant
-
 ---
-
 ## Lịch sử cập nhật
-
 ### Lần 8 - 22/12/2025 16:51
 **Sửa lỗi JavaScript Dashboard Chart**
 - ✅ Fix `Uncaught SyntaxError: Unexpected number` trong Dashboard
