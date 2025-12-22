@@ -1,29 +1,11 @@
-@model IEnumerable<Ltwhqt.ViewModels.Admin.TotalInventoryReportViewModel>
+@model IEnumerable<DoAnLTWHQT.ViewModels.Admin.TotalInventoryReportViewModel>
 @{
     ViewBag.Title = "Báo cáo tổng tồn kho";
-    
+
     // Tính tổng
     var totalWarehouse = Model.Where(m => m.LoaiKho == "Kho Tổng").Sum(m => m.TongSoLuongTon);
     var totalBranch = Model.Where(m => m.LoaiKho == "Chi Nhánh").Sum(m => m.TongSoLuongTon);
     var totalReserved = Model.Sum(m => m.HangDatTruoc);
-}
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@if (TempData["Warning"] != null)
-{
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <i class="bi bi-info-circle me-2"></i>
-        @TempData["Warning"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
 }
 
 @section Styles {
@@ -32,27 +14,32 @@
         .stat-card {
             border-radius: 12px;
             padding: 1.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             margin-bottom: 1rem;
         }
-        .stat-card.warehouse {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-        .stat-card.branch {
-            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
-        }
-        .stat-card.reserved {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-        }
+
+            .stat-card.warehouse {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            }
+
+            .stat-card.branch {
+                background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            }
+
+            .stat-card.reserved {
+                background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            }
+
         .stat-value {
             font-size: 2.5rem;
             font-weight: 700;
         }
+
         .stat-label {
             font-size: 0.9rem;
             opacity: 0.9;
         }
+
         .location-type {
             display: inline-block;
             padding: 0.25rem 0.75rem;
@@ -60,36 +47,33 @@
             font-size: 0.8rem;
             font-weight: 600;
         }
-        .location-type.warehouse {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .location-type.branch {
-            background-color: #fff3cd;
-            color: #856404;
-        }
+
+            .location-type.warehouse {
+                background-color: #d4edda;
+                color: #155724;
+            }
+
+            .location-type.branch {
+                background-color: #fff3cd;
+                color: #856404;
+            }
+
         .inventory-table th {
             background-color: #f8f9fa;
             border-bottom: 2px solid #dee2e6;
         }
+
         .inventory-table tbody tr:hover {
             background-color: #f1f3f5;
-        }
-        .quantity-badge {
-            font-size: 1.1rem;
-            font-weight: 600;
         }
     </style>
 }
 
 <div class="mb-4">
-    <h2 class="h4 mb-1">
-        <i class="bi bi-box-seam me-2"></i>Báo cáo Tổng Tồn Kho
-    </h2>
+    <h2 class="h4 mb-1"><i class="bi bi-box-seam me-2"></i>Báo cáo Tổng Tồn Kho</h2>
     <p class="text-secondary mb-0">Tổng quan tồn kho trên toàn hệ thống (Kho tổng + Chi nhánh)</p>
 </div>
 
-<!-- Thống kê tổng quan -->
 <div class="row mb-4">
     <div class="col-md-4">
         <div class="stat-card warehouse">
@@ -111,16 +95,11 @@
     </div>
 </div>
 
-<!-- Bảng chi tiết -->
-<div class="card border-0 shadow-sm">
+<div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white border-0 py-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="bi bi-list-ul me-2"></i>Chi tiết theo địa điểm
-            </h5>
-            <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
-                <i class="bi bi-printer me-1"></i>In báo cáo
-            </button>
+            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Chi tiết theo địa điểm</h5>
+            <button class="btn btn-outline-primary btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i>In báo cáo</button>
         </div>
     </div>
     <div class="table-responsive">
@@ -138,59 +117,28 @@
             <tbody>
                 @if (!Model.Any())
                 {
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            Chưa có dữ liệu tồn kho
-                        </td>
-                    </tr>
+                    <tr><td colspan="6" class="text-center text-muted py-5">Chưa có dữ liệu tồn kho</td></tr>
                 }
                 else
                 {
                     foreach (var item in Model)
                     {
                         var typeClass = item.IsWarehouse ? "warehouse" : "branch";
-                        var rowClass = item.TongSoLuongTon == 0 ? "table-light text-muted" : "";
-
-                        <tr class="@rowClass">
-                            <td>
-                                <strong>@item.TenKho</strong>
-                            </td>
-                            <td>
-                                <span class="location-type @typeClass">@item.LoaiKho</span>
-                            </td>
-                            <td class="text-end">
-                                <span class="quantity-badge text-primary">@item.TongSoLuongTon.ToString("N0")</span>
-                            </td>
-                            <td class="text-end">
-                                @if (item.HangDatTruoc > 0)
-                                {
-                                    <span class="badge bg-warning text-dark">@item.HangDatTruoc.ToString("N0")</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">0</span>
-                                }
-                            </td>
-                            <td class="text-end">
-                                <span class="quantity-badge @(item.SoLuongKhaDung > 0 ? "text-success" : "text-danger")">
-                                    @item.SoLuongKhaDung.ToString("N0")
-                                </span>
-                            </td>
-
+                        <tr>
+                            <td><strong>@item.TenKho</strong></td>
+                            <td><span class="location-type @typeClass">@item.LoaiKho</span></td>
+                            <td class="text-end text-primary">@item.TongSoLuongTon.ToString("N0")</td>
+                            <td class="text-end text-warning">@item.HangDatTruoc.ToString("N0")</td>
+                            <td class="text-end fw-bold @(item.SoLuongKhaDung > 0 ? "text-success" : "text-danger")">@item.SoLuongKhaDung.ToString("N0")</td>
                             <td class="text-center">
-                                @* Lưu ý: Bạn cần truyền định danh (ID hoặc Tên) để Controller biết cần xem kho nào.
-                                Ở đây mình ví dụ truyền TenKho và LoaiKho.
-                                *@
-                                <a href="@Url.Action("LocationDetails", new { name = item.TenKho, type = item.LoaiKho })"
-                                   class="btn btn-sm btn-outline-primary shadow-sm"
-                                   title="Xem danh sách hàng trong kho này">
-                                    <i class="bi bi-eye me-1"></i> Xem
+                                @* SỬ DỤNG THẺ A ĐỂ RELOAD TRANG KÈM THAM SỐ *@
+                                <a href="@Url.Action("Index", new { searchLocation = item.TenKho, type = item.LoaiKho })"
+                                   class="btn btn-sm btn-outline-primary shadow-sm">
+                                    <i class="bi bi-search me-1"></i> Xem nhanh
                                 </a>
                             </td>
                         </tr>
                     }
-
                     <tr class="table-dark">
                         <td><strong>TỔNG CỘNG</strong></td>
                         <td></td>
@@ -203,8 +151,55 @@
             </tbody>
         </table>
     </div>
+</div>
 
-<!-- Ghi chú -->
+@if (ViewBag.DetailedInventory != null)
+{
+    <div id="quick-view-section" class="card border-primary shadow mt-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Chi tiết sản phẩm tại: <strong>@ViewBag.SelectedLocation</strong></h5>
+            <a href="@Url.Action("Index")" class="btn btn-sm btn-light text-primary"><i class="bi bi-x-lg"></i> Đóng</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Tên sản phẩm</th>
+                        <th class="text-center">Tồn thực tế</th>
+                        <th class="text-center">Đang giữ</th>
+                        <th class="text-center pe-4">Khả dụng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var detailItems = ViewBag.DetailedInventory as IEnumerable<DoAnLTWHQT.ViewModels.Admin.InventorySnapshotViewModel>; }
+                    @if (detailItems != null && detailItems.Any())
+                    {
+                        foreach (var p in detailItems)
+                        {
+                            <tr>
+                                <td class="ps-4"><strong>@p.VariantName</strong><div class="small text-muted">ID: @p.VariantId</div></td>
+                                <td class="text-center">@p.QuantityOnHand.ToString("N0")</td>
+                                <td class="text-center text-warning">@p.QuantityReserved.ToString("N0")</td>
+                                <td class="text-center fw-bold text-success pe-4">@p.Available.ToString("N0")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Không có sản phẩm nào trong kho này.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var element = document.getElementById('quick-view-section');
+            if (element) { element.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        });
+    </script>
+}
+
 <div class="mt-4 p-3 bg-light rounded">
     <h6><i class="bi bi-info-circle me-2"></i>Ghi chú:</h6>
     <ul class="mb-0 small text-muted">

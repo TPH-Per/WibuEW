@@ -15,6 +15,7 @@ namespace DoAnLTWHQT
     {
         protected void Application_Start()
         {
+            System.Environment.SetEnvironmentVariable("EPPlusLicenseContext", "NonCommercial");
             AreaRegistration.RegisterAllAreas();
             // Ðang ký global filters (HandleError, v.v.) n?u c?n
             // FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);

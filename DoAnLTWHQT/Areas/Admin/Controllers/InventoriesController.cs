@@ -1,5 +1,4 @@
 using DoAnLTWHQT.ViewModels.Admin;
-using Ltwhqt.ViewModels.Admin;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -25,17 +24,32 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
         /// <summary>
         /// GET: Admin/Inventories - Hiển thị báo cáo tổng tồn kho
         /// </summary>
-        public ActionResult Index()
+        public ActionResult Index(string searchLocation = null, string type = null)
         {
-            var report = GetInventorySummaryReport();
-            
-            // Debug: nếu không có data, thêm thông báo
-            if (!report.Any())
             {
-                TempData["Warning"] = "Không có dữ liệu tồn kho. Vui lòng kiểm tra stored procedure sp_BaoCaoTongTonKhoDonGian.";
+                // 1. Luôn luôn lấy báo cáo tổng (để hiện bảng bên trên)
+                var report = GetInventorySummaryReport();
+
+                // 2. Kiểm tra nếu có yêu cầu xem chi tiết (khi bấm nút Xem nhanh)
+                if (!string.IsNullOrEmpty(searchLocation))
+                {
+                    // Gọi hàm lấy dữ liệu chi tiết tùy theo loại kho
+                    if (type == "Kho Tổng")
+                    {
+                        ViewBag.DetailedInventory = GetWarehouseInventoryDetails(searchLocation);
+                    }
+                    else
+                    {
+                        ViewBag.DetailedInventory = GetBranchInventoryDetails(searchLocation);
+                    }
+
+                    // Lưu tên kho đang xem để hiện lên tiêu đề bảng xanh
+                    ViewBag.SelectedLocation = searchLocation;
+                }
+
+                // Trả về View chính (không dùng PartialView)
+                return View(report);
             }
-            
-            return View(report);
         }
 
         /// <summary>
@@ -98,27 +112,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
         /// <summary>
         /// GET: Admin/Inventories/Adjust
         /// </summary>
-        public ActionResult Adjust(long variantId, long? warehouseId)
-        {
-            var variant = _db.product_variants.Find(variantId);
-            if (variant == null)
-            {
-                TempData["Error"] = "Không tìm thấy sản phẩm.";
-                return RedirectToAction("Index");
-            }
-
-            var inventory = _db.inventories
-                .FirstOrDefault(i => i.product_variant_id == variantId && 
-                                    (warehouseId == null || i.warehouse_id == warehouseId));
-
-            ViewBag.Title = "Điều chỉnh tồn kho";
-            return View(new InventoryAdjustmentViewModel
-            {
-                VariantId = variantId,
-                VariantName = variant.name,
-                CurrentQuantity = inventory?.quantity_on_hand ?? 0
-            });
-        }
 
         /// <summary>
         /// Gọi stored procedure sp_BaoCaoTongTonKhoDonGian
