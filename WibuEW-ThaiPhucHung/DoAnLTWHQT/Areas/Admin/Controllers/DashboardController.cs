@@ -11,32 +11,39 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
     {
         private readonly perwEntities db = new perwEntities();
 
-        public ActionResult Index()
+        public ActionResult Index(long? branchId = null)
         {
             var now = DateTime.Now;
             var sevenDaysAgo = now.AddDays(-7);
             var previousSevenDays = sevenDaysAgo.AddDays(-7);
 
+            // Base query với branch filter
+            var ordersQuery = db.purchase_orders.Where(o => o.deleted_at == null);
+            if (branchId.HasValue)
+            {
+                ordersQuery = ordersQuery.Where(o => o.branch_id == branchId.Value);
+            }
+
             // Tính doanh thu 7 ngày qua
-            var revenueSevenDays = db.purchase_orders
-                .Where(o => o.created_at >= sevenDaysAgo && o.deleted_at == null && o.status == "completed")
+            var revenueSevenDays = ordersQuery
+                .Where(o => o.created_at >= sevenDaysAgo && o.status == "completed")
                 .Sum(o => (decimal?)o.total_amount) ?? 0;
 
-            var previousRevenue = db.purchase_orders
-                .Where(o => o.created_at >= previousSevenDays && o.created_at < sevenDaysAgo && o.deleted_at == null && o.status == "completed")
+            var previousRevenue = ordersQuery
+                .Where(o => o.created_at >= previousSevenDays && o.created_at < sevenDaysAgo && o.status == "completed")
                 .Sum(o => (decimal?)o.total_amount) ?? 0;
 
             var revenueTrend = previousRevenue > 0 
                 ? $"{((revenueSevenDays - previousRevenue) / previousRevenue * 100):+0.0;-0.0}%" 
                 : "+0%";
 
-            // Đếm đơn hàng
-            var totalOrders = db.purchase_orders
-                .Where(o => o.deleted_at == null && o.created_at >= sevenDaysAgo)
+            // Đếm đơn hàng (với branch filter)
+            var totalOrders = ordersQuery
+                .Where(o => o.created_at >= sevenDaysAgo)
                 .Count();
 
-            var completedOrders = db.purchase_orders
-                .Where(o => o.deleted_at == null && o.status == "completed" && o.created_at >= sevenDaysAgo)
+            var completedOrders = ordersQuery
+                .Where(o => o.status == "completed" && o.created_at >= sevenDaysAgo)
                 .Count();
 
             var completionRate = totalOrders > 0 
@@ -46,13 +53,6 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
             // Đếm khách hàng mới (7 ngày qua)
             var newCustomers = db.users
                 .Where(u => u.created_at >= sevenDaysAgo && u.deleted_at == null)
-                .Count();
-
-            // Đếm SKU dưới định mức (giả sử reorder_level = 10)
-            var lowStockCount = db.branch_inventories
-                .Where(bi => bi.quantity_on_hand < bi.reorder_level)
-                .Select(bi => bi.product_variant_id)
-                .Distinct()
                 .Count();
 
             // Lấy danh sách chi nhánh từ database
@@ -66,17 +66,33 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
             
             branches.Insert(0, new SelectOptionViewModel { Value = "all", Label = "Tất cả chi nhánh", Selected = true });
 
-            // Đếm đơn hàng theo trạng thái
-            var pendingCount = db.purchase_orders
-                .Where(o => o.deleted_at == null && o.status == "pending")
+
+            // Đếm SKU tồn kho thấp (nếu có branch filter, dùng branch_inventories)
+            int lowStockCount;
+            if (branchId.HasValue)
+            {
+                lowStockCount = db.branch_inventories
+                    .Where(bi => bi.branch_id == branchId.Value && bi.quantity_on_hand < bi.reorder_level)
+                    .Count();
+            }
+            else
+            {
+                lowStockCount = db.inventories
+                    .Where(i => i.deleted_at == null && i.quantity_on_hand < i.reorder_level)
+                    .Count();
+            }
+
+            // Đếm đơn hàng theo trạng thái (với branch filter)
+            var pendingCount = ordersQuery
+                .Where(o => o.status == "pending")
                 .Count();
 
-            var processingCount = db.purchase_orders
-                .Where(o => o.deleted_at == null && o.status == "processing")
+            var processingCount = ordersQuery
+                .Where(o => o.status == "processing")
                 .Count();
 
-            var completedCount = db.purchase_orders
-                .Where(o => o.deleted_at == null && o.status == "completed")
+            var completedCount = ordersQuery
+                .Where(o => o.status == "completed")
                 .Count();
 
             var filters = new ReportFiltersViewModel
@@ -92,9 +108,15 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 }
             };
 
-            // Doanh thu theo chi nhánh (cho biểu đồ)
-            var revenueByBranch = db.purchase_orders
-                .Where(o => o.deleted_at == null && o.status == "completed")
+            // Doanh thu theo chi nhánh (cho biểu đồ) - Filter theo branchId
+            var revenueQuery = db.purchase_orders.Where(o => o.deleted_at == null && o.status == "completed");
+            
+            if (branchId.HasValue)
+            {
+                revenueQuery = revenueQuery.Where(o => o.branch_id == branchId.Value);
+            }
+            
+            var revenueByBranch = revenueQuery
                 .GroupBy(o => o.branch.name)
                 .Select(g => new BranchRevenueViewModel
                 {
@@ -188,7 +210,11 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                     })
                     .ToList(),
                 BranchRevenues = revenueByBranch
+                .ToList()
             };
+
+            // Truyền branchId sang view để hiển thị selected option
+            ViewBag.BranchId = branchId;
 
             return View(vm);
         }

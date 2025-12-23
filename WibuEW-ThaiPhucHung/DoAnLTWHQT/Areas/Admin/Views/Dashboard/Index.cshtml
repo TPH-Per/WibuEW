@@ -6,6 +6,34 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ViewBag.Breadcrumb = "Tổng quan KPI & báo cáo nhanh";
 }
 
@@ -35,13 +63,28 @@ Context = "primary"
                     </div>
                     <div>
                         <select id="branchFilter" class="form-select form-select-sm">
-                            <option value="all">Tất cả chi nhánh</option>
+                            <option value="all" @(ViewBag.BranchId == null ? "selected" : "")>Tất cả chi nhánh</option>
                             @foreach (var branch in Model.BranchRevenues)
 
 
 
                             {
-                                <option value="@branch.BranchName">@branch.BranchName</option>
+
+
+
+                                var branchOption = Model.Filters.BranchOptions.FirstOrDefault(b => b.Label ==
+
+                                branch.BranchName);
+
+
+
+                                var branchIdValue = branchOption != null ? branchOption.Value : "";
+
+
+
+                                var isSelected = ViewBag.BranchId != null && branchIdValue == ViewBag.BranchId.ToString();
+                                <option value="@branch.BranchName" data-branch-id="@branchIdValue" @(isSelected ? "selected"
+                                : "")>@branch.BranchName</option>
                             }
                         </select>
                     </div>
@@ -52,13 +95,97 @@ Context = "primary"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 {
                     <canvas id="branchRevenueChart" style="max-height: 300px;"></canvas>
                 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 else
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -82,6 +209,34 @@ Context = "primary"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     {
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
@@ -101,6 +256,34 @@ Context = "primary"
             <div class="card-body">
                 <ul class="list-group list-group-flush">
                     @foreach (var product in Model.BestSellers.Take(5))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -149,6 +332,34 @@ Context = "primary"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 {
                     <tr>
                         <td class="fw-semibold">@order.OrderCode</td>
@@ -177,12 +388,68 @@ Context = "primary"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         {
             <text>
                     document.addEventListener('DOMContentLoaded', function() {
-                                // Dữ liệu từ server
-                                var allBranchData = [
+                                                        // Dữ liệu từ server
+                                                        var allBranchData = [
                 @foreach (var branch in Model.BranchRevenues)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -191,7 +458,7 @@ Context = "primary"
                             name: '@Html.Raw(Json.Encode(branch.BranchName))',
                             revenue: @(branch.Revenue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)),
                             orderCount: @branch.OrderCount
-                                                },</text>
+                                                                                    },</text>
                 }
                     ];
 
@@ -200,9 +467,9 @@ Context = "primary"
 
                     // Hàm vẽ biểu đồ
                     function renderChart(data) {
-                                    if (chart) {
+                                                            if (chart) {
                         chart.destroy();
-                                    }
+                                                            }
 
                     chart = new Chart(ctx.getContext('2d'), {
                         type: 'bar',
@@ -210,76 +477,74 @@ Context = "primary"
                         labels: data.map(b => b.name),
                     datasets: [{
                         label: 'Doanh thu (VNĐ)',
-                                                data: data.map(b => b.revenue),
+                                                                        data: data.map(b => b.revenue),
                     backgroundColor: 'rgba(54, 162, 235, 0.6)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
-                                            }]
-                                        },
+                                                                    }]
+                                                                },
                     options: {
                         responsive: true,
                     maintainAspectRatio: true,
                     plugins: {
                         legend: {
                         display: false
-                                                },
+                                                                        },
                     tooltip: {
                         callbacks: {
                         label: function(context) {
-                                                            var value = context.parsed.y;
+                                                                                    var value = context.parsed.y;
                     var branch = data[context.dataIndex];
                     return [
                     'Doanh thu: ' + value.toLocaleString('vi-VN') + ' ₫',
                     'Số đơn: ' + branch.orderCount
                     ];
-                                                        }
-                                                    }
-                                                }
-                                            },
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
                     scales: {
                         y: {
                         beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                                                            if (value >= 1000000) {
-                                                                return (value / 1000000).toFixed(1) + 'M';
-                                                            } else if (value >= 1000) {
-                                                                return (value / 1000).toFixed(0) + 'K';
-                                                            }
+                                                                                    if (value >= 1000000) {
+                                                                                        return (value / 1000000).toFixed(1) + 'M';
+                                                                                    } else if (value >= 1000) {
+                                                                                        return (value / 1000).toFixed(0) + 'K';
+                                                                                    }
                     return value.toLocaleString('vi-VN');
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            });
                                                         }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    });
-                                }
 
                     // Vẽ biểu đồ ban đầu
                     renderChart(allBranchData);
 
-                    // Xử lý filter
-                    var branchFilter = document.getElementById('branchFilter');
-                    if (branchFilter) {
-                        branchFilter.addEventListener('change', function () {
-                            var selectedBranch = this.value;
+                    // Filter theo chi nhánh - RELOAD PAGE với branchId
+                    document.getElementById('branchFilter').addEventListener('change', function() {
+                                var selectedBranch = this.value;
 
-                            if (selectedBranch === 'all') {
-                                // Hiển thị tất cả chi nhánh
-                                renderChart(allBranchData);
-                            } else {
-                                // Lọc theo chi nhánh được chọn
-                                var filteredData = allBranchData.filter(function (branch) {
-                                    return branch.name === selectedBranch;
-                                });
+                    if (selectedBranch === 'all') {
+                        // Reload về trang gốc không có filter
+                        window.location.href = '@Url.Action("Index", "Dashboard", new { area = "Admin" })';
+                                } else {
+                                    // Lấy branchId từ data attribute
+                                    var selectedOption = this.options[this.selectedIndex];
+                    var branchIdValue = selectedOption.getAttribute('data-branch-id');
 
-                                if (filteredData.length > 0) {
-                                    renderChart(filteredData);
-                                }
-                            }
-                        });
+                    if (branchIdValue && branchIdValue !== 'all') {
+                                        // Reload với branchId parameter
+                                        var url = '@Url.Action("Index", "Dashboard", new { area = "Admin" })';
+                    window.location.href = url + '?branchId=' + branchIdValue;
+                                    }
                                 }
                             });
+                        });
             </text>
         }
     </script>
