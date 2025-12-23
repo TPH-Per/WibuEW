@@ -34,10 +34,12 @@ namespace DoAnLTWHQT
         public decimal discount_amount { get; set; }
         public decimal total_amount { get; set; }
         public Nullable<long> discount_id { get; set; }
+        public Nullable<long> branch_id { get; set; }
         public Nullable<System.DateTime> created_at { get; set; }
         public Nullable<System.DateTime> updated_at { get; set; }
         public Nullable<System.DateTime> deleted_at { get; set; }
     
+        public virtual branch branch { get; set; }
         public virtual discount discount { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<inventory_transactions> inventory_transactions { get; set; }

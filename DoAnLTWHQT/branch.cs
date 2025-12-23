@@ -19,6 +19,7 @@ namespace DoAnLTWHQT
         {
             this.branch_inventories = new HashSet<branch_inventories>();
             this.warehouse_transfers = new HashSet<warehouse_transfers>();
+            this.purchase_orders = new HashSet<purchase_orders>();
         }
     
         public long id { get; set; }
@@ -35,5 +36,7 @@ namespace DoAnLTWHQT
         public virtual warehouse warehouse { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<warehouse_transfers> warehouse_transfers { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<purchase_orders> purchase_orders { get; set; }
     }
 }
