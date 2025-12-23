@@ -1,8 +1,82 @@
 # Tài liệu cập nhật - Chức năng theo dõi hóa đơn
 
 **Ngày cập nhật:** 22/12/2025  
+
 ---
+
 ## Lịch sử cập nhật
+
+### Lần 11 - 23/12/2025 11:54
+**Dashboard Filter và Test Data Enhancements**
+- ✅ Implement branch filter cho Dashboard
+- ✅ Filter tất cả KPI cards theo chi nhánh
+- ✅ Filter chart theo chi nhánh
+- ✅ Thêm 8 đơn hàng completed để test chart
+- ✅ Sửa lỗi compile (duplicate lowStockCount)
+- ✅ Sửa lỗi JavaScript chart
+- ✅ Tạo Reports enhancement proposal
+
+**Dashboard Filter:**
+- Khi chọn chi nhánh → Reload page với `?branchId=X`
+- Controller filter: Doanh thu, Đơn hàng, Tồn kho, Chart
+- Dropdown hiển thị selected option đúng
+- Chart chỉ hiển thị chi nhánh được chọn
+
+**Test Data:**
+- Tổng 20 đơn hàng (12 ban đầu + 8 mới)
+- 12 đơn completed phân bố 3 chi nhánh
+- Chi nhánh 1: 7 đơn (~15M)
+- Chi nhánh 2: 7 đơn (~18M)  
+- Chi nhánh 3: 6 đơn (~16M)
+
+**Files Modified:**
+- `DashboardController.cs` - Added branchId parameter, filter logic
+- `Dashboard/Index.cshtml` - Updated dropdown, JavaScript
+- `TestData_Comprehensive.sql` - Added 8 test orders
+- `_DashboardContent.cshtml` - Created partial view (for future AJAX)
+
+**Files Created:**
+- `reports_enhancement_proposal.md` - Đề xuất cải tiến Reports page
+
+**Trạng thái:** ✅ Dashboard filter hoạt động đúng
+
+### Lần 10 - 23/12/2025 11:10
+**Sửa Lỗi Test Data và Hoàn thành**
+- ✅ Sửa lỗi NULL product_variant_id
+- ✅ Thêm fallback logic cho product variants
+- ✅ Sửa lỗi branches table không có deleted_at
+- ✅ Tạo TestData_Comprehensive.sql thay thế 3 files cũ
+- ✅ Xóa 8 files test/debug không cần thiết
+- ✅ Tạo walkthrough.md - Hướng dẫn testing đầy đủ
+
+**Test Data Coverage:**
+- Phiếu nhập: 4 trạng thái (pending, received, quality_check, completed)
+- Tồn kho Kho Tổng: 3 trạng thái (Đủ hàng, Cảnh báo, Hết hàng)
+- Tồn kho Chi nhánh: 3 chi nhánh với low stock items
+- Đơn hàng: 12 đơn (3 trạng thái x 3 chi nhánh)
+- Dashboard Chart: Dữ liệu từ 3 chi nhánh
+
+**Trạng thái:** ✅ Production Ready
+
+### Lần 9 - 23/12/2025 10:21
+**Tổng hợp Nghiệp vụ và Kiểm tra Đồng bộ**
+- ✅ Tổng hợp toàn bộ nghiệp vụ Admin và Branch
+- ✅ Kiểm tra schema database thực tế vs documentation
+- ✅ Sửa TestData_WarehouseManagement.sql theo schema đúng
+- ✅ Xác nhận đồng bộ dữ liệu giữa Admin ↔ Branch
+- ✅ Tạo schema_discrepancy.md - Báo cáo schema issues
+- ✅ Tạo business_summary.md - Tổng hợp nghiệp vụ
+
+**Schema Fixes:**
+- `inbound_receipts.code` (NOT receipt_code)
+- `inbound_receipt_details.receipt_id` (NOT inbound_receipt_id)
+- `inbound_receipt_details.input_price` (NOT unit_price/subtotal)
+
+**Đồng bộ Confirmed:**
+- Admin Kho Tổng ↔ Branch Chi nhánh: RIÊNG BIỆT ✅
+- Orders ↔ Dashboard: Cùng nguồn ✅
+- Inbound Receipts → Inventories: Chỉ completed ✅
+
 ### Lần 8 - 22/12/2025 16:51
 **Sửa lỗi JavaScript Dashboard Chart**
 - ✅ Fix `Uncaught SyntaxError: Unexpected number` trong Dashboard
