@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @model Ltwhqt.ViewModels.Branch.TransferRequestFullViewModel
 @{
     ViewBag.Title = "Chi tiết yêu cầu nhập hàng #" + (Model.Header != null ? Model.Header.Id.ToString() : "");
@@ -144,3 +145,37 @@ else
         </div>
     </div>
 }
+=======
+@model Ltwhqt.ViewModels.Branch.BranchTransferViewModel
+@{
+    ViewBag.Title = "Chi tiết phiếu chuyển";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between mb-3">
+            <div>
+                <h2 class="h5 mb-1">Transfer #@Model.Id</h2>
+                <p class="text-secondary mb-0">Từ: @Model.FromWarehouse</p>
+            </div>
+            <span class="badge bg-light text-dark text-uppercase">@Model.Status</span>
+        </div>
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Variant</dt>
+            <dd class="col-sm-9">@Model.Variant</dd>
+
+            <dt class="col-sm-3">Số lượng</dt>
+            <dd class="col-sm-9">@Model.Quantity</dd>
+
+            <dt class="col-sm-3">Ngày chuyển</dt>
+            <dd class="col-sm-9">@Model.CreatedAt:dd/MM/yyyy HH:mm</dd>
+
+            <dt class="col-sm-3">Ghi chú</dt>
+            <dd class="col-sm-9">@(!string.IsNullOrWhiteSpace(Model.Notes) ? Model.Notes : "Không có")</dd>
+        </dl>
+        <div class="text-end mt-4">
+            <button class="btn btn-success">Xác nhận đã nhận</button>
+        </div>
+    </div>
+</div>
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2

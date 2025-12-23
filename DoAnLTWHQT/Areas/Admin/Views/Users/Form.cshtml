@@ -2,14 +2,18 @@
 @{
     ViewBag.Title = ViewBag.Title ?? "Thông tin tài khoản";
     var heading = Model.Id.HasValue ? "Cập nhật tài khoản" : "Tạo tài khoản mới";
+<<<<<<< HEAD
     var actionUrl = Model.Id.HasValue 
         ? Url.Action("Edit", "Users", new { area = "Admin", id = Model.Id }) 
         : Url.Action("Create", "Users", new { area = "Admin" });
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
 }
 
 <div class="card border-0 shadow-sm">
     <div class="card-body">
         <h2 class="h5 mb-4">@heading</h2>
+<<<<<<< HEAD
         
         @if (ViewBag.ErrorMessage != null)
         {
@@ -135,3 +139,66 @@
         return true;
     });
 </script>
+=======
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Username</label>
+                <input class="form-control" value="@Model.Name" placeholder="perw.admin" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Tên hiển thị</label>
+                <input class="form-control" value="@Model.FullName" placeholder="Họ và tên" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email đăng nhập</label>
+                <input class="form-control" type="email" value="@Model.Email" placeholder="admin@perw.vn" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Số điện thoại</label>
+                <input class="form-control" value="@Model.PhoneNumber" placeholder="09xx xxx xxx" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Role</label>
+                <select class="form-select">
+                    @foreach (var role in Model.RoleOptions)
+                    {
+                        <option value="@role.Value" selected="@(role.Value == Model.Role ? "selected" : null)">@role.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Kho quản lý</label>
+                <select class="form-select">
+                    <option value="">-- Không gán --</option>
+                    @foreach (var warehouse in Model.WarehouseOptions)
+                    {
+                        <option value="@warehouse.Value" selected="@(warehouse.Value == Model.WarehouseId?.ToString() ? "selected" : null)">@warehouse.Label</option>
+                    }
+                </select>
+                <small class="text-secondary">Áp dụng nếu role là warehouse_manager</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Chi nhánh quản lý</label>
+                <select class="form-select">
+                    <option value="">-- Không gán --</option>
+                    @foreach (var branch in Model.BranchOptions)
+                    {
+                        <option value="@branch.Value" selected="@(branch.Value == Model.BranchId?.ToString() ? "selected" : null)">@branch.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select">
+                    <option value="active" @(Model.Status == "active" ? "selected" : null)>Active</option>
+                    <option value="inactive" @(Model.Status == "inactive" ? "selected" : null)>Inactive</option>
+                </select>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+            <button class="btn btn-primary" type="button">Lưu thông tin</button>
+        </div>
+    </div>
+</div>
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2

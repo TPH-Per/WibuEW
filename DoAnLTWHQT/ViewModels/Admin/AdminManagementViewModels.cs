@@ -39,10 +39,13 @@ namespace Ltwhqt.ViewModels.Admin
 
         public string PhoneNumber { get; set; } = string.Empty;
 
+<<<<<<< HEAD
         public string Password { get; set; } = string.Empty;
 
         public string ConfirmPassword { get; set; } = string.Empty;
 
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         public string Role { get; set; } = "client";
 
         public long? WarehouseId { get; set; }
@@ -403,6 +406,7 @@ namespace Ltwhqt.ViewModels.Admin
 
         public string Description { get; set; } = string.Empty;
     }
+<<<<<<< HEAD
 
     /// <summary>
     /// ViewModel cho báo cáo tổng tồn kho từ sp_BaoCaoTongTonKhoDonGian
@@ -417,4 +421,6 @@ namespace Ltwhqt.ViewModels.Admin
         public bool IsWarehouse => LoaiKho == "Kho Tổng";
         public int SoLuongKhaDung => TongSoLuongTon - HangDatTruoc;
     }
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
 }

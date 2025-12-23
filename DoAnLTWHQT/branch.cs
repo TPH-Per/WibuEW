@@ -18,7 +18,10 @@ namespace DoAnLTWHQT
         public branch()
         {
             this.branch_inventories = new HashSet<branch_inventories>();
+<<<<<<< HEAD
             this.purchase_orders = new HashSet<purchase_orders>();
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
             this.warehouse_transfers = new HashSet<warehouse_transfers>();
         }
     
@@ -35,8 +38,11 @@ namespace DoAnLTWHQT
         public virtual user user { get; set; }
         public virtual warehouse warehouse { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+<<<<<<< HEAD
         public virtual ICollection<purchase_orders> purchase_orders { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         public virtual ICollection<warehouse_transfers> warehouse_transfers { get; set; }
     }
 }

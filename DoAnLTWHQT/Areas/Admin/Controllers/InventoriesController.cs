@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
+=======
+using System.Collections.Generic;
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
 using System.Linq;
 using System.Web.Mvc;
 using Ltwhqt.ViewModels.Admin;
@@ -11,6 +15,7 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
 {
     public class InventoriesController : AdminBaseController
     {
+<<<<<<< HEAD
         private readonly Entities _db = new Entities();
         private readonly string _connectionString;
 
@@ -73,10 +78,21 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 .FirstOrDefault(i => i.product_variant_id == variantId && 
                                     (warehouseId == null || i.warehouse_id == warehouseId));
 
+=======
+        public ActionResult Index()
+        {
+            return View(BuildInventory());
+        }
+
+        public ActionResult Adjust(long variantId)
+        {
+            var variant = BuildInventory().FirstOrDefault(v => v.VariantId == variantId) ?? BuildInventory().First();
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
             ViewBag.Title = "Điều chỉnh tồn kho";
             return View(new InventoryAdjustmentViewModel
             {
                 VariantId = variantId,
+<<<<<<< HEAD
                 VariantName = variant.name,
                 CurrentQuantity = inventory?.quantity_on_hand ?? 0
             });
@@ -191,6 +207,21 @@ namespace DoAnLTWHQT.Areas.Admin.Controllers
                 _db.Dispose();
             }
             base.Dispose(disposing);
+=======
+                VariantName = variant.VariantName,
+                CurrentQuantity = variant.QuantityOnHand
+            });
+        }
+
+        private static IList<InventorySnapshotViewModel> BuildInventory()
+        {
+            return new List<InventorySnapshotViewModel>
+            {
+                new InventorySnapshotViewModel { VariantId = 101, VariantName = "Sneaker Aurora / 39", WarehouseName = "Kho trung tâm", QuantityOnHand = 52, QuantityReserved = 6, ReorderLevel = 20 },
+                new InventorySnapshotViewModel { VariantId = 202, VariantName = "Áo khoác Varsity / L", WarehouseName = "Kho trung tâm", QuantityOnHand = 18, QuantityReserved = 10, ReorderLevel = 25 },
+                new InventorySnapshotViewModel { VariantId = 303, VariantName = "Balo Transit / Đen", WarehouseName = "Kho trung tâm", QuantityOnHand = 8, QuantityReserved = 2, ReorderLevel = 10 }
+            };
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         }
     }
 }

@@ -39,6 +39,7 @@ namespace Ltwhqt.ViewModels.Branch
 
         public int ReorderLevel { get; set; }
 
+<<<<<<< HEAD
         public long BranchId { get; set; }
 
         public string BranchName { get; set; } = string.Empty;
@@ -46,6 +47,9 @@ namespace Ltwhqt.ViewModels.Branch
         public bool IsLowStock => QuantityOnHand <= ReorderLevel;
 
         public int AvailableQuantity => QuantityOnHand - QuantityReserved;
+=======
+        public bool IsLowStock => QuantityOnHand <= ReorderLevel;
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     }
 
     public class BranchInventoryDetailViewModel

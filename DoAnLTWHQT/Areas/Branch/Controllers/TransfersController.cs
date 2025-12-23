@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -7,11 +8,18 @@ using System.Linq;
 using System.Web.Mvc;
 using Ltwhqt.ViewModels.Branch;
 using Newtonsoft.Json;
+=======
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+using Ltwhqt.ViewModels.Branch;
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
 
 namespace DoAnLTWHQT.Areas.Branch.Controllers
 {
     public class TransfersController : BranchBaseController
     {
+<<<<<<< HEAD
         private readonly string _connectionString;
         private readonly Entities _db = new Entities();
 
@@ -391,6 +399,33 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             public long ProductVariantId { get; set; }
             public int Quantity { get; set; }
             public string Notes { get; set; }
+=======
+        public ActionResult Index(string status = "all")
+        {
+            var transfers = BuildTransfers();
+            if (!string.Equals(status, "all", System.StringComparison.OrdinalIgnoreCase))
+            {
+                transfers = transfers.Where(t => string.Equals(t.Status, status, System.StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            ViewBag.StatusFilter = status;
+            return View(transfers);
+        }
+
+        public ActionResult Details(long id)
+        {
+            var transfer = BuildTransfers().FirstOrDefault(t => t.Id == id) ?? BuildTransfers().First();
+            return View(transfer);
+        }
+
+        private static List<BranchTransferViewModel> BuildTransfers()
+        {
+            return new List<BranchTransferViewModel>
+            {
+                new BranchTransferViewModel { Id = 9101, FromWarehouse = "Kho trung tâm", Branch = "Chi nhánh Q1", Variant = "Aurora / 39", Quantity = 24, Status = "transferred", CreatedAt = System.DateTimeOffset.UtcNow.AddHours(-4) },
+                new BranchTransferViewModel { Id = 9102, FromWarehouse = "Kho trung tâm", Branch = "Chi nhánh Q1", Variant = "Varsity / L", Quantity = 12, Status = "pending", CreatedAt = System.DateTimeOffset.UtcNow.AddHours(-2) }
+            };
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         }
     }
 }

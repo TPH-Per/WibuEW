@@ -14,6 +14,7 @@ namespace DoAnLTWHQT
     
     public partial class warehouse_transfers
     {
+<<<<<<< HEAD
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public warehouse_transfers()
         {
@@ -23,6 +24,13 @@ namespace DoAnLTWHQT
         public long id { get; set; }
         public long from_warehouse_id { get; set; }
         public long to_branch_id { get; set; }
+=======
+        public long id { get; set; }
+        public long from_warehouse_id { get; set; }
+        public long to_branch_id { get; set; }
+        public long product_variant_id { get; set; }
+        public int quantity { get; set; }
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         public Nullable<System.DateTime> transfer_date { get; set; }
         public string status { get; set; }
         public string notes { get; set; }
@@ -30,8 +38,12 @@ namespace DoAnLTWHQT
         public Nullable<System.DateTime> updated_at { get; set; }
     
         public virtual branch branch { get; set; }
+<<<<<<< HEAD
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<warehouse_transfer_details> warehouse_transfer_details { get; set; }
+=======
+        public virtual product_variants product_variants { get; set; }
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         public virtual warehouse warehouse { get; set; }
     }
 }

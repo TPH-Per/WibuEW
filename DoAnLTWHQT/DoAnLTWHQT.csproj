@@ -57,9 +57,12 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+<<<<<<< HEAD
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -129,8 +132,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <Compile Include="address.cs">
       <DependentUpon>perw.tt</DependentUpon>
+=======
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="address.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -156,7 +169,10 @@
     <Compile Include="Areas\Branch\BranchAreaRegistration.cs" />
     <Compile Include="Areas\Branch\Controllers\BranchBaseController.cs" />
     <Compile Include="Areas\Branch\Controllers\DashboardController.cs" />
+<<<<<<< HEAD
     <Compile Include="Areas\Branch\Controllers\POSController.cs" />
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     <Compile Include="Areas\Branch\Controllers\TransfersController.cs" />
     <Compile Include="Areas\Branch\Controllers\InventoryController.cs" />
     <Compile Include="Areas\Branch\Controllers\OrdersController.cs" />
@@ -174,6 +190,7 @@
     <Compile Include="Areas\Warehouse\Controllers\ReservationsController.cs" />
     <Compile Include="Areas\Warehouse\WarehouseAreaRegistration.cs" />
     <Compile Include="branch.cs">
+<<<<<<< HEAD
       <DependentUpon>perw.tt</DependentUpon>
     </Compile>
     <Compile Include="branch_inventories.cs">
@@ -256,11 +273,95 @@
     </Compile>
     <Compile Include="user.cs">
       <DependentUpon>perw.tt</DependentUpon>
+=======
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="branch_inventories.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="cart.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="category.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="discount.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="inbound_receipts.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="inbound_receipt_details.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="inventory.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="inventory_transactions.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="payment.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="payment_methods.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Perw.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Perw.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Perw.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Perw.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Perw.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="product.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="product_reviews.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="product_variants.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="purchase_orders.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="purchase_order_details.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="role.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="sp_helpdiagramdefinition_Result.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="sp_helpdiagrams_Result.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="supplier.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="sysdiagram.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="user.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     </Compile>
     <Compile Include="ViewModels\Admin\AdminManagementViewModels.cs" />
     <Compile Include="ViewModels\Admin\AdminReportViewModel.cs" />
     <Compile Include="ViewModels\Admin\LoginViewModel.cs" />
+<<<<<<< HEAD
     <Compile Include="ViewModels\Admin\RegisterViewModel.cs" />
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
@@ -271,12 +372,16 @@
     <Compile Include="ViewModels\Api\CustomerDtos.cs" />
     <Compile Include="ViewModels\Branch\BranchDashboardViewModel.cs" />
     <Compile Include="ViewModels\Branch\BranchManagementViewModels.cs" />
+<<<<<<< HEAD
     <Compile Include="ViewModels\Branch\TransferRequestViewModels.cs" />
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     <Compile Include="ViewModels\Shared\AlertViewModel.cs" />
     <Compile Include="ViewModels\Warehouse\WarehouseDashboardViewModel.cs" />
     <Compile Include="ViewModels\Warehouse\WarehouseManagementViewModels.cs" />
     <Compile Include="ViewModels\Warehouse\InboundReceiptViewModels.cs" />
     <Compile Include="warehouse.cs">
+<<<<<<< HEAD
       <DependentUpon>perw.tt</DependentUpon>
     </Compile>
     <Compile Include="warehouse_transfers.cs">
@@ -284,6 +389,12 @@
     </Compile>
     <Compile Include="warehouse_transfer_details.cs">
       <DependentUpon>perw.tt</DependentUpon>
+=======
+      <DependentUpon>Perw.tt</DependentUpon>
+    </Compile>
+    <Compile Include="warehouse_transfers.cs">
+      <DependentUpon>Perw.tt</DependentUpon>
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -306,6 +417,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+<<<<<<< HEAD
     <Content Include="perw.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>perw.edmx</DependentUpon>
@@ -315,6 +427,17 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>perw.edmx</DependentUpon>
       <LastGenOutput>perw.cs</LastGenOutput>
+=======
+    <Content Include="Perw.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>Perw.edmx</DependentUpon>
+      <LastGenOutput>Perw.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Perw.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>Perw.edmx</DependentUpon>
+      <LastGenOutput>Perw.cs</LastGenOutput>
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     </Content>
     <Content Include="wwwroot\css\site.css" />
     <Content Include="perw_full.txt" />
@@ -327,6 +450,7 @@
     <Content Include="Areas\Admin\Views\web.config" />
     <Content Include="Areas\Warehouse\Views\web.config" />
     <Content Include="Areas\Branch\Views\web.config" />
+<<<<<<< HEAD
     <Content Include="Areas\Branch\Views\POS\Index.cshtml" />
     <EntityDeploy Include="perw.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
@@ -334,6 +458,14 @@
     </EntityDeploy>
     <Content Include="perw.edmx.diagram">
       <DependentUpon>perw.edmx</DependentUpon>
+=======
+    <EntityDeploy Include="Perw.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>Perw.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="Perw.edmx.diagram">
+      <DependentUpon>Perw.edmx</DependentUpon>
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     </Content>
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
@@ -412,8 +544,11 @@
     <Content Include="Areas\Branch\Views\Dashboard\Index.cshtml" />
     <Content Include="Areas\Branch\Views\Transfers\Index.cshtml" />
     <Content Include="Areas\Branch\Views\Transfers\Details.cshtml" />
+<<<<<<< HEAD
     <Content Include="Areas\Branch\Views\Transfers\Create.cshtml" />
     <Content Include="Areas\Branch\Views\Transfers\AddItems.cshtml" />
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     <Content Include="Areas\Branch\Views\Inventory\Index.cshtml" />
     <Content Include="Areas\Branch\Views\Inventory\Detail.cshtml" />
     <Content Include="Areas\Branch\Views\Inventory\Adjust.cshtml" />
@@ -466,9 +601,12 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+<<<<<<< HEAD
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

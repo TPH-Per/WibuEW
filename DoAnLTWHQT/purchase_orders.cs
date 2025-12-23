@@ -37,9 +37,13 @@ namespace DoAnLTWHQT
         public Nullable<System.DateTime> created_at { get; set; }
         public Nullable<System.DateTime> updated_at { get; set; }
         public Nullable<System.DateTime> deleted_at { get; set; }
+<<<<<<< HEAD
         public Nullable<long> branch_id { get; set; }
     
         public virtual branch branch { get; set; }
+=======
+    
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         public virtual discount discount { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<inventory_transactions> inventory_transactions { get; set; }

@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+<<<<<<< HEAD
 using System.Data.Entity;
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
 using System.Linq;
 using System.Web.Mvc;
 using Ltwhqt.ViewModels.Warehouse;
@@ -8,6 +11,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
 {
     public class InventoryController : WarehouseBaseController
     {
+<<<<<<< HEAD
         private readonly Entities _db = new Entities();
 
         /// <summary>
@@ -56,16 +60,27 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
             }).ToList();
 
             // Filter theo trạng thái
+=======
+        public ActionResult Index(string filter = "all")
+        {
+            var items = BuildInventory();
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
             if (string.Equals(filter, "low", System.StringComparison.OrdinalIgnoreCase))
             {
                 items = items.Where(i => i.IsLowStock).ToList();
             }
+<<<<<<< HEAD
             else if (string.Equals(filter, "zero", System.StringComparison.OrdinalIgnoreCase))
+=======
+
+            if (string.Equals(filter, "zero", System.StringComparison.OrdinalIgnoreCase))
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
             {
                 items = items.Where(i => i.QuantityOnHand == 0).ToList();
             }
 
             ViewBag.Filter = filter;
+<<<<<<< HEAD
             ViewBag.WarehouseId = warehouseId;
             ViewBag.TotalItems = items.Count;
             ViewBag.LowStockCount = items.Count(i => i.IsLowStock);
@@ -154,6 +169,50 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                 _db.Dispose();
             }
             base.Dispose(disposing);
+=======
+            return View(items);
+        }
+
+        public ActionResult Detail(long variantId)
+        {
+            var summary = BuildInventory().FirstOrDefault(i => i.VariantId == variantId) ?? BuildInventory().First();
+            var vm = new WarehouseInventoryDetailViewModel
+            {
+                Summary = summary,
+                Transactions = BuildTransactions().Where(t => t.Variant.Contains(summary.VariantName)).ToList(),
+                Reservations = BuildReservations().Where(r => r.Variant.Contains(summary.VariantName)).ToList()
+            };
+            return View(vm);
+        }
+
+        private static List<WarehouseInventoryItemViewModel> BuildInventory()
+        {
+            return new List<WarehouseInventoryItemViewModel>
+            {
+                new WarehouseInventoryItemViewModel { VariantId = 101, ProductName = "Sneaker Aurora", VariantName = "Aurora / 39", Sku = "AUR-39", QuantityOnHand = 48, QuantityReserved = 10, ReorderLevel = 30 },
+                new WarehouseInventoryItemViewModel { VariantId = 102, ProductName = "Sneaker Aurora", VariantName = "Aurora / 40", Sku = "AUR-40", QuantityOnHand = 18, QuantityReserved = 12, ReorderLevel = 25 },
+                new WarehouseInventoryItemViewModel { VariantId = 202, ProductName = "Áo khoác Varsity", VariantName = "Varsity / L", Sku = "VAR-L", QuantityOnHand = 6, QuantityReserved = 8, ReorderLevel = 15 }
+            };
+        }
+
+        private static List<WarehouseTransactionViewModel> BuildTransactions()
+        {
+            return new List<WarehouseTransactionViewModel>
+            {
+                new WarehouseTransactionViewModel { Id = 1, Type = "inbound", Variant = "Aurora / 39", Quantity = 60, Reference = "Shipment #1002", OccurredAt = System.DateTimeOffset.UtcNow.AddDays(-1), PerformedBy = "warehouse.thuy" },
+                new WarehouseTransactionViewModel { Id = 2, Type = "outbound", Variant = "Aurora / 39", Quantity = 24, Reference = "Transfer #701", OccurredAt = System.DateTimeOffset.UtcNow.AddHours(-4), PerformedBy = "warehouse.bot" },
+                new WarehouseTransactionViewModel { Id = 3, Type = "adjustment", Variant = "Varsity / L", Quantity = -2, Reference = "Damage check", OccurredAt = System.DateTimeOffset.UtcNow.AddHours(-8), PerformedBy = "warehouse.thuy", Notes = "Hàng lỗi chỉ may" }
+            };
+        }
+
+        private static List<WarehouseReservationViewModel> BuildReservations()
+        {
+            return new List<WarehouseReservationViewModel>
+            {
+                new WarehouseReservationViewModel { OrderId = 9001, OrderCode = "PO24001", Channel = "Online", Variant = "Aurora / 39", ReservedQuantity = 4, Status = "processing", ReservedAt = System.DateTimeOffset.UtcNow.AddHours(-3) },
+                new WarehouseReservationViewModel { OrderId = 9004, OrderCode = "PR24005", Channel = "Pre-order", Variant = "Aurora / 39", ReservedQuantity = 6, Status = "pending", ReservedAt = System.DateTimeOffset.UtcNow.AddHours(-6) }
+            };
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         }
     }
 }

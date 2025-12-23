@@ -23,7 +23,11 @@ namespace DoAnLTWHQT
             this.inventories = new HashSet<inventory>();
             this.inventory_transactions = new HashSet<inventory_transactions>();
             this.purchase_order_details = new HashSet<purchase_order_details>();
+<<<<<<< HEAD
             this.warehouse_transfer_details = new HashSet<warehouse_transfer_details>();
+=======
+            this.warehouse_transfers = new HashSet<warehouse_transfers>();
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         }
     
         public long id { get; set; }
@@ -51,6 +55,10 @@ namespace DoAnLTWHQT
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<purchase_order_details> purchase_order_details { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+<<<<<<< HEAD
         public virtual ICollection<warehouse_transfer_details> warehouse_transfer_details { get; set; }
+=======
+        public virtual ICollection<warehouse_transfers> warehouse_transfers { get; set; }
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
     }
 }

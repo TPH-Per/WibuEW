@@ -1,15 +1,22 @@
 using System;
+<<<<<<< HEAD
 using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
+=======
+using System.Data.Entity;
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
 using System.Linq;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
 using System.Web.Security;
 using DoAnLTWHQT.Security;
+<<<<<<< HEAD
 using Ltwhqt.ViewModels.Admin;
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace DoAnLTWHQT.Controllers
@@ -192,6 +199,7 @@ namespace DoAnLTWHQT.Controllers
             return RedirectToAction("Login", new { logout = "success" });
         }
 
+<<<<<<< HEAD
         // GET: /Account/Register - Form đăng ký (CaoQuocPhu)
         [AllowAnonymous]
         [HttpGet]
@@ -315,6 +323,8 @@ namespace DoAnLTWHQT.Controllers
             }
         }
 
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
         // GET: /Account/TestPost - Simple test page
         [AllowAnonymous]
         [HttpGet]

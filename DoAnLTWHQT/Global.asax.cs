@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ï»¿using System;
+=======
+using System;
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -16,10 +20,17 @@ namespace DoAnLTWHQT
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
+<<<<<<< HEAD
             // Ãang kÃ½ global filters (HandleError, v.v.) n?u c?n
             // FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             // WebApiConfig.Register(GlobalConfiguration.Configuration); // n?u cÃ³ dÃ¹ng Web API
+=======
+            // Ðang ký global filters (HandleError, v.v.) n?u c?n
+            // FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            // WebApiConfig.Register(GlobalConfiguration.Configuration); // n?u có dùng Web API
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
             EnsureTestAdminAccount();
             EnsureTestWarehouseManagerAccount();
             EnsureTestBranchManagerAccount();
@@ -265,5 +276,8 @@ namespace DoAnLTWHQT
         }
     }
 }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 6bd7bebea24df32452dc3f0c6754c1bfba9336f2
