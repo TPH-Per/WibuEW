@@ -243,6 +243,8 @@
     <Compile Include="Models\ApplyDiscountRequest.cs" />
     <Compile Include="Models\CancelOrderRequest.cs" />
     <Compile Include="Models\CreateOrderRequest.cs" />
+    <Compile Include="Models\ReviewCreateRequest.cs" />
+    <Compile Include="Models\ReviewResponse.cs" />
     <Compile Include="Models\UpdateCartRequest.cs" />
     <Compile Include="Models\UserDto.cs" />
     <Compile Include="payment.cs">

@@ -1,9 +1,11 @@
-﻿using System;
+﻿using DoAnLTWHQT.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Web;
 using System.Web.Http;
-using System.Data.Entity;
-using DoAnLTWHQT.Models;
 
 namespace DoAnLTWHQT.Controllers
 {
@@ -15,7 +17,38 @@ namespace DoAnLTWHQT.Controllers
         // ========================================
         // GET /api/products/in-stock
         // Lấy sản phẩm có trong kho (tùy chọn lọc theo chi nhánh)
+
         // ========================================
+
+        private long? GetCurrentUserId()
+        {
+            try
+            {
+                var identity = HttpContext.Current?.User?.Identity;
+                if (identity == null || !identity.IsAuthenticated)
+                {
+                    return null;
+                }
+
+                // Lấy email/username từ identity
+                var userName = identity.Name;
+                if (string.IsNullOrEmpty(userName)) return null;
+
+                // Query database để lấy user id (Cache kết quả này nếu có thể)
+                var user = _db.users.FirstOrDefault(u =>
+                    (u.email == userName || u.name == userName) &&
+                    u.deleted_at == null &&
+                    u.status == "active");
+
+                return user?.id;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[GetCurrentUserId] Error: {ex.Message}");
+                return null;
+            }
+        }
+
         [HttpGet]
         [Route("in-stock")]
         public IHttpActionResult GetProductsInStock(
@@ -259,6 +292,232 @@ namespace DoAnLTWHQT.Controllers
             catch (Exception ex)
             {
                 return InternalServerError(ex);
+            }
+        }
+
+
+        // ==========================================
+        // GET: /api/products/{productId}/reviews
+        // Lấy danh sách đánh giá của sản phẩm
+        // ==========================================
+        [HttpGet]
+        [Route("{productId}/reviews")]
+        public IHttpActionResult GetReviews(long productId)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[GetReviews] ProductId: {productId}");
+
+                var currentUserId = GetCurrentUserId();
+
+                // Kiểm tra product tồn tại
+                var product = _db.products.Find(productId);
+                if (product == null)
+                {
+                    return Content(System.Net.HttpStatusCode.NotFound, new
+                    {
+                        Success = false,
+                        Message = "Sản phẩm không tồn tại"
+                    });
+                }
+
+                // Lấy danh sách reviews
+                // CHẾ ĐỘ TEST: Lấy tất cả reviews không cần duyệt
+                var reviewsQuery = _db.product_reviews
+                    .Where(r => r.product_id == productId && r.deleted_at == null)
+                    // PRODUCTION: Bỏ comment dòng dưới
+                    // .Where(r => r.is_approved == true || r.user_id == currentUserId)
+                    .OrderByDescending(r => r.created_at)
+                    .ToList();
+
+                System.Diagnostics.Debug.WriteLine($"[GetReviews] Found {reviewsQuery.Count} reviews");
+
+                // Map sang DTO
+                var reviews = new List<ReviewResponse>();
+                foreach (var r in reviewsQuery)
+                {
+                    var user = _db.users.Find(r.user_id);
+                    var userName = user?.full_name ?? "Ẩn danh";
+
+                    // Kiểm tra verified purchase (đơn giản hóa để tránh lỗi)
+                    var isVerifiedPurchase = false;
+                    try
+                    {
+                        isVerifiedPurchase = _db.purchase_orders
+                            .Join(_db.purchase_order_details,
+                                po => po.id,
+                                pod => pod.order_id,
+                                (po, pod) => new { po, pod })
+                            .Join(_db.product_variants,
+                                x => x.pod.product_variant_id,
+                                pv => pv.id,
+                                (x, pv) => new { x.po, pv })
+                            .Any(x => x.po.user_id == r.user_id
+                                   && x.pv.product_id == productId
+                                   && x.po.status == "delivered");
+                    }
+                    catch
+                    {
+                        // Nếu lỗi join, để false
+                    }
+
+                    reviews.Add(new ReviewResponse
+                    {
+                        UserId = r.user_id,
+                        ProductId = r.product_id,
+                        UserName = userName,
+                        Rating = r.rating,
+                        Comment = r.comment,
+                        IsApproved = r.is_approved,
+                        IsVerifiedPurchase = isVerifiedPurchase,
+                        Status = r.status,
+                        CreatedAt = r.created_at,
+                        UpdatedAt = r.updated_at
+                    });
+                }
+
+                return Ok(new
+                {
+                    Success = true,
+                    Data = reviews,
+                    Message = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[GetReviews] Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[GetReviews] StackTrace: {ex.StackTrace}");
+                return InternalServerError(new Exception("Đã xảy ra lỗi khi lấy danh sách đánh giá"));
+            }
+        }
+
+        // ==========================================
+        // POST: /api/products/{productId}/reviews
+        // Tạo đánh giá mới
+        // ==========================================
+        [HttpPost]
+        [Route("{productId}/reviews")]
+        public IHttpActionResult CreateReview(long productId, [FromBody] ReviewCreateRequest request)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[CreateReview] ProductId: {productId}");
+                System.Diagnostics.Debug.WriteLine($"[CreateReview] Rating: {request?.Rating}, Comment: {request?.Comment}");
+
+                // 1. Kiểm tra đăng nhập
+                var userId = GetCurrentUserId();
+                if (userId == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("[CreateReview] User not authenticated");
+                    return Content(System.Net.HttpStatusCode.Unauthorized, new
+                    {
+                        Success = false,
+                        Message = "Vui lòng đăng nhập để đánh giá"
+                    });
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[CreateReview] UserId: {userId}");
+
+                // 2. Validate rating
+                if (request == null || request.Rating < 1 || request.Rating > 5)
+                {
+                    return Content(System.Net.HttpStatusCode.BadRequest, new
+                    {
+                        Success = false,
+                        Message = "Rating phải từ 1 đến 5"
+                    });
+                }
+
+                // 3. Kiểm tra product tồn tại
+                var product = _db.products.Find(productId);
+                if (product == null)
+                {
+                    return Content(System.Net.HttpStatusCode.NotFound, new
+                    {
+                        Success = false,
+                        Message = "Sản phẩm không tồn tại"
+                    });
+                }
+
+                // 4. Kiểm tra user đã review chưa
+                var existingReview = _db.product_reviews
+                    .FirstOrDefault(r => r.user_id == userId && r.product_id == productId && r.deleted_at == null);
+
+                if (existingReview != null)
+                {
+                    return Content(System.Net.HttpStatusCode.Conflict, new
+                    {
+                        Success = false,
+                        Message = "Bạn đã đánh giá sản phẩm này rồi"
+                    });
+                }
+
+                // 5. Tạo review mới
+                // CHẾ ĐỘ TEST: Auto approved
+                var review = new product_reviews
+                {
+                    user_id = userId.Value,
+                    product_id = productId,
+                    rating = (byte)request.Rating,
+                    comment = request.Comment ?? "",
+                    is_approved = true,      // TEST: Auto approve
+                    status = "approved",     // TEST: Auto approve
+                    created_at = DateTime.Now
+                };
+
+                _db.product_reviews.Add(review);
+                _db.SaveChanges();
+
+                System.Diagnostics.Debug.WriteLine($"[CreateReview] Review created successfully");
+
+                // Lấy thông tin user để trả về
+                var user = _db.users.Find(userId.Value);
+
+                // Kiểm tra verified purchase
+                var isVerifiedPurchase = false;
+                try
+                {
+                    isVerifiedPurchase = _db.purchase_orders
+                        .Join(_db.purchase_order_details,
+                            po => po.id,
+                            pod => pod.order_id,
+                            (po, pod) => new { po, pod })
+                        .Join(_db.product_variants,
+                            x => x.pod.product_variant_id,
+                            pv => pv.id,
+                            (x, pv) => new { x.po, pv })
+                        .Any(x => x.po.user_id == userId.Value
+                               && x.pv.product_id == productId
+                               && x.po.status == "delivered");
+                }
+                catch { }
+
+                var response = new ReviewResponse
+                {
+                    UserId = review.user_id,
+                    ProductId = review.product_id,
+                    UserName = user?.full_name ?? "Ẩn danh",
+                    Rating = review.rating,
+                    Comment = review.comment,
+                    IsApproved = review.is_approved,
+                    IsVerifiedPurchase = isVerifiedPurchase,
+                    Status = review.status,
+                    CreatedAt = review.created_at,
+                    UpdatedAt = review.updated_at
+                };
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Đánh giá đã được gửi thành công!",
+                    Data = response
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CreateReview] Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[CreateReview] StackTrace: {ex.StackTrace}");
+                return InternalServerError(new Exception("Đã xảy ra lỗi khi gửi đánh giá: " + ex.Message));
             }
         }
 
