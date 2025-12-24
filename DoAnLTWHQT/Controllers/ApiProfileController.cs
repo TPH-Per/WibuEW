@@ -127,8 +127,9 @@ namespace DoAnLTWHQT.Controllers
                     HttpOnly = true,
                     Path = "/",
                     Expires = ticket.Expiration,
-                    Secure = HttpContext.Current.Request.IsSecureConnection,
-                    SameSite = SameSiteMode.None  // Required for cross-origin
+                    // HTTPS required for SameSite=None
+                    Secure = true,
+                    SameSite = SameSiteMode.None
                 };
 
                 HttpContext.Current.Response.Cookies.Add(authCookie);

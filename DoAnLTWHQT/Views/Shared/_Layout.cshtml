@@ -106,6 +106,10 @@
                         <ul class="nav flex-column sidebar-submenu">
                             <li class="nav-item"><a class='@navLinkClass("Branch", "Transfers")' href="@Url.Action("Index", "Transfers", new { area = "Branch" })"><i class="bi bi-box-arrow-in-down me-2"></i>Phiếu hàng từ kho trung tâm</a></li>
                         </ul>
+                        <div class="sidebar-subtitle">Đơn hàng</div>
+                        <ul class="nav flex-column sidebar-submenu">
+                            <li class="nav-item"><a class='@navLinkClass("Branch", "Orders")' href="@Url.Action("Index", "Orders", new { area = "Branch" })"><i class="bi bi-bag-check me-2"></i>Danh sách đơn hàng</a></li>
+                        </ul>
                         <div class="sidebar-subtitle">Khuyến mãi</div>
                         <ul class="nav flex-column sidebar-submenu">
                             <li class="nav-item"><a class='@navLinkClass("Branch", "Discounts")' href="@Url.Action("Index", "Discounts", new { area = "Branch" })"><i class="bi bi-ticket-perforated me-2"></i>Mã giảm giá áp dụng</a></li>

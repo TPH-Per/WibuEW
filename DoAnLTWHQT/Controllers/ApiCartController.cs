@@ -71,27 +71,33 @@ namespace DoAnLTWHQT.Controllers
 
             try
             {
-                // Step 1: Load cart items with related data
+                // Step 1: Load cart items with related data (NO branch navigation - not in EDMX)
                 var cartEntities = _db.carts
                     .Include(c => c.product_variants.product)
-                    .Include(c => c.branch)
                     .Where(c => c.user_id == userId && c.deleted_at == null)
                     .OrderByDescending(c => c.created_at)
                     .ToList();
 
-                // Step 2: Get all variant IDs and branch IDs for stock lookup
-                var variantBranchPairs = cartEntities
-                    .Select(c => new { VariantId = c.product_variant_id, BranchId = c.branch != null ? c.branch.id : 0 })
-                    .ToList();
+                // Step 2: Get distinct branch IDs from cart items
+                var branchIds = cartEntities.Select(c => c.branch_id).Distinct().ToList();
+                
+                // Step 3: Load branches for lookup
+                var branches = _db.branches
+                    .Where(b => branchIds.Contains(b.id))
+                    .ToDictionary(b => b.id, b => b.name);
 
-                // Step 3: Load stock quantities for all pairs
+                // Step 4: Get all variant IDs for stock lookup
+                var variantIds = cartEntities.Select(c => c.product_variant_id).Distinct().ToList();
+
+                // Step 5: Load stock quantities
                 var stocks = _db.branch_inventories
-                    .Where(bi => variantBranchPairs.Select(p => p.VariantId).Contains(bi.product_variant_id))
+                    .Where(bi => variantIds.Contains(bi.product_variant_id))
                     .ToList();
 
-                // Step 4: Map to response DTOs
+                // Step 6: Map to response DTOs
                 var cartItems = cartEntities.Select(c => {
-                    var branchId = c.branch != null ? c.branch.id : 0;
+                    var branchId = c.branch_id;
+                    var branchName = branches.ContainsKey(branchId) ? branches[branchId] : "Không xác định";
                     var stock = stocks.FirstOrDefault(s => s.product_variant_id == c.product_variant_id && s.branch_id == branchId);
                     
                     return new
@@ -112,9 +118,9 @@ namespace DoAnLTWHQT.Controllers
                         VariantImageUrl = c.product_variants?.image_url ?? "",
                         OriginalPrice = c.product_variants?.original_price,
 
-                        // Branch info - from navigation property
+                        // Branch info - from manual lookup
                         BranchId = branchId,
-                        BranchName = c.branch?.name ?? "Không xác định",
+                        BranchName = branchName,
                         // Stock quantity at this specific branch
                         StockQuantity = stock?.quantity_on_hand ?? 0
                     };
@@ -131,7 +137,15 @@ namespace DoAnLTWHQT.Controllers
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[GetCart] Error: {ex.Message}");
-                return InternalServerError(ex);
+                System.Diagnostics.Debug.WriteLine($"[GetCart] StackTrace: {ex.StackTrace}");
+                // Return detailed error for debugging
+                return Ok(new
+                {
+                    Success = false,
+                    Message = "Loi khi lay gio hang: " + ex.Message,
+                    Error = ex.ToString(),
+                    InnerError = ex.InnerException?.Message
+                });
             }
         }
 
@@ -189,31 +203,17 @@ namespace DoAnLTWHQT.Controllers
                     });
                 }
 
-                // 4. Kiem tra neu gio hang da co san pham tu branch khac
-                var existingCartItem = _db.carts
-                    .Include(c => c.branch)
+                // 4. Load existing cart items (for checking duplicate variant+branch)
+                // NOTE: Cart NOW ALLOWS products from MULTIPLE branches
+                // Products will be grouped by branch in frontend
+                // At checkout, only same-branch products go into one purchase order
+                var existingCartItems = _db.carts
                     .Where(c => c.user_id == userId && c.deleted_at == null)
-                    .FirstOrDefault();
-
-                if (existingCartItem != null && existingCartItem.branch != null && existingCartItem.branch.id != request.BranchId)
-                {
-                    return Ok(new { 
-                        Success = false, 
-                        Message = $"Gio hang cua ban dang co san pham tu chi nhanh \"{existingCartItem.branch.name}\". Vui long xoa truoc khi them san pham tu chi nhanh khac.",
-                        ErrorCode = "BRANCH_CONFLICT",
-                        ExistingBranchId = existingCartItem.branch.id,
-                        ExistingBranchName = existingCartItem.branch.name
-                    });
-                }
+                    .ToList();
 
                 // 5. Kiem tra xem item nay da ton tai trong gio chua (cung variant + cung branch)
-                var existingItem = _db.carts
-                    .Include(c => c.branch)
-                    .Where(c => c.user_id == userId 
-                        && c.product_variant_id == request.ProductVariantId 
-                        && c.deleted_at == null)
-                    .ToList()
-                    .FirstOrDefault(c => c.branch != null && c.branch.id == request.BranchId);
+                var existingItem = existingCartItems
+                    .FirstOrDefault(c => c.product_variant_id == request.ProductVariantId && c.branch_id == request.BranchId);
 
                 if (existingItem != null)
                 {
@@ -250,7 +250,20 @@ namespace DoAnLTWHQT.Controllers
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AddToCart] Error: {ex.Message}");
-                return InternalServerError(ex);
+                System.Diagnostics.Debug.WriteLine($"[AddToCart] StackTrace: {ex.StackTrace}");
+                
+                // Get full inner exception chain
+                var innerMsg = ex.InnerException?.Message ?? "";
+                var innerInner = ex.InnerException?.InnerException?.Message ?? "";
+                
+                // Return detailed error for debugging (don't use 500)
+                return Ok(new { 
+                    Success = false, 
+                    Message = "Loi them san pham: " + ex.Message,
+                    Error = ex.ToString(),
+                    InnerError = innerMsg,
+                    InnerInnerError = innerInner
+                });
             }
         }
 

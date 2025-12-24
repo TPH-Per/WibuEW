@@ -1,0 +1,423 @@
+@using DoAnLTWHQT
+@model purchase_orders
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng #" + Model.order_code;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-1 fw-bold">
+            <i class="bi bi-receipt me-2 text-primary"></i>Chi tiết đơn hàng <span class="text-primary">#@Model.order_code</span>
+        </h2>
+        <p class="text-secondary mb-0">Xem thông tin chi tiết và quản lý trạng thái đơn hàng.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Index")" class="btn btn-light border shadow-sm">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-printer me-2"></i>In đơn hàng
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    @* Cột trái - Thông tin chung *@
+    <div class="col-lg-4">
+        @* Card trạng thái và cập nhật *@
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title fw-bold mb-3">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>Thông tin chung
+                </h5>
+
+                <div class="mb-3">
+                    <label class="small text-secondary fw-bold">TRẠNG THÁI HIỆN TẠI</label>
+                    <div class="mt-2">
+                        @{
+                            string badgeClass = "bg-secondary";
+                            string statusText = Model.status ?? "N/A";
+                            string statusIcon = "bi-question-circle";
+                            switch (Model.status?.ToLower())
+                            {
+                                case "pending": 
+                                    badgeClass = "bg-warning text-dark"; 
+                                    statusIcon = "bi-clock"; 
+                                    statusText = "Chờ xác nhận";
+                                    break;
+                                case "processing": 
+                                    badgeClass = "bg-info text-dark"; 
+                                    statusIcon = "bi-gear"; 
+                                    statusText = "Đang xử lý";
+                                    break;
+                                case "shipping": 
+                                    badgeClass = "bg-primary"; 
+                                    statusIcon = "bi-truck"; 
+                                    statusText = "Đang giao";
+                                    break;
+                                case "completed": 
+                                    badgeClass = "bg-success"; 
+                                    statusIcon = "bi-check-circle"; 
+                                    statusText = "Hoàn thành";
+                                    break;
+                                case "cancelled": 
+                                    badgeClass = "bg-danger"; 
+                                    statusIcon = "bi-x-circle"; 
+                                    statusText = "Đã hủy";
+                                    break;
+                            }
+                        }
+                        <span class="badge @badgeClass rounded-pill px-3 py-2 fs-6">
+                            <i class="bi @statusIcon me-1"></i>@statusText
+                        </span>
+                    </div>
+                </div>
+
+                @* Badge nguồn đơn hàng *@
+                <div class="mb-3 border-top pt-3">
+                    <label class="small text-secondary fw-bold">KÊNH BÁN</label>
+                    <div class="mt-2">
+                        @{
+                            bool isEcommerce = Model.user_id.HasValue && !string.IsNullOrEmpty(Model.shipping_address);
+                        }
+                        @if (isEcommerce)
+                        {
+                            <span class="badge rounded-pill px-3 py-2" style="background-color: rgba(111, 66, 193, 0.15); color: #6f42c1;">
+                                <i class="bi bi-globe me-1"></i>Đặt hàng từ Website
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge rounded-pill px-3 py-2" style="background-color: rgba(32, 201, 151, 0.15); color: #198754;">
+                                <i class="bi bi-shop me-1"></i>Mua tại quầy (POS)
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                @* Cập nhật trạng thái *@
+                <div class="mb-3 border-top pt-3">
+                    <label class="small text-secondary fw-bold mb-2 d-block">CẬP NHẬT TRẠNG THÁI</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-warning update-status-btn" data-status="pending" @(Model.status == "pending" ? "disabled" : "")>
+                            <i class="bi bi-clock me-1"></i>Pending
+                        </button>
+                        <button class="btn btn-sm btn-outline-info update-status-btn" data-status="processing" @(Model.status == "processing" ? "disabled" : "")>
+                            <i class="bi bi-gear me-1"></i>Processing
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary update-status-btn" data-status="shipping" @(Model.status == "shipping" ? "disabled" : "")>
+                            <i class="bi bi-truck me-1"></i>Shipping
+                        </button>
+                        <button class="btn btn-sm btn-outline-success update-status-btn" data-status="completed" @(Model.status == "completed" ? "disabled" : "")>
+                            <i class="bi bi-check-circle me-1"></i>Completed
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger update-status-btn" data-status="cancelled" @(Model.status == "cancelled" ? "disabled" : "")>
+                            <i class="bi bi-x-circle me-1"></i>Cancelled
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3 border-top pt-3">
+                    <label class="small text-secondary fw-bold">NGÀY ĐẶT HÀNG</label>
+                    <p class="fw-medium mb-0">
+                        <i class="bi bi-calendar-event text-primary me-2"></i>
+                        @(Model.created_at.HasValue ? Model.created_at.Value.ToString("dd/MM/yyyy HH:mm") : "--")
+                    </p>
+                </div>
+
+                <div class="mb-0">
+                    <label class="small text-secondary fw-bold">CHI NHÁNH XỬ LÝ</label>
+                    <p class="fw-medium mb-0">
+                        <i class="bi bi-shop text-primary me-2"></i>
+                        @(Model.branch != null ? Model.branch.name : "Chưa xác định")
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        @* Card thanh toán *@
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title fw-bold mb-3">
+                    <i class="bi bi-credit-card me-2 text-success"></i>Thanh toán
+                </h5>
+                @if (Model.payments != null && Model.payments.Any())
+                {
+                    foreach (var pay in Model.payments)
+                    {
+                        <div class="border rounded-3 p-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                @if (pay.payment_methods != null && pay.payment_methods.code == "COD")
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                        <i class="bi bi-cash-stack me-1"></i> COD
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                        <i class="bi bi-bank me-1"></i> PREPAID
+                                    </span>
+                                }
+                                @{
+                                    string paymentBadge = "bg-secondary";
+                                    switch (pay.status?.ToLower())
+                                    {
+                                        case "paid": paymentBadge = "bg-success"; break;
+                                        case "pending": paymentBadge = "bg-warning text-dark"; break;
+                                        case "failed": paymentBadge = "bg-danger"; break;
+                                    }
+                                }
+                                <span class="badge @paymentBadge rounded-pill px-2 py-1">@pay.status</span>
+                            </div>
+
+                            <div class="small mb-1">
+                                Số tiền: <span class="fw-bold text-dark fs-5">@String.Format("{0:N0}", pay.amount) ₫</span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(pay.transaction_code))
+                            {
+                                <div class="small text-muted pt-2 border-top mt-2">
+                                    Mã GD: <span class="font-monospace text-dark bg-white px-1 border rounded">@pay.transaction_code</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted fst-italic mt-1 mb-0">
+                        <i class="bi bi-info-circle me-1"></i>Chưa có thông tin thanh toán
+                    </p>
+                }
+            </div>
+        </div>
+
+        @* Card người nhận *@
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title fw-bold mb-3">
+                    <i class="bi bi-person-badge me-2 text-info"></i>Người nhận
+                </h5>
+
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="bi bi-person text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">@Model.shipping_recipient_name</div>
+                        <div class="text-muted small">
+                            <i class="bi bi-telephone me-1"></i>@Model.shipping_recipient_phone
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="text-muted opacity-25">
+
+                <div class="d-flex mb-0">
+                    <i class="bi bi-geo-alt text-danger me-3 fs-5"></i>
+                    <div>
+                        <span class="d-block fw-bold text-secondary small mb-1">ĐỊA CHỈ GIAO HÀNG</span>
+                        <span class="text-dark">@Model.shipping_address</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Cột phải - Danh sách sản phẩm *@
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom-0 d-flex align-items-center">
+                <h5 class="card-title fw-bold mb-0">
+                    <i class="bi bi-bag me-2 text-primary"></i>Danh sách sản phẩm
+                </h5>
+                <span class="badge bg-primary ms-2">@(Model.purchase_order_details?.Count() ?? 0) sản phẩm</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">Sản phẩm</th>
+                            <th class="py-3" style="min-width: 120px;">Phân loại</th>
+                            <th class="text-center py-3">Đơn giá</th>
+                            <th class="text-center py-3">SL</th>
+                            <th class="text-end pe-4 py-3">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.purchase_order_details != null && Model.purchase_order_details.Any())
+                        {
+                            foreach (var item in Model.purchase_order_details)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                                @if (item.product_variants?.image_url != null)
+                                                {
+                                                    <img src="@item.product_variants.image_url" alt="" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-box-seam text-secondary fs-5"></i>
+                                                }
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium text-dark">
+                                                    @(item.product_variants?.product?.name ?? "Sản phẩm ẩn")
+                                                </div>
+                                                <div class="small text-muted">
+                                                    SKU: @(item.product_variants?.sku ?? "--")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-light text-dark border fw-normal px-2 py-1">
+                                            @(item.product_variants?.name ?? "--")
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        @String.Format("{0:N0}", item.price_at_purchase) ₫
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary rounded-pill px-3">x @item.quantity</span>
+                                    </td>
+                                    <td class="text-end pe-4 fw-bold text-success">
+                                        @String.Format("{0:N0}", (item.quantity * item.price_at_purchase)) ₫
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="bi bi-box display-6 mb-2 d-block opacity-50"></i>
+                                    Không có sản phẩm nào.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="border-top bg-light">
+                        <tr>
+                            <td colspan="4" class="text-end py-3 text-secondary">Tạm tính:</td>
+                            <td class="text-end pe-4 py-3 fw-medium">@String.Format("{0:N0}", Model.sub_total) ₫</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end py-2 text-secondary">Phí vận chuyển:</td>
+                            <td class="text-end pe-4 py-2 fw-medium">@String.Format("{0:N0}", Model.shipping_fee) ₫</td>
+                        </tr>
+                        @if (Model.discount_amount > 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="text-end py-2 text-success">
+                                    <i class="bi bi-tag me-1"></i>Giảm giá:
+                                </td>
+                                <td class="text-end pe-4 py-2 text-success fw-medium">- @String.Format("{0:N0}", Model.discount_amount) ₫</td>
+                            </tr>
+                        }
+                        <tr class="bg-primary bg-opacity-10">
+                            <td colspan="4" class="text-end py-3 fw-bold fs-5 text-primary">
+                                <i class="bi bi-receipt me-2"></i>Tổng cộng:
+                            </td>
+                            <td class="text-end pe-4 py-3 fw-bold fs-5 text-primary">
+                                @String.Format("{0:N0}", Model.total_amount) ₫
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Xử lý cập nhật trạng thái
+            $('.update-status-btn').click(function () {
+                var newStatus = $(this).data('status');
+                var btn = $(this);
+                var originalHtml = btn.html();
+
+                Swal.fire({
+                    title: 'Xác nhận thay đổi?',
+                    html: 'Bạn muốn cập nhật trạng thái đơn hàng thành <strong>' + newStatus.toUpperCase() + '</strong>?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="bi bi-check-lg me-1"></i>Xác nhận',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+
+                        $.ajax({
+                            url: '@Url.Action("UpdateStatus", "Orders", new { area = "Branch" })',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                id: @Model.id,
+                                newStatus: newStatus,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function (response) {
+                                console.log('Response:', response);
+                                if (response && response.success === true) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Thành công!',
+                                        text: response.message || 'Cập nhật trạng thái thành công!',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(function () {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Lỗi!', response.message || 'Có lỗi xảy ra', 'error');
+                                    btn.prop('disabled', false).html(originalHtml);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('AJAX Error:', status, error);
+                                console.error('Response:', xhr.responseText);
+                                
+                                // Try to parse response as JSON in case it's still valid
+                                try {
+                                    var resp = JSON.parse(xhr.responseText);
+                                    if (resp && resp.success === true) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Thành công!',
+                                            text: resp.message || 'Cập nhật trạng thái thành công!',
+                                            timer: 1500,
+                                            showConfirmButton: false
+                                        }).then(function () {
+                                            location.reload();
+                                        });
+                                        return;
+                                    }
+                                } catch (e) {
+                                    // Not JSON, show generic error
+                                }
+                                
+                                Swal.fire('Lỗi!', 'Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+                                btn.prop('disabled', false).html(originalHtml);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+@Html.AntiForgeryToken()

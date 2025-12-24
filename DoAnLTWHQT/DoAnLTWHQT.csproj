@@ -184,6 +184,7 @@
     <Compile Include="Areas\Branch\Controllers\InventoryController.cs" />
     <Compile Include="Areas\Branch\Controllers\DiscountsController.cs" />
     <Compile Include="Areas\Branch\Controllers\ReportsController.cs" />
+    <Compile Include="Areas\Branch\Controllers\OrdersController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\DashboardController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\WarehouseBaseController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\ShipmentsController.cs" />
@@ -297,6 +298,7 @@
     <Compile Include="Controllers\ApiAuthController.cs" />
     <Compile Include="Controllers\ApiBranchesController.cs" />
     <Compile Include="Controllers\ApiCartController.cs" />
+    <Compile Include="Controllers\ApiOrdersController.cs" />
     <Compile Include="Controllers\ApiCategoriesController.cs" />
     <Compile Include="Controllers\ApiDiscountsController.cs" />
     <Compile Include="Controllers\ApiProductsController.cs" />

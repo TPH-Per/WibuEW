@@ -4,16 +4,23 @@ GO
 -- ================================================
 -- Fix Cart Branch Validation Trigger
 -- Date: 2025-12-24
--- Note: Column in carts table is 'branchid' (no underscore)
+-- Note: Column in carts table is now 'branch_id'
 -- ================================================
 
 PRINT '=== Fixing Cart Branch Validation Trigger ===';
 
--- Drop existing trigger
+-- Drop existing triggers
 IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'TR_Cart_ValidateConsistency')
 BEGIN
     DROP TRIGGER TR_Cart_ValidateConsistency;
     PRINT '  - Dropped existing trigger TR_Cart_ValidateConsistency';
+END
+GO
+
+IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'TR_Cart_ValidateBranchConsistency')
+BEGIN
+    DROP TRIGGER TR_Cart_ValidateBranchConsistency;
+    PRINT '  - Dropped existing trigger TR_Cart_ValidateBranchConsistency';
 END
 GO
 
@@ -42,7 +49,7 @@ BEGIN
     WHILE @@FETCH_STATUS = 0
     BEGIN
         -- Count distinct branches for this user's active cart items
-        SELECT @BranchCount = COUNT(DISTINCT branchid)
+        SELECT @BranchCount = COUNT(DISTINCT branch_id)
         FROM dbo.carts
         WHERE user_id = @UserId
           AND deleted_at IS NULL;
@@ -115,7 +122,7 @@ BEGIN
         
         -- 4. Kiểm tra nếu user đã có items từ branch khác trong cart
         DECLARE @ExistingBranchId BIGINT;
-        SELECT TOP 1 @ExistingBranchId = branchid
+        SELECT TOP 1 @ExistingBranchId = branch_id
         FROM carts
         WHERE user_id = @UserId AND deleted_at IS NULL;
         
@@ -133,7 +140,7 @@ BEGIN
         FROM carts
         WHERE user_id = @UserId 
           AND product_variant_id = @ProductVariantId 
-          AND branchid = @BranchId
+          AND branch_id = @BranchId
           AND deleted_at IS NULL;
         
         IF @ExistingCartId IS NOT NULL
@@ -149,7 +156,7 @@ BEGIN
         ELSE
         BEGIN
             -- Insert new item
-            INSERT INTO carts (user_id, product_variant_id, branchid, quantity, price, created_at)
+            INSERT INTO carts (user_id, product_variant_id, branch_id, quantity, price, created_at)
             VALUES (@UserId, @ProductVariantId, @BranchId, @Quantity, @Price, SYSDATETIME());
             
             SELECT SCOPE_IDENTITY() AS CartItemId, 'created' AS Action;

@@ -115,7 +115,7 @@ namespace DoAnLTWHQT.Controllers
             try
             {
                 var reviews = _db.product_reviews
-                    .Where(r => r.product_id == productId && r.is_approved == true && r.deleted_at == null)
+                    .Where(r => r.product_id == productId && r.deleted_at == null)
                     .Include(r => r.user)
                     .OrderByDescending(r => r.created_at)
                     .ToList()
@@ -123,9 +123,11 @@ namespace DoAnLTWHQT.Controllers
                     {
                         UserId = r.user_id,
                         ProductId = r.product_id,
-                        UserName = r.user != null ? r.user.full_name : "Anonymous",
+                        UserName = r.user != null ? r.user.full_name : "Khách hàng",
                         Rating = r.rating,
                         Comment = r.comment,
+                        IsApproved = r.is_approved,
+                        Status = r.status,
                         CreatedAt = r.created_at
                     })
                     .ToList();
@@ -149,9 +151,59 @@ namespace DoAnLTWHQT.Controllers
         }
 
         // ========================================
-        // POST /api/reviews
-        // Create a new review
+        // GET /api/reviews/can-review/{productId}
+        // Check if user can review a product
         // ========================================
+        [HttpGet]
+        [Route("can-review/{productId:long}")]
+        public IHttpActionResult CanReview(long productId)
+        {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return Ok(new
+                {
+                    Success = true,
+                    CanReview = false,
+                    HasPurchased = false,
+                    HasReviewed = false,
+                    Message = "Chua dang nhap"
+                });
+            }
+
+            try
+            {
+                // 1. Check if user already reviewed this product
+                bool hasReviewed = _db.product_reviews.Any(r =>
+                    r.user_id == userId.Value &&
+                    r.product_id == productId &&
+                    r.deleted_at == null);
+
+                // 2. Check if user purchased the product
+                // Must have at least one order with status 'completed' or 'delivered'
+                // containing a variant of the product
+                bool hasPurchased = _db.purchase_orders
+                    .Where(o => o.user_id == userId.Value &&
+                           (o.status == "completed" || o.status == "delivered" || o.status == "shipped") && // Allow shipped too for testing
+                           o.deleted_at == null)
+                    .Any(o => _db.purchase_order_details
+                        .Any(d => d.order_id == o.id &&
+                                  d.product_variants.product_id == productId &&
+                                  d.deleted_at == null));
+
+                return Ok(new
+                {
+                    Success = true,
+                    CanReview = hasPurchased && !hasReviewed,
+                    HasPurchased = hasPurchased,
+                    HasReviewed = hasReviewed
+                });
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
         [HttpPost]
         [Route("")]
         public IHttpActionResult CreateReview([FromBody] CreateReviewRequest request)

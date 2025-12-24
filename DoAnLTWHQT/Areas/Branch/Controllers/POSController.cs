@@ -22,12 +22,19 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             
             ViewBag.PaymentMethods = new SelectList(paymentMethods, "id", "name");
 
-            // TODO: Get real BranchID and UserID from Session/Auth
-            // For now, hardcode or pass via ViewBag
-            // Giả sử branch 1 = Chi Nhánh Quận 1
-            ViewBag.CurrentBranchID = 1; 
-            ViewBag.CurrentUserID = 3; // Branch Manager DEV (existing user)
-            ViewBag.BranchName = GetBranchName(1);
+            // Get current user's branch
+            var branchId = GetCurrentBranchId();
+            var userId = GetCurrentUserId();
+            
+            if (branchId == null)
+            {
+                TempData["Error"] = "Không tìm thấy chi nhánh của bạn.";
+                return RedirectToAction("Index", "Dashboard");
+            }
+            
+            ViewBag.CurrentBranchID = branchId; 
+            ViewBag.CurrentUserID = userId;
+            ViewBag.BranchName = GetBranchName(branchId.Value);
 
             return View();
         }
@@ -41,9 +48,13 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                                    .ToList();
             
             ViewBag.PaymentMethods = new SelectList(paymentMethods, "id", "name");
-            ViewBag.CurrentBranchID = 1; 
-            ViewBag.CurrentUserID = 3; // Branch Manager DEV (existing user)
-            ViewBag.BranchName = GetBranchName(1);
+            
+            var branchId = GetCurrentBranchId();
+            var userId = GetCurrentUserId();
+            
+            ViewBag.CurrentBranchID = branchId ?? 1; 
+            ViewBag.CurrentUserID = userId ?? 3;
+            ViewBag.BranchName = GetBranchName(branchId ?? 1);
 
             return View();
         }
@@ -54,7 +65,7 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
             if (string.IsNullOrEmpty(query))
                 return Json(new List<object>(), JsonRequestBehavior.AllowGet);
 
-            var branchId = 1; // TODO: Get from session
+            var branchId = GetCurrentBranchId() ?? 1;
 
             try
             {
@@ -106,7 +117,7 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
         [HttpGet]
         public ActionResult GetBranchInventoryProducts(string query = "")
         {
-            var branchId = 1; // TODO: Get from session
+            var branchId = GetCurrentBranchId() ?? 1;
 
             try
             {

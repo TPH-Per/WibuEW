@@ -60,9 +60,7 @@
                             <td>@order.Customer</td>
                             <td><span class="status-pill @order.Status">@order.Status</span></td>
                             <td>@order.TotalAmount.ToString("c0")</td>
-                            <td class="text-end">
-                                <a class="btn btn-light btn-sm" href="@Url.Action("Detail","Orders", new { area = "Branch", id = order.Id })">Chi tiet</a>
-                            </td>
+                            
                         </tr>
                     }
                 }
