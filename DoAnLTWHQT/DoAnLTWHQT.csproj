@@ -294,12 +294,17 @@
     <Compile Include="ViewModels\Admin\RegisterViewModel.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\ApiAddressController.cs" />
-    <Compile Include="Controllers\ApiAuthControllerController.cs" />
+    <Compile Include="Controllers\ApiAuthController.cs" />
     <Compile Include="Controllers\ApiBranchesController.cs" />
+    <Compile Include="Controllers\ApiCartController.cs" />
     <Compile Include="Controllers\ApiCategoriesController.cs" />
+    <Compile Include="Controllers\ApiDiscountsController.cs" />
     <Compile Include="Controllers\ApiProductsController.cs" />
+    <Compile Include="Controllers\ApiProfileController.cs" />
+    <Compile Include="Controllers\ApiReviewsController.cs" />
     <Compile Include="Controllers\ApiSuppliersController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\POSController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -478,6 +483,9 @@
     <Compile Include="Models\ApiResponse.cs" />
     <Compile Include="Models\ApiUpdateProfileRequest.cs" />
     <Compile Include="Models\ApiValidationResponse.cs" />
+    <Compile Include="Models\AddToCartRequest.cs" />
+    <Compile Include="Models\UpdateCartRequest.cs" />
+    <Compile Include="Models\ApplyDiscountRequest.cs" />
     <Compile Include="Models\UserDto.cs" />
   </ItemGroup>
   <ItemGroup>

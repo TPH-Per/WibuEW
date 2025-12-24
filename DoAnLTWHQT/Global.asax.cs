@@ -39,16 +39,25 @@ namespace DoAnLTWHQT
             var context = HttpContext.Current;
             var origin = context.Request.Headers["Origin"];
 
-            // Cho phép CORS từ Vue dev servers
-            if (origin == "http://localhost:3000" || origin == "http://localhost:5173")
+            // Danh sách các origins được phép
+            var allowedOrigins = new[] { 
+                "http://localhost:3000", 
+                "http://localhost:5173",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:5173"
+            };
+
+            // Kiểm tra origin có trong danh sách được phép không
+            if (!string.IsNullOrEmpty(origin) && allowedOrigins.Any(o => o.Equals(origin, StringComparison.OrdinalIgnoreCase)))
             {
-                // Chỉ thêm header nếu chưa có
-                if (context.Response.Headers["Access-Control-Allow-Origin"] == null)
+                // Chỉ thêm header nếu chưa có (tránh duplicate)
+                if (string.IsNullOrEmpty(context.Response.Headers["Access-Control-Allow-Origin"]))
                 {
                     context.Response.AddHeader("Access-Control-Allow-Origin", origin);
                     context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
-                    context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, Authorization");
+                    context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, Authorization, Cookie");
                     context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                    context.Response.AddHeader("Access-Control-Max-Age", "86400");
                 }
             }
 
@@ -58,6 +67,7 @@ namespace DoAnLTWHQT
                 context.Response.StatusCode = 200;
                 context.Response.End();
             }
+
         }
 
         protected void Application_PostAuthenticateRequest(object sender, EventArgs e)
