@@ -53,10 +53,10 @@
                             <td>@supplier.CreatedAt.ToString("dd/MM/yyyy")</td>
                             <td class="text-end">
                                 <a class="btn btn-sm btn-light" href="@Url.Action("Edit", new { id = supplier.Id })">Sửa</a>
-                                @using (Html.BeginForm("Delete", "Suppliers", new { id = supplier.Id }, FormMethod.Post, new { style = "display:inline" }))
+                                @using (Html.BeginForm("Delete", "Suppliers", new { id = supplier.Id }, FormMethod.Post, new { style = "display:inline", id = "deleteForm_" + supplier.Id }))
                                 {
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa nhà cung cấp này?')">Xóa</button>
+                                    <button type="button" class="btn btn-sm btn-danger" data-confirm-delete="deleteForm_@supplier.Id" data-confirm-message="Bạn có chắc muốn xóa nhà cung cấp này?">Xóa</button>
                                 }
                             </td>
                         </tr>

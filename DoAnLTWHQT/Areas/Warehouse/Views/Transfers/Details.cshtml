@@ -272,14 +272,13 @@
 <script>
     // Helper function cho thông báo
     function showSuccess(msg, reload = true) {
-        Swal.fire({ icon: 'success', title: 'Thành công!', text: msg, confirmButtonColor: '#28a745' })
-            .then(() => { if (reload) location.reload(); });
+        ModalPopup.success('Thành công!', msg, reload ? function() { location.reload(); } : null);
     }
     function showError(msg) {
-        Swal.fire({ icon: 'error', title: 'Lỗi!', text: msg, confirmButtonColor: '#dc3545' });
+        ModalPopup.error('Lỗi!', msg);
     }
     function showWarning(msg) {
-        Swal.fire({ icon: 'warning', title: 'Cảnh báo!', text: msg, confirmButtonColor: '#ffc107' });
+        ModalPopup.warning('Cảnh báo!', msg);
     }
 
     function updateStatus(newStatus) {
@@ -290,22 +289,20 @@
             'cancelled': 'Hủy phiếu chuyển'
         };
 
-        Swal.fire({
+        ModalPopup.confirm({
+            type: 'question',
             title: 'Xác nhận?',
-            text: 'Bạn có chắc muốn ' + statusNames[newStatus] + '?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Đồng ý',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
+            message: 'Bạn có chắc muốn ' + statusNames[newStatus] + '?',
+            confirmText: 'Đồng ý',
+            cancelText: 'Hủy',
+            onConfirm: function() {
+                ModalPopup.showLoading('Đang xử lý...');
                 $.ajax({
                     url: '@Url.Action("UpdateStatus")',
                     type: 'POST',
                     data: { id: @Model.id, newStatus: newStatus },
                     success: function (response) {
+                        ModalPopup.hideLoading();
                         if ((response && response.success) || !response || !response.message) {
                             showSuccess(response && response.message ? response.message : 'Thao tác thành công!');
                         } else {
@@ -313,6 +310,7 @@
                         }
                     },
                     error: function () {
+                        ModalPopup.hideLoading();
                         showError('Lỗi kết nối server!');
                     }
                 });
@@ -322,23 +320,21 @@
 
     // Duyệt yêu cầu từ Branch: Requested → Shipping
     function approveToShipping() {
-        Swal.fire({
+        ModalPopup.confirm({
+            type: 'question',
             title: 'Duyệt yêu cầu?',
-            text: 'Phiếu sẽ chuyển sang trạng thái Shipping và xuất kho.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: '<i class="fa fa-check"></i> Duyệt',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({ title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            message: 'Phiếu sẽ chuyển sang trạng thái Shipping và xuất kho.',
+            confirmText: 'Duyệt',
+            cancelText: 'Hủy',
+            confirmClass: 'btn-success',
+            onConfirm: function() {
+                ModalPopup.showLoading('Đang xử lý...');
                 $.ajax({
                     url: '@Url.Action("ApproveToShipping")',
                     type: 'POST',
                     data: { id: @Model.id },
                     success: function (response) {
+                        ModalPopup.hideLoading();
                         if ((response && response.success) || !response || !response.message) {
                             showSuccess(response && response.message ? response.message : 'Đã duyệt yêu cầu thành công!');
                         } else {
@@ -346,6 +342,7 @@
                         }
                     },
                     error: function () {
+                        ModalPopup.hideLoading();
                         showError('Lỗi kết nối server!');
                     }
                 });
@@ -353,62 +350,58 @@
         });
     }
 
-    // Mở modal hủy
+    // Mở modal hủy - cần input
     function cancelRequest() {
-        Swal.fire({
-            title: 'Hủy phiếu?',
-            input: 'textarea',
-            inputLabel: 'Lý do hủy',
-            inputPlaceholder: 'Nhập lý do hủy...',
-            inputAttributes: { 'aria-label': 'Nhập lý do hủy' },
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: '<i class="fa fa-times"></i> Xác nhận hủy',
-            cancelButtonText: 'Đóng',
-            inputValidator: (value) => {
-                if (!value) return 'Bạn phải nhập lý do hủy!';
-            }
-        }).then((result) => {
-            if (result.isConfirmed && result.value) {
-                $.ajax({
-                    url: '@Url.Action("CancelRequest")',
-                    type: 'POST',
-                    data: { id: @Model.id, reason: result.value },
-                    success: function (response) {
-                        if ((response && response.success) || !response || !response.message) {
-                            showSuccess(response && response.message ? response.message : 'Đã hủy phiếu thành công!');
-                        } else {
-                            showError(response.message);
-                        }
-                    },
-                    error: function () {
-                        showError('Lỗi kết nối server!');
-                    }
-                });
+        // Hiển thị bootstrap modal thay vì Swal input
+        $('#cancelModal').modal('show');
+    }
+
+    function submitCancel() {
+        var reason = $('#cancelReason').val();
+        if (!reason) {
+            ModalPopup.warning('Thiếu thông tin!', 'Bạn phải nhập lý do hủy!');
+            return;
+        }
+
+        $('#cancelModal').modal('hide');
+        ModalPopup.showLoading('Đang xử lý...');
+
+        $.ajax({
+            url: '@Url.Action("CancelRequest")',
+            type: 'POST',
+            data: { id: @Model.id, reason: reason },
+            success: function (response) {
+                ModalPopup.hideLoading();
+                if ((response && response.success) || !response || !response.message) {
+                    showSuccess(response && response.message ? response.message : 'Đã hủy phiếu thành công!');
+                } else {
+                    showError(response.message);
+                }
+            },
+            error: function () {
+                ModalPopup.hideLoading();
+                showError('Lỗi kết nối server!');
             }
         });
     }
 
     // Xóa sản phẩm khỏi phiếu
     function removeDetail(detailId) {
-        Swal.fire({
+        ModalPopup.confirm({
+            type: 'warning',
             title: 'Xóa sản phẩm?',
-            text: 'Sản phẩm sẽ bị xóa khỏi phiếu này.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: '<i class="fa fa-trash"></i> Xóa',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
+            message: 'Sản phẩm sẽ bị xóa khỏi phiếu này.',
+            confirmText: 'Xóa',
+            cancelText: 'Hủy',
+            confirmClass: 'btn-danger',
+            onConfirm: function() {
+                ModalPopup.showLoading('Đang xử lý...');
                 $.ajax({
                     url: '@Url.Action("RemoveDetail")',
                     type: 'POST',
                     data: { detailId: detailId },
                     success: function (response) {
-                        // Nếu có success=true hoặc không có message lỗi -> thành công
+                        ModalPopup.hideLoading();
                         if ((response && response.success) || !response || !response.message) {
                             showSuccess(response && response.message ? response.message : 'Đã xóa sản phẩm khỏi phiếu!');
                         } else {
@@ -416,6 +409,7 @@
                         }
                     },
                     error: function () {
+                        ModalPopup.hideLoading();
                         showError('Lỗi kết nối server!');
                     }
                 });

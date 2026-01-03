@@ -248,13 +248,13 @@
             
             if (password !== confirmPassword) {
                 e.preventDefault();
-                alert('Mật khẩu xác nhận không khớp!');
+                ModalPopup.warning('Mật khẩu không khớp!', 'Mật khẩu xác nhận không khớp!');
                 return false;
             }
             
             if (!agreeTerms) {
                 e.preventDefault();
-                alert('Bạn phải đồng ý với điều khoản sử dụng!');
+                ModalPopup.warning('Chưa đồng ý điều khoản!', 'Bạn phải đồng ý với điều khoản sử dụng!');
                 return false;
             }
             

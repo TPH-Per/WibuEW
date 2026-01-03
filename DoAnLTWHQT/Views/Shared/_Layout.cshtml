@@ -190,9 +190,10 @@
         </main>
     </div>
 
+    @Html.Partial("_ModalPopup")
+
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <script>
@@ -259,16 +260,12 @@
                 btn.addEventListener('click', function (event) {
                     event.preventDefault();
                     const message = btn.getAttribute('data-confirm') || 'Bạn chắc chắn thực hiện thao tác này?';
-                    Swal.fire({
+                    ModalPopup.confirm({
                         title: 'Xác nhận',
-                        text: message,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonText: 'Đồng ý',
-                        cancelButtonText: 'Huỷ',
-                        confirmButtonColor: '#3b82f6'
-                    }).then(result => {
-                        if (result.isConfirmed) {
+                        message: message,
+                        confirmText: 'Đồng ý',
+                        cancelText: 'Huỷ',
+                        onConfirm: function() {
                             if (btn.dataset.submitForm && btn.closest('form')) {
                                 btn.closest('form').submit();
                             } else if (btn.getAttribute('href')) {
@@ -283,34 +280,16 @@
                 btn.addEventListener('click', function () {
                     const type = btn.getAttribute('data-alert');
                     if (type === 'notifications') {
-                        Swal.fire({
-                            title: 'Thông báo mới',
-                            text: 'Bạn chưa có thông báo nào.',
-                            icon: 'info',
-                            confirmButtonColor: '#3b82f6'
-                        });
+                        ModalPopup.info('Thông báo mới', 'Bạn chưa có thông báo nào.');
                     } else {
-                        Swal.fire({
-                            title: 'Thao tác nhanh',
-                            text: 'Chức năng đang được triển khai.',
-                            icon: 'success',
-                            confirmButtonColor: '#3b82f6'
-                        });
+                        ModalPopup.success('Thao tác nhanh', 'Chức năng đang được triển khai.');
                     }
                 });
             });
 
             window.AppAlerts = {
-                toast: function (message, icon = 'success') {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon,
-                        title: message,
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true
-                    });
+                toast: function (message, type = 'success') {
+                    Toast[type] ? Toast[type](message) : Toast.info(message);
                 }
             };
 

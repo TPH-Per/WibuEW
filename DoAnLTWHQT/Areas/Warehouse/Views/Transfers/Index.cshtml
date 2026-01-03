@@ -161,34 +161,35 @@
             var transferId = $(this).data('id');
             var button = $(this);
             
-            Swal.fire({
+            ModalPopup.confirm({
+                type: 'question',
                 title: 'Giao hàng ngay?',
-                text: 'Hàng sẽ tự động xuất kho và được giao thành công đến chi nhánh.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="fa fa-truck"></i> Giao ngay',
-                cancelButtonText: 'Hủy'
-            }).then((result) => {
-                if (result.isConfirmed) {
+                message: 'Hàng sẽ tự động xuất kho và được giao thành công đến chi nhánh.',
+                confirmText: 'Giao ngay',
+                cancelText: 'Hủy',
+                confirmClass: 'btn-success',
+                onConfirm: function() {
                     button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
+                    ModalPopup.showLoading('Đang xử lý giao hàng...');
                     
                     $.ajax({
                         url: '@Url.Action("AutoDeliver")',
                         type: 'POST',
                         data: { id: transferId, autoComplete: true },
                         success: function(response) {
+                            ModalPopup.hideLoading();
                             if ((response && response.success) || !response || !response.message) {
-                                Swal.fire({ icon: 'success', title: 'Thành công!', text: response && response.message ? response.message : 'Giao hàng thành công!', confirmButtonColor: '#28a745' })
-                                    .then(() => location.reload());
+                                ModalPopup.success('Thành công!', response && response.message ? response.message : 'Giao hàng thành công!', function() {
+                                    location.reload();
+                                });
                             } else {
-                                Swal.fire({ icon: 'error', title: 'Lỗi!', text: response.message, confirmButtonColor: '#dc3545' });
+                                ModalPopup.error('Lỗi!', response.message);
                                 button.prop('disabled', false).html('<i class="fa fa-truck"></i> Giao Nhanh');
                             }
                         },
                         error: function() {
-                            Swal.fire({ icon: 'error', title: 'Lỗi!', text: 'Lỗi kết nối server!', confirmButtonColor: '#dc3545' });
+                            ModalPopup.hideLoading();
+                            ModalPopup.error('Lỗi!', 'Lỗi kết nối server!');
                             button.prop('disabled', false).html('<i class="fa fa-truck"></i> Giao Nhanh');
                         }
                     });

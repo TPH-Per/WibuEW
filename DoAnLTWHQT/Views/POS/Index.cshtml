@@ -185,44 +185,66 @@
             // Checkout
             $('#btnCheckout').click(function () {
                 if (cart.length === 0) {
-                    alert('Giỏ hàng trống!');
+                    ModalPopup.warning('Giỏ hàng trống!', 'Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.');
                     return;
                 }
 
-                if (!confirm('Xác nhận thanh toán?')) return;
+                ModalPopup.confirm({
+                    type: 'question',
+                    title: 'Xác nhận thanh toán?',
+                    message: 'Bạn có chắc chắn muốn thanh toán đơn hàng này?',
+                    confirmText: 'Thanh toán',
+                    cancelText: 'Hủy',
+                    confirmClass: 'btn-success',
+                    onConfirm: function() {
+                        ModalPopup.showLoading('Đang xử lý thanh toán...');
+                        
+                        var data = {
+                            branchId: $('#currentBranchId').val(),
+                            userId: $('#currentUserId').val(),
+                            paymentMethodId: $('#paymentMethod').val(),
+                            cartItems: cart.map(function(i) { return { VariantID: i.VariantID, Qty: i.Qty }; })
+                        };
 
-                var data = {
-                    branchId: $('#currentBranchId').val(),
-                    userId: $('#currentUserId').val(),
-                    paymentMethodId: $('#paymentMethod').val(),
-                    cartItems: cart.map(function(i) { return { VariantID: i.VariantID, Qty: i.Qty }; })
-                };
-
-                $.ajax({
-                    url: '/POS/Checkout',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    success: function (res) {
-                        if (res.success) {
-                            alert(res.message);
-                            cart = [];
-                            renderCart();
-                        } else {
-                            alert(res.message);
-                        }
-                    },
-                    error: function () {
-                        alert('Lỗi kết nối server!');
+                        $.ajax({
+                            url: '/POS/Checkout',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(data),
+                            success: function (res) {
+                                ModalPopup.hideLoading();
+                                if (res.success) {
+                                    ModalPopup.success('Thành công!', res.message, function() {
+                                        cart = [];
+                                        renderCart();
+                                    });
+                                } else {
+                                    ModalPopup.error('Lỗi!', res.message);
+                                }
+                            },
+                            error: function () {
+                                ModalPopup.hideLoading();
+                                ModalPopup.error('Lỗi kết nối!', 'Lỗi kết nối server!');
+                            }
+                        });
                     }
                 });
             });
 
             $('#btnCancel').click(function() {
-                if(confirm('Hủy giao dịch hiện tại?')) {
-                    cart = [];
-                    renderCart();
-                }
+                ModalPopup.confirm({
+                    type: 'warning',
+                    title: 'Hủy giao dịch?',
+                    message: 'Bạn có chắc muốn hủy giao dịch hiện tại? Tất cả sản phẩm trong giỏ hàng sẽ bị xóa.',
+                    confirmText: 'Hủy giao dịch',
+                    cancelText: 'Quay lại',
+                    confirmClass: 'btn-danger',
+                    onConfirm: function() {
+                        cart = [];
+                        renderCart();
+                        Toast.info('Đã hủy giao dịch');
+                    }
+                });
             });
         });
     </script>

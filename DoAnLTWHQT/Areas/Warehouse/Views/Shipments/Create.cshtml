@@ -169,6 +169,42 @@
         document.addEventListener('DOMContentLoaded', function() {
             addProductModal = new bootstrap.Modal(document.getElementById('addProductModal'));
             
+            // Form submission validation
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate supplier selection
+                const supplierId = document.getElementById('SupplierId').value;
+                if (!supplierId) {
+                    ModalPopup.warning('Thiếu thông tin!', 'Vui lòng chọn nhà cung cấp!');
+                    document.getElementById('SupplierId').focus();
+                    return false;
+                }
+                
+                // Validate product details
+                if (details.length === 0) {
+                    ModalPopup.warning('Thiếu thông tin!', 'Vui lòng thêm ít nhất một sản phẩm vào phiếu nhập!');
+                    return false;
+                }
+                
+                // All validations passed - show confirmation
+                ModalPopup.confirm({
+                    type: 'question',
+                    title: 'Xác nhận tạo phiếu nhập',
+                    message: `Tạo phiếu nhập với ${details.length} sản phẩm từ nhà cung cấp đã chọn?`,
+                    confirmText: 'Tạo phiếu',
+                    cancelText: 'Hủy',
+                    confirmClass: 'btn-primary',
+                    onConfirm: function() {
+                        ModalPopup.showLoading('Đang tạo phiếu nhập...');
+                        form.submit();
+                    }
+                });
+                
+                return false;
+            });
+            
             // Load products when supplier changes
             document.getElementById('SupplierId').addEventListener('change', function() {
                 const supplierId = this.value;
@@ -180,14 +216,25 @@
 
                 // Clear existing details when supplier changes
                 if (details.length > 0) {
-                    if (confirm('Thay đổi nhà cung cấp sẽ xóa tất cả sản phẩm đã thêm. Bạn có chắc chắn?')) {
-                        details = [];
-                        updateDetailsTable();
-                        updateSummary();
-                    } else {
-                        // Revert selection - không làm gì cả, giữ nguyên supplier
-                        return;
-                    }
+                    const selectElement = this;
+                    ModalPopup.confirm({
+                        type: 'warning',
+                        title: 'Thay đổi nhà cung cấp',
+                        message: 'Thay đổi nhà cung cấp sẽ xóa tất cả sản phẩm đã thêm. Bạn có chắc chắn?',
+                        confirmText: 'Đồng ý',
+                        cancelText: 'Hủy',
+                        confirmClass: 'btn-warning',
+                        onConfirm: function() {
+                            details = [];
+                            updateDetailsTable();
+                            updateSummary();
+                            loadProductVariants(selectElement.value);
+                        },
+                        onCancel: function() {
+                            // Keep original value
+                        }
+                    });
+                    return;
                 }
 
                 // Show loading
@@ -215,7 +262,7 @@
                     })
                     .catch(error => {
                         console.error('Error loading products:', error);
-                        alert('Lỗi khi tải danh sách sản phẩm!');
+                        ModalPopup.error('Lỗi!', 'Lỗi khi tải danh sách sản phẩm!');
                         document.getElementById('productVariantSelect').innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
                     });
             });
@@ -224,12 +271,12 @@
         function showAddProductModal() {
             const supplierId = document.getElementById('SupplierId').value;
             if (!supplierId) {
-                alert('Vui lòng chọn nhà cung cấp trước!');
+                ModalPopup.warning('Thiếu thông tin!', 'Vui lòng chọn nhà cung cấp trước!');
                 return;
             }
 
             if (productVariants.length === 0) {
-                alert('Nhà cung cấp này chưa có sản phẩm nào!');
+                ModalPopup.warning('Không có sản phẩm!', 'Nhà cung cấp này chưa có sản phẩm nào!');
                 return;
             }
 
@@ -255,19 +302,19 @@
 
             // Validation
             if (!variantId) {
-                alert('Vui lòng chọn sản phẩm!');
+                ModalPopup.warning('Thiếu thông tin!', 'Vui lòng chọn sản phẩm!');
                 document.getElementById('productVariantSelect').focus();
                 return;
             }
 
             if (!quantity || quantity <= 0) {
-                alert('Vui lòng nhập số lượng hợp lệ (lớn hơn 0)!');
+                ModalPopup.warning('Số lượng không hợp lệ!', 'Vui lòng nhập số lượng hợp lệ (lớn hơn 0)!');
                 document.getElementById('quantityInput').focus();
                 return;
             }
 
             if (!priceValue || price <= 0) {
-                alert('Vui lòng nhập giá nhập hợp lệ (lớn hơn 0)!');
+                ModalPopup.warning('Giá không hợp lệ!', 'Vui lòng nhập giá nhập hợp lệ (lớn hơn 0)!');
                 document.getElementById('priceInput').focus();
                 return;
             }
@@ -275,7 +322,7 @@
             // Check if product already exists
             const existingIndex = details.findIndex(d => d.ProductVariantId === variantId);
             if (existingIndex >= 0) {
-                alert('Sản phẩm đã tồn tại trong danh sách!');
+                ModalPopup.warning('Sản phẩm trùng!', 'Sản phẩm đã tồn tại trong danh sách!');
                 return;
             }
 
@@ -289,14 +336,26 @@
             updateDetailsTable();
             updateSummary();
             addProductModal.hide();
+            
+            // Show success toast
+            Toast.success('Đã thêm sản phẩm vào phiếu nhập');
         }
 
         function removeProductDetail(index) {
-            if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-                details.splice(index, 1);
-                updateDetailsTable();
-                updateSummary();
-            }
+            ModalPopup.confirm({
+                type: 'warning',
+                title: 'Xác nhận xóa',
+                message: 'Bạn có chắc muốn xóa sản phẩm này?',
+                confirmText: 'Xóa',
+                cancelText: 'Hủy',
+                confirmClass: 'btn-danger',
+                onConfirm: function() {
+                    details.splice(index, 1);
+                    updateDetailsTable();
+                    updateSummary();
+                    Toast.info('Đã xóa sản phẩm');
+                }
+            });
         }
 
         function updateDetailsTable() {
@@ -347,7 +406,7 @@
         function updateQuantity(index, newValue) {
             const quantity = parseInt(newValue);
             if (!quantity || quantity <= 0) {
-                alert('Số lượng phải lớn hơn 0!');
+                ModalPopup.warning('Số lượng không hợp lệ!', 'Số lượng phải lớn hơn 0!');
                 updateDetailsTable(); // Refresh to restore old value
                 return;
             }
@@ -359,7 +418,7 @@
         function updatePrice(index, newValue) {
             const price = parseFloat(newValue);
             if (!price || price <= 0) {
-                alert('Giá nhập phải lớn hơn 0!');
+                ModalPopup.warning('Giá không hợp lệ!', 'Giá nhập phải lớn hơn 0!');
                 updateDetailsTable(); // Refresh to restore old value
                 return;
             }

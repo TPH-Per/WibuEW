@@ -80,10 +80,10 @@
                             <td class="text-end">
                                 <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Details", new { id = product.Id })">Chi tiết</a>
                                 <a class="btn btn-sm btn-light ms-1" href="@Url.Action("Edit", new { id = product.Id })">Sửa</a>
-                                @using (Html.BeginForm("Delete", "Products", new { id = product.Id }, FormMethod.Post, new { style = "display:inline" }))
+                                @using (Html.BeginForm("Delete", "Products", new { id = product.Id }, FormMethod.Post, new { style = "display:inline", id = "deleteForm_" + product.Id }))
                                 {
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-danger ms-1" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">Xóa</button>
+                                    <button type="button" class="btn btn-sm btn-danger ms-1" data-confirm-delete="deleteForm_@product.Id" data-confirm-message="Bạn có chắc muốn xóa sản phẩm này?">Xóa</button>
                                 }
                             </td>
                         </tr>

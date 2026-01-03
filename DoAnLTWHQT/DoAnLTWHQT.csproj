@@ -185,6 +185,7 @@
     <Compile Include="Areas\Branch\Controllers\DiscountsController.cs" />
     <Compile Include="Areas\Branch\Controllers\ReportsController.cs" />
     <Compile Include="Areas\Branch\Controllers\OrdersController.cs" />
+    <Compile Include="Areas\Branch\Controllers\DiscountApiController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\DashboardController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\WarehouseBaseController.cs" />
     <Compile Include="Areas\Warehouse\Controllers\ShipmentsController.cs" />

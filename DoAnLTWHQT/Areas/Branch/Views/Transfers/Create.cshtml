@@ -154,7 +154,7 @@
             });
 
             if (detailsArray.length === 0) {
-                Swal.fire({ icon: 'warning', title: 'Thiếu sản phẩm!', text: 'Vui lòng thêm ít nhất một sản phẩm!' });
+                ModalPopup.warning('Thiếu sản phẩm!', 'Vui lòng thêm ít nhất một sản phẩm!');
                 return false;
             }
 

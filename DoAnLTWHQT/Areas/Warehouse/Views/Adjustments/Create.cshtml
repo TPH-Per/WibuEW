@@ -6,27 +6,101 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body">
         <h2 class="h5 mb-4">Điền thông tin điều chỉnh</h2>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label">Variant</label>
-                <input class="form-control" value="@Model.Variant" readonly />
+        
+        @using (Html.BeginForm("Create", "Adjustments", FormMethod.Post, new { id = "adjustmentForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.VariantId)
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Variant</label>
+                    @Html.TextBoxFor(m => m.Variant, new { @class = "form-control", @readonly = "readonly" })
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Số lượng hiện tại</label>
+                    @Html.TextBoxFor(m => m.CurrentQuantity, new { @class = "form-control", @readonly = "readonly" })
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Điều chỉnh (+/-) <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Adjustment, new { @class = "form-control", type = "number", id = "adjustmentInput", required = "required" })
+                    <div class="invalid-feedback">Vui lòng nhập số lượng điều chỉnh</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Lý do <span class="text-danger">*</span></label>
+                    @Html.TextAreaFor(m => m.Reason, new { @class = "form-control", rows = "3", placeholder = "Kiểm kê lệch, hư hỏng, thất lạc...", id = "reasonInput", required = "required" })
+                    <div class="invalid-feedback">Vui lòng nhập lý do điều chỉnh</div>
+                </div>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Số lượng hiện tại</label>
-                <input class="form-control" value="@Model.CurrentQuantity" readonly />
+            
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
+                <button class="btn btn-primary" type="submit">Xác nhận điều chỉnh</button>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Điều chỉnh (+/-)</label>
-                <input class="form-control" type="number" value="@Model.Adjustment" />
-            </div>
-            <div class="col-12">
-                <label class="form-label">Lý do</label>
-                <textarea class="form-control" rows="3" placeholder="Kiểm kê lệch, hư hỏng, thất lạc...">@Model.Reason</textarea>
-            </div>
-        </div>
-        <div class="d-flex justify-content-end gap-2 mt-4">
-            <a class="btn btn-light" href="@Url.Action("Index")">Huỷ</a>
-            <button class="btn btn-primary" type="button">Xác nhận điều chỉnh</button>
-        </div>
+        }
     </div>
 </div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        $('#adjustmentForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Client-side validation
+            var adjustment = $('#adjustmentInput').val();
+            var reason = $('#reasonInput').val().trim();
+            
+            // Kiểm tra adjustment không rỗng
+            if (!adjustment || adjustment === '0') {
+                ModalPopup.warning('Thiếu thông tin!', 'Vui lòng nhập số lượng điều chỉnh (khác 0)');
+                $('#adjustmentInput').addClass('is-invalid');
+                return false;
+            }
+            
+            // Kiểm tra reason không rỗng
+            if (!reason) {
+                ModalPopup.warning('Thiếu thông tin!', 'Vui lòng nhập lý do điều chỉnh');
+                $('#reasonInput').addClass('is-invalid');
+                return false;
+            }
+            
+            // Remove invalid class nếu đã điền
+            $('#adjustmentInput').removeClass('is-invalid');
+            $('#reasonInput').removeClass('is-invalid');
+            
+            // Show loading
+            ModalPopup.showLoading('Đang xử lý điều chỉnh...');
+            
+            // Submit form qua AJAX
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    ModalPopup.hideLoading();
+                    
+                    if (response.success) {
+                        ModalPopup.success('Thành công!', response.message || 'Điều chỉnh tồn kho thành công!', function() {
+                            window.location.href = '@Url.Action("Index")';
+                        });
+                    } else {
+                        ModalPopup.error('Lỗi!', response.message || 'Có lỗi xảy ra khi điều chỉnh.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    ModalPopup.hideLoading();
+                    ModalPopup.error('Lỗi kết nối!', 'Không thể kết nối đến server. Vui lòng thử lại.');
+                }
+            });
+            
+            return false;
+        });
+        
+        // Clear invalid class on input
+        $('#adjustmentInput, #reasonInput').on('input', function() {
+            $(this).removeClass('is-invalid');
+        });
+    });
+</script>
+}

@@ -86,10 +86,10 @@
                             </td>
                             <td class="text-end">
                                 <a class="btn btn-sm btn-light" href="@Url.Action("Edit", new { id = variant.Id })">Sửa</a>
-                                @using (Html.BeginForm("Delete", "ProductVariants", new { id = variant.Id }, FormMethod.Post, new { style = "display:inline" }))
+                                @using (Html.BeginForm("Delete", "ProductVariants", new { id = variant.Id }, FormMethod.Post, new { style = "display:inline", id = "deleteForm_" + variant.Id }))
                                 {
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa biến thể này?')">Xóa</button>
+                                    <button type="button" class="btn btn-sm btn-danger" data-confirm-delete="deleteForm_@variant.Id" data-confirm-message="Bạn có chắc muốn xóa biến thể này?">Xóa</button>
                                 }
                             </td>
                         </tr>

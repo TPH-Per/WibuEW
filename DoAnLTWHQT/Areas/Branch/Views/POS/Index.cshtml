@@ -312,6 +312,89 @@
         padding: 20px;
     }
 
+    /* Voucher Section Styling */
+    .voucher-section {
+        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        padding: 15px;
+        border-radius: 15px;
+        border: 2px dashed #cbd5e0;
+        transition: all 0.3s ease;
+    }
+
+    .voucher-section:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .voucher-section .form-label {
+        font-weight: 600;
+        color: #667eea;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
+    }
+
+    .voucher-section .input-group {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .voucher-section input[type="text"] {
+        border: 2px solid #e0e0e0;
+        background: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .voucher-section input[type="text"]:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .voucher-section .btn-outline-primary {
+        border: 2px solid #667eea;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .voucher-section .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        transform: scale(1.05);
+    }
+
+    #voucherInfo .alert-success {
+        background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+        border: none;
+        border-left: 4px solid #28a745;
+        animation: slideInFromLeft 0.4s ease-out;
+    }
+
+    @@keyframes slideInFromLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    #voucherError {
+        background: #ffe6e6;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border-left: 3px solid #dc3545;
+        animation: shake 0.5s ease;
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
     .total-section {
         background: white;
         padding: 20px;
@@ -499,20 +582,23 @@
                                     <i class="bi bi-ticket-perforated me-1"></i> Áp dụng
                                 </button>
                             </div>
+                            
                             <div id="voucherInfo" class="mt-2" style="display: none;">
-                                <div class="alert alert-success py-2 mb-0" style="border-radius: 10px;">
+                                <!-- Thay alert bằng simple box -->
+                                <div class="voucher-applied-box p-2 border border-success rounded" style="background-color: #f0fff4; color: #198754;">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span>
-                                            <i class="bi bi-check-circle me-1"></i>
-                                            <span id="voucherName">Mã ABC</span>: Giảm <strong id="voucherValue">0₫</strong>
+                                        <span class="fw-bold">
+                                            <i class="bi bi-tag-fill me-1"></i>
+                                            <span id="voucherName">CODE</span>: Giảm <span id="voucherValue">0₫</span>
                                         </span>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveVoucher">
-                                            <i class="bi bi-x"></i>
+                                        <button type="button" class="btn btn-sm text-danger border-0 p-0" id="btnRemoveVoucher" title="Gỡ bỏ">
+                                            <i class="bi bi-x-circle-fill" style="font-size: 1.2rem;"></i>
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                            <div id="voucherError" class="text-danger small mt-1" style="display: none;"></div>
+                            
+                            <div id="voucherError" class="text-danger small mt-1 fw-bold" style="display: none;"></div>
                         </div>
 
                         <!-- Subtotal -->
@@ -737,12 +823,7 @@
             var existing = cart.find(x => x.VariantID == id);
             if (existing) {
                 if (existing.Qty >= stock) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Không đủ hàng!',
-                        text: 'Chỉ còn ' + stock + ' sản phẩm trong kho',
-                        confirmButtonColor: '#667eea'
-                    });
+                    ModalPopup.warning('Không đủ hàng!', 'Chỉ còn ' + stock + ' sản phẩm trong kho');
                     return;
                 }
                 existing.Qty++;
@@ -760,14 +841,7 @@
             $('#productSearch').val('').focus();
             
             // Success feedback
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: 'Đã thêm vào giỏ!',
-                showConfirmButton: false,
-                timer: 1500
-            });
+            Toast.success('Đã thêm vào giỏ!');
         });
 
         // Remove from Cart
@@ -785,22 +859,13 @@
             var item = cart.find(x => x.VariantID == id);
             if(item) {
                 if(val < 1) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Số lượng tối thiểu là 1',
-                        confirmButtonColor: '#667eea'
-                    });
+                    ModalPopup.warning('Số lượng không hợp lệ!', 'Số lượng tối thiểu là 1');
                     $(this).val(1);
                     return;
                 }
                 
                 if(val > item.Stock) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Không đủ hàng!',
-                        text: 'Chỉ còn ' + item.Stock + ' sản phẩm trong kho',
-                        confirmButtonColor: '#667eea'
-                    });
+                    ModalPopup.warning('Không đủ hàng!', 'Chỉ còn ' + item.Stock + ' sản phẩm trong kho');
                     $(this).val(item.Qty);
                     return;
                 }
@@ -871,8 +936,15 @@
                 return;
             }
             
-            // Call API to validate voucher
-            $.get('/Branch/POS/ValidateVoucher', { code: code }, function(res) {
+            console.log('[Voucher] Validating code:', code);
+            
+            // USE NEW INDEPENDENT API CONTROLLER
+            var apiUrl = '/Branch/DiscountApi/Check';
+            
+            // Use getJSON to ensure response is parsed as JSON
+            $.getJSON(apiUrl, { code: code, _: new Date().getTime() }, function(res) {
+                console.log('[Voucher] API Response:', res);
+
                 if (res.success) {
                     appliedVoucher = res.voucher;
                     $('#voucherName').text(res.voucher.code);
@@ -883,20 +955,16 @@
                     $('#btnApplyVoucher').prop('disabled', true);
                     renderCart(); // Re-calculate totals
                     
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        title: 'Áp dụng voucher thành công!',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
+                    Toast.success('Áp dụng voucher thành công!');
                 } else {
-                    $('#voucherError').text(res.message).show();
+                    var msg = res.message || 'Lỗi không xác định';
+                    console.error('[Voucher] Validation failed:', msg);
+                    $('#voucherError').text(msg).show();
                     $('#voucherInfo').hide();
                 }
-            }).fail(function() {
-                $('#voucherError').text('Lỗi kết nối server').show();
+            }).fail(function(xhr, status, error) {
+                console.error('[Voucher] AJAX Error:', status, error);
+                $('#voucherError').text('Lỗi kết nối server: ' + error).show();
             });
         });
 
@@ -912,21 +980,12 @@
         // Checkout
         $('#btnCheckout').click(function () {
             if (cart.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Giỏ hàng trống!',
-                    text: 'Vui lòng thêm sản phẩm trước khi thanh toán',
-                    confirmButtonColor: '#667eea'
-                });
+                ModalPopup.warning('Giỏ hàng trống!', 'Vui lòng thêm sản phẩm trước khi thanh toán');
                 return;
             }
 
             if(!$('#paymentMethod').val()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Chưa chọn phương thức thanh toán!',
-                    confirmButtonColor: '#667eea'
-                });
+                ModalPopup.warning('Chưa chọn thanh toán!', 'Chưa chọn phương thức thanh toán!');
                 return;
             }
 
@@ -954,17 +1013,14 @@
         });
 
         function confirmAndCheckout(paymentType) {
-            Swal.fire({
+            ModalPopup.confirm({
+                type: 'question',
                 title: 'Xác nhận thanh toán?',
-                html: 'Tổng tiền: <strong style="color: #667eea; font-size: 1.5rem;">' + $('#totalAmount').text() + '</strong>',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: '<i class="bi bi-check-circle me-2"></i>Thanh Toán',
-                cancelButtonText: '<i class="bi bi-x-circle me-2"></i>Hủy',
-                confirmButtonColor: '#11998e',
-                cancelButtonColor: '#eb3349'
-            }).then((result) => {
-                if (result.isConfirmed) {
+                message: 'Tổng tiền: ' + $('#totalAmount').text(),
+                confirmText: 'Thanh Toán',
+                cancelText: 'Hủy',
+                confirmClass: 'btn-success',
+                onConfirm: function() {
                     processCheckout(paymentType);
                 }
             });
@@ -991,59 +1047,43 @@
                 success: function (res) {
                     // Nếu có success=true HOẶC không có message lỗi -> thành công
                     if ((res && res.success) || !res || !res.message) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Thanh toán thành công!',
-                            text: res && res.message ? res.message : 'Đơn hàng đã được tạo!',
-                            confirmButtonColor: '#11998e'
+                        ModalPopup.success('Thanh toán thành công!', res && res.message ? res.message : 'Đơn hàng đã được tạo!', function() {
+                            cart = [];
+                            appliedVoucher = null; // Reset voucher
+                            $('#voucherCode').val('').prop('disabled', false);
+                            $('#btnApplyVoucher').prop('disabled', false);
+                            $('#voucherInfo').hide();
+                            renderCart();
+                            $('#productSearch').val('').focus();
+                            $('#paymentMethod').val('');
+                            // Reload products để cập nhật tồn kho
+                            setTimeout(function() { location.reload(); }, 1500);
                         });
-                        cart = [];
-                        appliedVoucher = null; // Reset voucher
-                        $('#voucherCode').val('').prop('disabled', false);
-                        $('#btnApplyVoucher').prop('disabled', false);
-                        $('#voucherInfo').hide();
-                        renderCart();
-                        $('#productSearch').val('').focus();
-                        $('#paymentMethod').val('');
-                        // Reload products để cập nhật tồn kho
-                        setTimeout(function() { location.reload(); }, 1500);
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi!',
-                            text: res.message,
-                            confirmButtonColor: '#eb3349'
-                        });
+                        ModalPopup.error('Lỗi!', res.message);
                     }
                 },
                 error: function (xhr) {
                     console.error(xhr);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi kết nối!',
-                        text: 'Không thể kết nối đến server',
-                        confirmButtonColor: '#eb3349'
-                    });
+                    ModalPopup.error('Lỗi kết nối!', 'Không thể kết nối đến server');
                 }
             });
         }
 
         $('#btnCancel').click(function() {
             if(cart.length > 0) {
-                Swal.fire({
+                ModalPopup.confirm({
+                    type: 'warning',
                     title: 'Hủy giao dịch?',
-                    text: 'Tất cả sản phẩm trong giỏ sẽ bị xóa',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Đồng ý',
-                    cancelButtonText: 'Không',
-                    confirmButtonColor: '#eb3349',
-                    cancelButtonColor: '#667eea'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                    message: 'Tất cả sản phẩm trong giỏ sẽ bị xóa',
+                    confirmText: 'Đồng ý',
+                    cancelText: 'Không',
+                    confirmClass: 'btn-danger',
+                    onConfirm: function() {
                         cart = [];
                         renderCart();
                         $('#productSearch').val('').focus();
+                        Toast.info('Đã hủy giao dịch');
                     }
                 });
             }

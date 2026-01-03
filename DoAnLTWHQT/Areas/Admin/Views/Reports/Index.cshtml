@@ -442,14 +442,7 @@
             radio.addEventListener('change', function() {
                 const period = this.value;
                 // Show loading indicator
-                Swal.fire({
-                    title: 'Đang tải...',
-                    text: 'Đang cập nhật báo cáo',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+                ModalPopup.showLoading('Đang cập nhật báo cáo...');
                 // Redirect with period parameter
                 window.location.href = '@Url.Action("Index", "Reports", new { area = "Admin" })?period=' + period;
             });
@@ -468,48 +461,7 @@
 
         // === Export Report Handler ===
         function exportReport() {
-            Swal.fire({
-                title: 'Xuất báo cáo',
-                html: `
-                    <div class="text-start">
-                        <label class="form-label fw-medium">Định dạng xuất:</label>
-                        <div class="d-flex flex-column gap-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="exportFormat" id="exportPDF" value="pdf" checked>
-                                <label class="form-check-label" for="exportPDF">
-                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i>PDF
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="exportFormat" id="exportExcel" value="excel">
-                                <label class="form-check-label" for="exportExcel">
-                                    <i class="bi bi-file-earmark-excel text-success me-1"></i>Excel
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="exportFormat" id="exportCSV" value="csv">
-                                <label class="form-check-label" for="exportCSV">
-                                    <i class="bi bi-file-earmark-spreadsheet text-primary me-1"></i>CSV
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: '<i class="bi bi-download me-1"></i>Xuất',
-                cancelButtonText: 'Hủy',
-                confirmButtonColor: '#667eea'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const format = document.querySelector('input[name="exportFormat"]:checked').value;
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Thông báo',
-                        text: 'Tính năng xuất báo cáo ' + format.toUpperCase() + ' đang được phát triển!',
-                        confirmButtonColor: '#667eea'
-                    });
-                }
-            });
+            ModalPopup.info('Thông báo', 'Tính năng xuất báo cáo đang được phát triển!');
         }
     </script>
 }

@@ -67,10 +67,10 @@
                                     <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Edit", new { id = branch.Id })" title="Sửa">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    @using (Html.BeginForm("Delete", "Branches", new { id = branch.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc muốn xóa chi nhánh này?');" }))
+                                    @using (Html.BeginForm("Delete", "Branches", new { id = branch.Id }, FormMethod.Post, new { @class = "d-inline", id = "deleteForm_" + branch.Id }))
                                     {
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Xóa" data-confirm-delete="deleteForm_@branch.Id" data-confirm-message="Bạn có chắc muốn xóa chi nhánh này?">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     }

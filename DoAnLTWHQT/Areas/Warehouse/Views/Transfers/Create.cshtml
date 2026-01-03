@@ -155,7 +155,7 @@
                         
                         if (res.available === 0 || res.available == 0) {
                             $stockInput.addClass('bg-warning text-dark').removeClass('bg-success text-white');
-                            Swal.fire({ icon: 'warning', title: 'Hết hàng!', text: 'Sản phẩm này không có trong kho!' });
+                            ModalPopup.warning('Hết hàng!', 'Sản phẩm này không có trong kho!');
                         } else {
                             $stockInput.removeClass('bg-warning text-dark').addClass('bg-success text-white');
                         }
@@ -192,7 +192,7 @@
             });
 
             if (detailsArray.length === 0) {
-                Swal.fire({ icon: 'warning', title: 'Thiếu sản phẩm!', text: 'Vui lòng thêm ít nhất một sản phẩm!' });
+                ModalPopup.warning('Thiếu sản phẩm!', 'Vui lòng thêm ít nhất một sản phẩm!');
                 return false;
             }
 

@@ -182,28 +182,33 @@
 @section Scripts {
 <script>
     function completeReceipt() {
-        if (!confirm('Bạn có chắc muốn HOÀN THÀNH phiếu nhập này?\n\nSau khi hoàn thành, tồn kho sẽ được cập nhật và không thể hoàn tác.')) {
-            return;
-        }
+        ModalPopup.confirm({
+            type: 'question',
+            title: 'Hoàn thành phiếu nhập',
+            message: 'Bạn có chắc muốn HOÀN THÀNH phiếu nhập này? Sau khi hoàn thành, tồn kho sẽ được cập nhật và không thể hoàn tác.',
+            confirmText: 'Hoàn thành',
+            cancelText: 'Hủy',
+            confirmClass: 'btn-success',
+            onConfirm: function() {
+                // Show loading
+                ModalPopup.showLoading('Đang xử lý...');
 
-        // Disable button to prevent double click
-        event.target.disabled = true;
-        event.target.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Đang xử lý...';
-
-        // Submit form
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '@Url.Action("Complete", new { id = Model.Id })';
-        
-        // Add anti-forgery token
-        const token = document.createElement('input');
-        token.type = 'hidden';
-        token.name = '__RequestVerificationToken';
-        token.value = '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)[1];
-        form.appendChild(token);
-        
-        document.body.appendChild(form);
-        form.submit();
+                // Submit form
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("Complete", new { id = Model.Id })';
+                
+                // Add anti-forgery token
+                const token = document.createElement('input');
+                token.type = 'hidden';
+                token.name = '__RequestVerificationToken';
+                token.value = '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)[1];
+                form.appendChild(token);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
     }
 </script>
 }

@@ -223,6 +223,7 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public ActionResult ValidateVoucher(string code)
         {
             if (string.IsNullOrEmpty(code))
@@ -230,44 +231,63 @@ namespace DoAnLTWHQT.Areas.Branch.Controllers
                 return Json(new { success = false, message = "Vui lòng nhập mã voucher" }, JsonRequestBehavior.AllowGet);
             }
 
-            var voucher = db.discounts
-                .FirstOrDefault(d => d.code.ToUpper() == code.ToUpper() 
-                                    && d.is_active);
-
-            if (voucher == null)
+            try 
             {
-                return Json(new { success = false, message = "Mã voucher không tồn tại hoặc đã hết hiệu lực" }, JsonRequestBehavior.AllowGet);
-            }
+                code = code.Trim().ToUpper();
+                System.Diagnostics.Debug.WriteLine($"[POS] Validating voucher: {code}");
 
-            // Check if voucher is expired
-            if (voucher.end_at.HasValue && voucher.end_at.Value < DateTime.Now)
-            {
-                return Json(new { success = false, message = "Mã voucher đã hết hạn" }, JsonRequestBehavior.AllowGet);
-            }
+                // Use _db from base controller
+                var voucher = _db.discounts
+                    .FirstOrDefault(d => d.code == code && d.is_active);
 
-            // Check if voucher hasn't started yet
-            if (voucher.start_at.HasValue && voucher.start_at.Value > DateTime.Now)
-            {
-                return Json(new { success = false, message = "Mã voucher chưa đến thời gian sử dụng" }, JsonRequestBehavior.AllowGet);
-            }
-
-            // Check usage limit
-            if (voucher.max_uses.HasValue && voucher.used_count >= voucher.max_uses.Value)
-            {
-                return Json(new { success = false, message = "Mã voucher đã hết lượt sử dụng" }, JsonRequestBehavior.AllowGet);
-            }
-
-            return Json(new
-            {
-                success = true,
-                voucher = new
+                if (voucher == null)
                 {
-                    id = voucher.id,
-                    code = voucher.code,
-                    value = voucher.value,
-                    type = voucher.type
+                    System.Diagnostics.Debug.WriteLine($"[POS] Voucher not found or inactive: {code}");
+                    return Json(new { success = false, message = "Mã voucher không tồn tại hoặc đã bị khóa" }, JsonRequestBehavior.AllowGet);
                 }
-            }, JsonRequestBehavior.AllowGet);
+
+                var now = DateTime.Now;
+
+                // Check if voucher is expired
+                if (voucher.end_at.HasValue && voucher.end_at.Value < now)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[POS] Voucher expired: {voucher.end_at}");
+                    return Json(new { success = false, message = $"Mã voucher đã hết hạn vào ngày {voucher.end_at:dd/MM/yyyy}" }, JsonRequestBehavior.AllowGet);
+                }
+
+                // Check if voucher hasn't started yet
+                if (voucher.start_at.HasValue && voucher.start_at.Value > now)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[POS] Voucher not started: {voucher.start_at}");
+                    return Json(new { success = false, message = $"Mã voucher chỉ bắt đầu từ ngày {voucher.start_at:dd/MM/yyyy}" }, JsonRequestBehavior.AllowGet);
+                }
+
+                // Check usage limit
+                if (voucher.max_uses.HasValue && voucher.used_count >= voucher.max_uses.Value)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[POS] Voucher max used: {voucher.used_count}/{voucher.max_uses}");
+                    return Json(new { success = false, message = "Mã voucher đã hết lượt sử dụng" }, JsonRequestBehavior.AllowGet);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[POS] Voucher valid: {code}, Value: {voucher.value}");
+
+                return Json(new
+                {
+                    success = true,
+                    voucher = new
+                    {
+                        id = voucher.id,
+                        code = voucher.code,
+                        value = voucher.value,
+                        type = voucher.type
+                    }
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[POS] Error validating voucher: {ex.Message}");
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         private string GetBranchName(long branchId)

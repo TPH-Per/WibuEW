@@ -159,22 +159,15 @@ else
 @section Scripts {
 <script>
     function confirmDelivery() {
-        Swal.fire({
+        ModalPopup.confirm({
+            type: 'question',
             title: 'Xác nhận nhận hàng?',
-            html: 'Sau khi xác nhận, tồn kho chi nhánh sẽ được cập nhật.<br><strong>Không thể hoàn tác thao tác này!</strong>',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: '<i class="bi bi-check-circle"></i> Xác nhận đã nhận',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Đang xử lý...',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
+            message: 'Sau khi xác nhận, tồn kho chi nhánh sẽ được cập nhật. Không thể hoàn tác thao tác này!',
+            confirmText: 'Xác nhận đã nhận',
+            cancelText: 'Hủy',
+            confirmClass: 'btn-success',
+            onConfirm: function() {
+                ModalPopup.showLoading('Đang xử lý...');
 
                 $.ajax({
                     url: '@Url.Action("ConfirmDelivery")',
@@ -183,33 +176,20 @@ else
                         id: @(header != null ? header.Id : 0)
                     },
                     success: function (response) {
+                        ModalPopup.hideLoading();
                         // Nếu có success=true hoặc không có message lỗi -> thành công
                         if ((response && response.success) || (!response) || (!response.message)) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Thành công!',
-                                text: (response && response.message) ? response.message : 'Đã xác nhận nhận hàng!',
-                                confirmButtonColor: '#28a745'
-                            }).then(() => {
+                            ModalPopup.success('Thành công!', (response && response.message) ? response.message : 'Đã xác nhận nhận hàng!', function() {
                                 window.location.href = '@Url.Action("Index", "Transfers")';
                             });
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi!',
-                                text: response.message,
-                                confirmButtonColor: '#dc3545'
-                            });
+                            ModalPopup.error('Lỗi!', response.message);
                         }
                     },
                     error: function (xhr, status, error) {
+                        ModalPopup.hideLoading();
                         console.error('AJAX Error:', xhr, status, error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi kết nối!',
-                            html: 'Không thể kết nối đến server.<br><small>' + (error || status) + '</small>',
-                            confirmButtonColor: '#dc3545'
-                        });
+                        ModalPopup.error('Lỗi kết nối!', 'Không thể kết nối đến server. ' + (error || status));
                     }
                 });
             }

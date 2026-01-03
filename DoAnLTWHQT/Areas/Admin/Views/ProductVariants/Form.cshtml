@@ -94,7 +94,7 @@
             if (input.files && input.files[0]) {
                 // Validate file size (5MB)
                 if (input.files[0].size > 5 * 1024 * 1024) {
-                    alert('Kích thước file không được vượt quá 5MB');
+                    ModalPopup.warning('File quá lớn!', 'Kích thước file không được vượt quá 5MB');
                     input.value = '';
                     return;
                 }
@@ -102,7 +102,7 @@
                 // Validate file type
                 var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
                 if (!allowedTypes.includes(input.files[0].type)) {
-                    alert('Chỉ chấp nhận file ảnh: JPG, PNG, GIF');
+                    ModalPopup.warning('Định dạng không hợp lệ!', 'Chỉ chấp nhận file ảnh: JPG, PNG, GIF');
                     input.value = '';
                     return;
                 }

@@ -1,0 +1,589 @@
+@* Premium Modal Popup Component - Thay thế hoàn toàn alert/confirm/SweetAlert *@
+
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+<!-- Universal Modal Popup -->
+<div class="modal fade" id="universalModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center w-100">
+                    <div id="modalIcon" class="me-3"></div>
+                    <h5 class="modal-title fw-bold" id="modalTitle"></h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <p id="modalMessage" class="text-secondary mb-0"></p>
+            </div>
+            <div class="modal-footer border-0 pt-0" id="modalButtons">
+                <!-- Buttons will be injected here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg text-center py-4 loading-pulse">
+            <div class="modal-body">
+                <div class="loading-spinner mb-3">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <p id="loadingMessage" class="mb-0 fw-semibold text-secondary"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ===== PREMIUM MODAL ANIMATIONS - SCOPED TO MODAL ONLY ===== */
+    
+    /* Success Animation - Bounce từ trên */
+    #universalModal.modal-success .modal-content {
+        animation: modalSuccessBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    @@keyframes modalSuccessBounce {
+        0% {
+            opacity: 0;
+            transform: translateY(-100px) scale(0.5) rotate(-15deg);
+        }
+        50% {
+            transform: translateY(10px) scale(1.05) rotate(5deg);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotate(0deg);
+        }
+    }
+    
+    /* Error Animation - Shake */
+    #universalModal.modal-error .modal-content {
+        animation: modalErrorShake 0.5s cubic-bezier(.36,.07,.19,.97);
+    }
+    
+    @@keyframes modalErrorShake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+        20%, 40%, 60%, 80% { transform: translateX(10px); }
+    }
+    
+    /* Warning Animation - Swing */
+    #universalModal.modal-warning .modal-content {
+        animation: modalWarningSwing 0.6s ease-in-out;
+        transform-origin: top center;
+    }
+    
+    @@keyframes modalWarningSwing {
+        0% { transform: rotate(0deg) scale(0.8); opacity: 0; }
+        20% { transform: rotate(15deg) scale(0.9); }
+        40% { transform: rotate(-10deg) scale(0.95); }
+        60% { transform: rotate(5deg) scale(1); }
+        80% { transform: rotate(-3deg) scale(1); }
+        100% { transform: rotate(0deg) scale(1); opacity: 1; }
+    }
+    
+    /* Info Animation - Slide Fade */
+    #universalModal.modal-info .modal-content {
+        animation: modalInfoSlide 0.4s ease-out;
+    }
+    
+    @@keyframes modalInfoSlide {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Question Animation - Zoom Rotate */
+    #universalModal.modal-question .modal-content {
+        animation: modalQuestionZoom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @@keyframes modalQuestionZoom {
+        0% {
+            opacity: 0;
+            transform: scale(0) rotate(-180deg);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+    }
+    
+    /* ===== ICON STYLES WITH ANIMATIONS ===== */
+    #universalModal .modal-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #universalModal .modal-icon::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        animation: modalIconPulse 2s ease-in-out infinite;
+    }
+    
+    @@keyframes modalIconPulse {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.1); opacity: 0.4; }
+    }
+    
+    #universalModal .modal-icon i {
+        position: relative;
+        z-index: 1;
+        animation: modalIconBounce 0.6s ease-in-out;
+    }
+    
+    @@keyframes modalIconBounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    
+    #universalModal .modal-icon-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    }
+    
+    #universalModal .modal-icon-success::before {
+        background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    }
+    
+    #universalModal .modal-icon-error {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        animation: modalErrorIconShake 0.5s ease-in-out;
+    }
+    
+    @@keyframes modalErrorIconShake {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-15deg); }
+        75% { transform: rotate(15deg); }
+    }
+    
+    #universalModal .modal-icon-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        color: #856404;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+        animation: modalWarningIconPulse 1s ease-in-out infinite;
+    }
+    
+    @@keyframes modalWarningIconPulse {
+        0%, 100% { box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4); }
+        50% { box-shadow: 0 4px 25px rgba(255, 193, 7, 0.8); }
+    }
+    
+    #universalModal .modal-icon-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+    }
+    
+    #universalModal .modal-icon-question {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+    }
+    
+    /* ===== PREMIUM LOADING ANIMATION ===== */
+    #loadingModal .loading-pulse {
+        animation: modalLoadingPulse 1.5s ease-in-out infinite;
+    }
+    
+    @@keyframes modalLoadingPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    #loadingModal .loading-spinner {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+    }
+    
+    #loadingModal .spinner-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 4px solid transparent;
+        border-top-color: #007bff;
+        border-radius: 50%;
+        animation: modalSpinnerRotate 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    }
+    
+    #loadingModal .spinner-ring:nth-child(1) {
+        animation-delay: -0.45s;
+        border-top-color: #007bff;
+    }
+    
+    #loadingModal .spinner-ring:nth-child(2) {
+        animation-delay: -0.3s;
+        border-top-color: #28a745;
+        width: 70%;
+        height: 70%;
+        top: 15%;
+        left: 15%;
+    }
+    
+    #loadingModal .spinner-ring:nth-child(3) {
+        animation-delay: -0.15s;
+        border-top-color: #ffc107;
+        width: 40%;
+        height: 40%;
+        top: 30%;
+        left: 30%;
+    }
+    
+    @@keyframes modalSpinnerRotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* ===== TOAST ANIMATIONS ===== */
+    #toastContainer .toast-notification {
+        min-width: 320px;
+        animation: modalToastSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        backdrop-filter: blur(10px);
+    }
+    
+    @@keyframes modalToastSlideIn {
+        from {
+            opacity: 0;
+            transform: translateX(400px) rotateZ(90deg);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0) rotateZ(0deg);
+        }
+    }
+    
+    #toastContainer .toast-notification.hiding {
+        animation: modalToastSlideOut 0.3s ease-in forwards;
+    }
+    
+    @@keyframes modalToastSlideOut {
+        from {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(400px) scale(0.8);
+        }
+    }
+    
+    /* ===== BUTTON HOVER EFFECTS ===== */
+    #modalButtons .btn {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 600;
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.5rem;
+    }
+    
+    #modalButtons .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    #modalButtons .btn:active {
+        transform: translateY(0);
+    }
+    
+    /* ===== MODAL CONTENT ENHANCEMENTS ===== */
+    #universalModal .modal-content {
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    
+    #universalModal .modal-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    #universalModal .modal-body {
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+    
+    #loadingModal .modal-content {
+        border-radius: 1rem;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+</style>
+
+<script>
+    // ===== PREMIUM MODAL POPUP UTILITY =====
+    const ModalPopup = {
+        modal: null,
+        loadingModal: null,
+        currentCallback: null,
+        currentType: null,
+
+        init: function() {
+            this.modal = new bootstrap.Modal(document.getElementById('universalModal'));
+            this.loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        },
+
+        // Icon HTML generators with animations
+        getIconHtml: function(type) {
+            const icons = {
+                success: '<div class="modal-icon modal-icon-success"><i class="bi bi-check-lg"></i></div>',
+                error: '<div class="modal-icon modal-icon-error"><i class="bi bi-x-lg"></i></div>',
+                warning: '<div class="modal-icon modal-icon-warning"><i class="bi bi-exclamation-triangle"></i></div>',
+                info: '<div class="modal-icon modal-icon-info"><i class="bi bi-info-circle"></i></div>',
+                question: '<div class="modal-icon modal-icon-question"><i class="bi bi-question-lg"></i></div>'
+            };
+            return icons[type] || icons.info;
+        },
+
+        // Apply animation class based on type
+        applyAnimation: function(type) {
+            const modalEl = document.getElementById('universalModal');
+            // Remove all animation classes
+            modalEl.classList.remove('modal-success', 'modal-error', 'modal-warning', 'modal-info', 'modal-question');
+            // Add new animation class
+            if (type) {
+                modalEl.classList.add('modal-' + type);
+            }
+        },
+
+        // Show simple notification modal
+        show: function(options) {
+            const defaults = {
+                type: 'info',
+                title: 'Thông báo',
+                message: '',
+                buttonText: 'Đồng ý',
+                buttonClass: 'btn-primary',
+                onClose: null
+            };
+            const settings = { ...defaults, ...options };
+
+            this.applyAnimation(settings.type);
+            document.getElementById('modalIcon').innerHTML = this.getIconHtml(settings.type);
+            document.getElementById('modalTitle').textContent = settings.title;
+            document.getElementById('modalMessage').textContent = settings.message;
+            
+            const buttonClass = {
+                success: 'btn-success',
+                error: 'btn-danger',
+                warning: 'btn-warning',
+                info: 'btn-primary',
+                question: 'btn-secondary'
+            };
+
+            document.getElementById('modalButtons').innerHTML = `
+                <button type="button" class="btn ${settings.buttonClass || buttonClass[settings.type]}" data-bs-dismiss="modal">
+                    <i class="bi bi-check-circle me-1"></i>${settings.buttonText}
+                </button>
+            `;
+
+            this.currentCallback = settings.onClose;
+            this.modal.show();
+
+            // Handle callback on close
+            document.getElementById('universalModal').addEventListener('hidden.bs.modal', function handler() {
+                if (ModalPopup.currentCallback) {
+                    ModalPopup.currentCallback();
+                    ModalPopup.currentCallback = null;
+                }
+                this.removeEventListener('hidden.bs.modal', handler);
+            });
+        },
+
+        // Shorthand methods
+        success: function(title, message, onClose) {
+            this.show({ type: 'success', title, message, onClose });
+        },
+
+        error: function(title, message, onClose) {
+            this.show({ type: 'error', title, message, onClose });
+        },
+
+        warning: function(title, message, onClose) {
+            this.show({ type: 'warning', title, message, onClose });
+        },
+
+        info: function(title, message, onClose) {
+            this.show({ type: 'info', title, message, onClose });
+        },
+
+        // Show confirm modal with callbacks
+        confirm: function(options) {
+            const defaults = {
+                type: 'question',
+                title: 'Xác nhận',
+                message: 'Bạn có chắc chắn muốn thực hiện hành động này?',
+                confirmText: 'Đồng ý',
+                cancelText: 'Hủy',
+                confirmClass: 'btn-primary',
+                cancelClass: 'btn-secondary',
+                onConfirm: null,
+                onCancel: null
+            };
+            const settings = { ...defaults, ...options };
+
+            this.applyAnimation(settings.type);
+            document.getElementById('modalIcon').innerHTML = this.getIconHtml(settings.type);
+            document.getElementById('modalTitle').textContent = settings.title;
+            document.getElementById('modalMessage').textContent = settings.message;
+            
+            document.getElementById('modalButtons').innerHTML = `
+                <button type="button" class="btn ${settings.cancelClass}" id="modalCancelBtn">
+                    <i class="bi bi-x-circle me-1"></i>${settings.cancelText}
+                </button>
+                <button type="button" class="btn ${settings.confirmClass}" id="modalConfirmBtn">
+                    <i class="bi bi-check-circle me-1"></i>${settings.confirmText}
+                </button>
+            `;
+
+            this.modal.show();
+
+            // Handle confirm
+            document.getElementById('modalConfirmBtn').onclick = () => {
+                this.modal.hide();
+                if (settings.onConfirm) settings.onConfirm();
+            };
+
+            // Handle cancel
+            document.getElementById('modalCancelBtn').onclick = () => {
+                this.modal.hide();
+                if (settings.onCancel) settings.onCancel();
+            };
+        },
+
+        // Show loading modal
+        showLoading: function(message = 'Đang xử lý...') {
+            document.getElementById('loadingMessage').textContent = message;
+            this.loadingModal.show();
+        },
+
+        // Hide loading modal
+        hideLoading: function() {
+            this.loadingModal.hide();
+        },
+
+        // Close any open modal
+        close: function() {
+            this.modal.hide();
+            this.loadingModal.hide();
+        }
+    };
+
+    // ===== PREMIUM TOAST NOTIFICATION UTILITY =====
+    const Toast = {
+        show: function(options) {
+            const defaults = {
+                type: 'info',
+                title: '',
+                message: '',
+                duration: 4000
+            };
+            const settings = { ...defaults, ...options };
+
+            const bgColors = {
+                success: 'bg-success',
+                error: 'bg-danger',
+                warning: 'bg-warning text-dark',
+                info: 'bg-info'
+            };
+
+            const icons = {
+                success: 'bi-check-circle-fill',
+                error: 'bi-x-circle-fill',
+                warning: 'bi-exclamation-triangle-fill',
+                info: 'bi-info-circle-fill'
+            };
+
+            const toastId = 'toast_' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast-notification toast show ${bgColors[settings.type]} text-white mb-2 rounded-3 shadow-lg" role="alert">
+                    <div class="d-flex align-items-center p-3">
+                        <i class="bi ${icons[settings.type]} me-2 fs-4"></i>
+                        <div class="flex-grow-1">
+                            ${settings.title ? `<strong class="d-block mb-1">${settings.title}</strong>` : ''}
+                            <span>${settings.message}</span>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white ms-3" onclick="Toast.dismiss('${toastId}')"></button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('toastContainer').insertAdjacentHTML('beforeend', toastHtml);
+
+            // Auto dismiss
+            setTimeout(() => this.dismiss(toastId), settings.duration);
+        },
+
+        dismiss: function(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }
+        },
+
+        success: function(message, title = '') {
+            this.show({ type: 'success', title, message });
+        },
+
+        error: function(message, title = '') {
+            this.show({ type: 'error', title, message });
+        },
+
+        warning: function(message, title = '') {
+            this.show({ type: 'warning', title, message });
+        },
+
+        info: function(message, title = '') {
+            this.show({ type: 'info', title, message });
+        }
+    };
+
+    // Initialize on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        ModalPopup.init();
+
+        // Handler for data-confirm-delete buttons
+        document.querySelectorAll('[data-confirm-delete]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const formId = this.getAttribute('data-confirm-delete');
+                const message = this.getAttribute('data-confirm-message') || 'Bạn có chắc chắn muốn xóa?';
+                
+                ModalPopup.confirm({
+                    type: 'warning',
+                    title: 'Xác nhận xóa',
+                    message: message,
+                    confirmText: 'Xóa',
+                    cancelText: 'Hủy',
+                    confirmClass: 'btn-danger',
+                    onConfirm: function() {
+                        const form = document.getElementById(formId);
+                        if (form) form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>

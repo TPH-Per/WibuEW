@@ -70,10 +70,10 @@
                                 <a class="btn btn-sm btn-outline-primary me-1" href="@Url.Action("Edit", new { id = discount.id })">
                                     <i class="bi bi-pencil"></i> Sửa
                                 </a>
-                                @using (Html.BeginForm("Delete", "Discounts", new { id = discount.id }, FormMethod.Post, new { style = "display:inline" }))
+                                @using (Html.BeginForm("Delete", "Discounts", new { id = discount.id }, FormMethod.Post, new { style = "display:inline", id = "deleteForm_" + discount.id }))
                                 {
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa mã này?');">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-confirm-delete="deleteForm_@discount.id" data-confirm-message="Bạn có chắc chắn muốn xóa mã này?">
                                         <i class="bi bi-trash"></i> Xóa
                                     </button>
                                 }

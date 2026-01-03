@@ -1,0 +1,6 @@
+Changed database context to 'perw'.
+id                   branch_id            product_variant_id   quantity_on_hand quantity_reserved reorder_level created_at                             updated_at                            
+-------------------- -------------------- -------------------- ---------------- ----------------- ------------- -------------------------------------- --------------------------------------
+                   1                    1                    7                5                 0            10            2025-12-19 03:21:29.7500000            2025-12-21 23:15:42.4466667
+
+(1 rows affected)

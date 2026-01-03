@@ -11,6 +11,7 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
             return View(BuildAdjustments());
         }
 
+        // GET: Warehouse/Adjustments/Create
         public ActionResult Create(long variantId = 0)
         {
             var variant = new WarehouseAdjustmentViewModel
@@ -20,6 +21,44 @@ namespace DoAnLTWHQT.Areas.Warehouse.Controllers
                 CurrentQuantity = 48
             };
             return View(variant);
+        }
+
+        // POST: Warehouse/Adjustments/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(WarehouseAdjustmentViewModel model)
+        {
+            try
+            {
+                // Validation
+                if (model.Adjustment == 0)
+                {
+                    return Json(new { success = false, message = "Số lượng điều chỉnh không được bằng 0" });
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Reason))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập lý do điều chỉnh" });
+                }
+
+                // TODO: Thực hiện logic điều chỉnh tồn kho ở đây
+                // - Cập nhật inventory table
+                // - Tạo inventory_transaction record
+                // - Log adjustment
+
+                System.Diagnostics.Debug.WriteLine($"[Adjustment] Variant: {model.VariantId}, Adjustment: {model.Adjustment}, Reason: {model.Reason}");
+
+                // Giả lập thành công
+                return Json(new { 
+                    success = true, 
+                    message = $"Đã điều chỉnh {(model.Adjustment > 0 ? "+" : "")}{model.Adjustment} cho variant {model.VariantId}" 
+                });
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Adjustment Error] {ex.Message}");
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
         }
 
         private static IList<WarehouseAdjustmentViewModel> BuildAdjustments()

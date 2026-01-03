@@ -155,12 +155,12 @@
         if (password && confirmPassword && password.value.length > 0) {
             if (password.value !== confirmPassword.value) {
                 e.preventDefault();
-                alert('Mật khẩu xác nhận không khớp!');
+                ModalPopup.warning('Lỗi xác thực!', 'Mật khẩu xác nhận không khớp!');
                 return false;
             }
             if (password.value.length < 6) {
                 e.preventDefault();
-                alert('Mật khẩu phải có ít nhất 6 ký tự!');
+                ModalPopup.warning('Lỗi xác thực!', 'Mật khẩu phải có ít nhất 6 ký tự!');
                 return false;
             }
         }

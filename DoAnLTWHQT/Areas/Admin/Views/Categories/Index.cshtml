@@ -51,10 +51,10 @@
                             <td><code>@category.Slug</code></td>
                             <td class="text-end">
                                 <a class="btn btn-sm btn-light" href="@Url.Action("Edit", new { id = category.Id })">Sửa</a>
-                                @using (Html.BeginForm("Delete", "Categories", new { id = category.Id }, FormMethod.Post, new { style = "display:inline" }))
+                                @using (Html.BeginForm("Delete", "Categories", new { id = category.Id }, FormMethod.Post, new { style = "display:inline", id = "deleteForm_" + category.Id }))
                                 {
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa danh mục này?')">Xóa</button>
+                                    <button type="button" class="btn btn-sm btn-danger" data-confirm-delete="deleteForm_@category.Id" data-confirm-message="Bạn có chắc muốn xóa danh mục này?">Xóa</button>
                                 }
                             </td>
                         </tr>
